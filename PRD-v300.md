@@ -92,10 +92,14 @@ This lets us compute coverage at every level:
 
 The ~40% not in entities is: comments (14.5%), blanks (10.6%), non-code files (15%).
 This is expected and correct. We parse what's parsable. We track what we didn't.
+Note: doc comments within that 14.5% ARE searchable — they're folded into code span FTS
+via the `doc_comment` field. So effective search coverage exceeds the entity line count.
 
 # Searchability Rule
 
 - SEARCHABLE: Only code spans (N:M) go into FTS. They have name + signature + snippet.
+- SEARCHABLE VIA CODE SPANS: Doc comments are folded into the adjacent code span's `doc_comment`
+  field. Searchable through FTS, but not separate entities and not stored as blobs.
 - NOT SEARCHABLE: Folders and files are graph-only. Connectivity + staleness checks only.
 - NOT STORED: Full file content is NEVER stored. Only parsed snippets.
 
@@ -113,7 +117,7 @@ Other languages' config files (package.json, pyproject.toml) = file_unparsable.
 
 ## B. Code Span Entities (searchable, extracted by tree-sitter)
 
-Each is a contiguous line range within a parsable file. FTS indexes name + signature.
+Each is a contiguous line range within a parsable file. FTS indexes name + signature + doc_comment.
 
     Kind          Example PK                     Languages
     ----          ----------                     ---------
@@ -137,7 +141,11 @@ Each is a contiguous line range within a parsable file. FTS indexes name + signa
     record        src/User.java:1:10             Java, C#
     object        src/App.scala:1:20             Scala
 
-Comments are NOT entities. Blanks are NOT entities.
+Comments are NOT separate entities — but doc comments (///, /** */, #[doc]) are folded into the
+adjacent code span's `doc_comment` field and indexed by FTS. This makes doc comments searchable
+without bloating entity count or polluting search results with standalone comment rows.
+Inline comments (// and /* */) are counted in coverage (comment_lines) but not indexed.
+Blanks are NOT entities.
 Tests are not a separate kind — `is_test=true` flag on function/method entities.
 
 ## C. Rust Config Span Entities (Cargo.toml only)
@@ -491,7 +499,8 @@ LLM pays ~200 tokens to choose, then up to 20k for ONE deep dive (not 80k for al
 - 4 structural (folder, file_parsable, file_unparsable, file_config)
 - 19 code spans (function, method, struct, class, enum, trait, interface, impl, type_alias, constant, static, macro, module, import, variable, constructor, namespace, record, object) + is_test flag
 - 3 Rust config spans (dependency, package_meta, config_section)
-- Comments are NOT entities. Blanks are NOT entities.
+- Comments are NOT separate entities. Doc comments (///, /** */) are folded into adjacent
+  code span's `doc_comment` field and FTS-indexed. Inline comments counted in coverage only.
 - Imports ARE entities (drive dependency edges).
 - Rust config (Cargo.toml) IS parsed. Other languages' configs are file_unparsable.
 - Only code spans are searchable (FTS). Folders and files are graph-only.
