@@ -3,14 +3,75 @@
 > Grep returns files. Parseltongue returns understanding.
 > A minimalistic, well-verified proof of Rust craft.
 
-# Key Ideas
+# Primary Key Format
 
-- Types of entities
-    - folder is an entity
-    - sub-folders are an entity with edge connections to upper folders and lower folders
-    - 
+Uniform for ALL entities: `path:start_line:end_line`
 
+    src/auth/:-1:-1                    → folder
+    src/auth/service.rs:0:0            → file
+    src/auth/service.rs:8:25           → code span (fn login)
 
+Sentinels: `-1:-1` = folder, `0:0` = file, `N:M` (N >= 1) = code span.
+
+# Searchability Rule
+
+- SEARCHABLE: Only code spans (N:M) go into FTS. They have name + signature + snippet.
+- NOT SEARCHABLE: Folders and files are graph-only. Connectivity + staleness checks only.
+- NOT STORED: Full file content is NEVER stored. Only parsed snippets.
+
+# Entity Taxonomy (27 kinds)
+
+## A. Structural Entities (graph-only, not searchable, no content stored)
+
+    folder            src/auth/:-1:-1             Every directory in the tree
+    file_parsable     src/auth/service.rs:0:0     Tree-sitter can parse it. Has child code spans. Stores file_hash only.
+    file_unparsable   README.md:0:0               Can't parse. Just an address. Stores file_hash only.
+    file_config       Cargo.toml:0:0              Rust config only. Parsed as TOML, not code. Other langs' configs = file_unparsable.
+
+## B. Code Span Entities (searchable, extracted by tree-sitter)
+
+Each is a contiguous line range within a parsable file. FTS indexes name + signature.
+
+    Kind          Example PK                     Languages
+    ----          ----------                     ---------
+    function      src/main.rs:10:25              All
+    method        src/auth.rs:30:45              All with classes/impls
+    struct        src/model.rs:5:15              Rust, C, C++, Go
+    class         src/app.py:1:50                Python, JS/TS, Java, C++, Ruby, PHP, C#
+    enum          src/status.rs:3:12             Rust, Java, TS, C, C++, C#
+    trait         src/auth.rs:1:20               Rust
+    interface     src/api.ts:5:30                TS, Java, Go, C#, PHP
+    impl          src/auth.rs:22:60              Rust
+    type_alias    src/types.rs:3:3               Rust, TS, Go, C
+    constant      src/config.rs:1:1              All
+    static        src/global.rs:5:5              Rust, C, C++
+    macro         src/macros.rs:1:20             Rust, C, C++
+    module        src/lib.rs:1:1                 Rust, Python, Ruby, JS/TS
+    import        src/main.rs:1:3                All (drives dependency edges)
+    variable      src/app.js:1:1                 JS/TS, Python, Go
+    constructor   src/App.java:10:20             Java, C++, TS, PHP, C#
+    namespace     src/lib.cpp:1:50               C++, C#, PHP
+    record        src/User.java:1:10             Java, C#
+    object        src/App.scala:1:20             Scala
+
+Comments are NOT entities. Blanks are NOT entities.
+Tests are not a separate kind — `is_test=true` flag on function/method entities.
+
+## C. Rust Config Span Entities (Cargo.toml only)
+
+    dependency      Cargo.toml:5:5               A crate dependency declaration
+    package_meta    Cargo.toml:1:4               Package name, version, edition
+    config_section  Cargo.toml:10:15             Named section ([features], [workspace], etc.)
+
+## D. Rust Compiler Enrichment (Layer 3 — extra columns, not new entities)
+
+For .rs code spans, same pk, same row, more columns filled in:
+
+    rustc_scope     tcx.def_path_str()     "crate::auth::service::login"
+    rustc_sig       tcx.fn_sig()           "fn(&Credentials) -> Result<Token>"
+    visibility      tcx.visibility()       "pub(crate)"
+    mir_calls       tcx.optimized_mir()    ["crate::db::lookup", ...]
+    trait_impls     tcx.all_impls()        [...]
 
 ---
 
@@ -292,71 +353,25 @@ LLM pays ~200 tokens to choose, then up to 20k for ONE deep dive (not 80k for al
     - rustcompiler enrichment for Rust code
 
 - Big-Rock-02: the primary-key
-    - PRIMARY KEY = physical location: file_path (+ start_line:end_line for code spans)
-    - ISG_L1_V3 (language|||kind|||scope|||name|||file_path|||discriminator) is a DERIVED COLUMN, not the key
-    - The key is the address. Everything else is metadata about that address.
-
-    Entity hierarchy (everything is a physical location first):
-
-    Layer 0: FOLDER
-        src/auth/                              pk = "src/auth/"
-        - every folder is an entity
-        - subfolders connect to parent via edge
-
-    Layer 1: FILE
-        src/auth/service.rs                    pk = "src/auth/service.rs"
-        - every file is an entity, connects to its folder via edge
-        - file is either parsable or not parsable
-        - unparsable file: just the address, that's the entity
-
-    Layer 2: LINE RANGE (within a parsable file)
-        src/auth/service.rs:1:3     (comments)     pk = "src/auth/service.rs:1:3"
-        src/auth/service.rs:4:6     (imports)      pk = "src/auth/service.rs:4:6"
-        src/auth/service.rs:8:25    (fn login)     pk = "src/auth/service.rs:8:25"
-        src/auth/service.rs:27:40   (struct Auth)  pk = "src/auth/service.rs:27:40"
-
-        Classifications for parsable line ranges:
-        - comment
-        - blank (not an entity)
-        - import statement
-        - statement (assignment, expression)
-        - function / method
-        - type definition (struct, class, enum)
-        - trait / interface
-        - impl block (Rust-specific)
-
-        All classifications work for any language via tree-sitter.
-
-    Layer 3: RUST COMPILER ENRICHMENT (extra columns, only for Rust files)
-        src/auth/service.rs:8:25 gets additional columns:
-        - rustc_scope:   "crate::auth::service::login"       from tcx.def_path_str()
-        - rustc_sig:     "fn(&Credentials) -> Result<Token>"  from tcx.fn_sig()
-        - visibility:    "pub(crate)"                          from tcx.visibility()
-        - mir_calls:     ["crate::db::lookup", ...]            from tcx.optimized_mir()
-        - trait_impls:   [...]                                 from tcx.all_impls()
-
-        Rust enrichment is ADDITIVE. Same table, same primary key.
-        Rust rows just have more columns filled in.
-
-    The ISG_L1_V3 rich name:
-        language|||kind|||scope|||name|||file_path|||discriminator
-        rust|||fn|||auth::service|||login|||src/auth/service.rs|||sig_v3
-
-        This is DERIVED from the layers above. Useful for display and search.
-        NOT the primary key. The entity IS its location.
+    - Uniform PK: `path:start_line:end_line` — see Entity Taxonomy above
+    - Sentinels: -1:-1 = folder, 0:0 = file, N:M = code span
+    - ISG_L1_V3 (language|||kind|||scope|||name|||file_path|||discriminator) is DERIVED, not the key
+    - 27 entity kinds across 4 layers — see Entity Taxonomy above
+    - Validated by codemogger (uses same `file:line:line` chunk key)
 
 - Big-Rock-03: code-graph-building
-    - parse folder names
-    - folders become entities of type folder, connected via edges
-    - subfolders connect to parent folders
-    - files connect to their containing folder
-    - rust-ecosystem files
-        - rust code (.rs) → parsable, gets Layer 2 + Layer 3
-        - rust config (Cargo.toml) → parsable as TOML, not as code
-        - rust tests → parsable, marked with is_test metadata
-    - non-rust files
-        - parsable languages (py, js, ts, go, java, c, cpp) → Layer 2 only
-        - unparsable files (README.md, .env, images) → Layer 1 only (just the file path)
+    - .gitignore-driven walk (simplified: directory names only, no globs)
+    - Hardcoded ALWAYS_IGNORE: .git, node_modules, target, build, dist, __pycache__, .venv, .cargo, .rustup
+    - SHA-256 hash per file for incremental indexing (skip unchanged files on re-analyze)
+    - Folder → folder edges (parent/child)
+    - File → folder edges (belongs_to)
+    - Code span → file edges (part_of)
+    - Code span → code span edges (calls, imports, implements — from tree-sitter + rustc)
+    - Rust files (.rs) → Layer 2 (tree-sitter) + Layer 3 (rustc_private enrichment)
+    - Rust config (Cargo.toml) → parsed as TOML, yields dependency/package_meta/config_section entities
+    - Other parsable languages (py, js, ts, go, java, c, cpp) → Layer 2 only
+    - Unparsable files → Layer 1 only (just the address + hash)
+    - Tests → same entities, flagged with is_test=true
 
 ---
 
@@ -388,6 +403,15 @@ LLM pays ~200 tokens to choose, then up to 20k for ONE deep dive (not 80k for al
 
 ## D8: Primary Key is Physical Location
 - file_path + optional start_line:end_line. ISG_L1_V3 is derived, not identity.
+
+## D9: Entity Taxonomy is 27 Kinds (2026-03-16)
+- 4 structural (folder, file_parsable, file_unparsable, file_config)
+- 19 code spans (function, method, struct, class, enum, trait, interface, impl, type_alias, constant, static, macro, module, import, variable, constructor, namespace, record, object) + is_test flag
+- 3 Rust config spans (dependency, package_meta, config_section)
+- Comments are NOT entities. Blanks are NOT entities.
+- Imports ARE entities (drive dependency edges).
+- Rust config (Cargo.toml) IS parsed. Other languages' configs are file_unparsable.
+- Only code spans are searchable (FTS). Folders and files are graph-only.
 
 ---
 

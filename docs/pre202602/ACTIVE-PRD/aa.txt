@@ -1608,3 +1608,1349 @@
   5. Comments/docstrings can improve retrieval ranking, but cannot create verified edges without parser/LSP evidence.                                                   
    - god speed - DO NOT READ from this repo - exclusively use my github cli - DO PLANNING FIRST and RESEARCH HENCE -- DO NOT TRIGGER BOTH AGENTS AT ONCE - first use    
   @agent-plan AND WHEN IT COMPLETES then use agent-general-purpose - DO NOT READ from repo for this - all the ABOVE NOTES ARE ENOUGH    
+
+
+============
+
+     completed INTEGER (boolean),
+       task_score REAL,            -- Z-score normalized against baseline
+       started_at INTEGER,
+       finished_at INTEGER
+     );
+
+     CREATE TABLE memory_retrievals (
+       memory_id TEXT,
+       task_id TEXT,
+       similarity REAL,            -- Cosine similarity (0-1)
+       self_report REAL,           -- Agent's rating (0-3)
+       credit REAL,                -- Credit e
+
+∴ Thinking…
+
+  I have enough information from both agents. Let me now compile my synthesis and update the plan file with the research findings. Since this is a research task (not implementation), I should present the
+  findings to the user and update the plan file with the research summary, then use ExitPlanMode since there's actually no implementation to plan here - this is purely research.
+
+  Actually, wait - I'm in plan mode. The original plan was about cloning repos and reading them. The repos are cloned, and I've read the key files. My task is to present the synthesis of findings. Since I'm in
+  plan mode and this is a research task, I should update the plan file with the completed research and present my findings.
+
+  I'll update the plan file with the research synthesis and exit plan mode since the research is complete.
+
+⏺ Both agents have completed. I now have a comprehensive picture of all three repos. Let me update the plan file with the complete research synthesis.
+
+⏺ Updated plan
+  ⎿  Added 165 lines, removed 28 lines
+        1 -# Plan: Clone Glommer's Repos + Fetch Blog Post for Research                                                                                                                                    
+        1 +# Glommer Research: Complete Findings for Parseltongue v3                                                                                                                                       
+        2  
+        3 -## Context                                                                                                                                                                                      
+        4 -We're designing Parseltongue v3 and need to study how Glommer (Glauber Costa, Turso CEO) built codemogger and related tools. These repos demonstrate patterns we want to adopt: .gitignore-drive
+          -n file walking, SHA-256 hash-based incremental indexing, Turso/libSQL FTS setup, and the "one .db file per codebase" pattern.                                                                   
+        3 +## Status: COMPLETE (all 3 repos cloned, all key files read)                                                                                                                                    
+        4  
+        6 -## Actions                                                                                                                                                                                      
+        5 +Repos live at `docs/research-glommer/{codemogger,cachebro,memelord}`.                                                                                                                           
+        6  
+        8 -### 1. Create research directory                                                                                                                                                                
+        9 -```                                                                                                                                                                                             
+       10 -docs/research-glommer/                                                                                                                                                                          
+       11 -```                                                                                                                                                                                             
+        7 +---                                                                                                                                                                                             
+        8  
+       13 -### 2. Clone three repos                                                                                                                                                                        
+       14 -```bash                                                                                                                                                                                         
+       15 -git clone https://github.com/glommer/codemogger.git docs/research-glommer/codemogger                                                                                                            
+       16 -git clone https://github.com/glommer/cachebro.git docs/research-glommer/cachebro                                                                                                                
+       17 -git clone https://github.com/glommer/memelord.git docs/research-glommer/memelord                                                                                                                
+       18 -```                                                                                                                                                                                             
+        9 +## CODEMOGGER - Code Indexing Library (STEAL HEAVILY)                                                                                                                                           
+       10  
+       20 -### 3. Fetch the Turso blog post                                                                                                                                                                
+       21 -Save the blog post content from https://turso.tech/blog/building-a-code-search-engine-with-turso to `docs/research-glommer/turso-blog-code-search-engine.md`                                    
+       11 +**What it is**: Tree-sitter code chunker + Turso/libSQL store with FTS + vector search. Single `.db` file per codebase. 14 languages. MCP server + CLI.                                         
+       12  
+       23 -### 4. Read and summarize key patterns                                                                                                                                                          
+       24 -After cloning, read the critical files in codemogger:                                                                                                                                           
+       25 -- `.gitignore` handling / file walker                                                                                                                                                           
+       26 -- SHA-256 hash-based change detection                                                                                                                                                           
+       27 -- Tree-sitter chunking logic                                                                                                                                                                    
+       28 -- Turso/libSQL schema (FTS + vector tables)                                                                                                                                                     
+       29 -- MCP server interface                                                                                                                                                                          
+       30 -- The index/search/reindex pipeline                                                                                                                                                             
+       13 +### Patterns to Adopt                                                                                                                                                                           
+       14  
+       32 -## Verification                                                                                                                                                                                 
+       33 -- All three repos cloned successfully                                                                                                                                                           
+       34 -- Blog post saved                                                                                                                                                                               
+       35 -- No changes to Parseltongue source code (read-only research)                                                                                                                                   
+       15 +**1. File Walker + .gitignore** (`src/scan/walker.ts`)                                                                                                                                          
+       16 +- Hardcoded `ALWAYS_IGNORE` set: .git, node_modules, target, build, dist, __pycache__, .venv, .cargo, .rustup                                                                                   
+       17 +- Simplified .gitignore parsing: directory names only (no glob patterns). Practical tradeoff.                                                                                                   
+       18 +- Skips hidden files (starts with `.`), empty files, files >1MB                                                                                                                                 
+       19 +- Returns: absPath, relPath, language, SHA-256 hash, content                                                                                                                                    
+       20 +                                                                                                                                                                                                
+       21 +**2. SHA-256 Hash-Based Incremental Indexing** (`src/index.ts`)                                                                                                                                 
+       22 +- On reindex: compute hash per file, compare to stored hash                                                                                                                                     
+       23 +- Changed → re-chunk + re-embed. Unchanged → skip.                                                                                                                                              
+       24 +- 5-phase pipeline: scan → hash check → chunk+write → embed → cleanup → FTS rebuild                                                                                                             
+       25 +- Batch sizes: FILE_BATCH=200, EMBED_BATCH=64                                                                                                                                                   
+       26 +                                                                                                                                                                                                
+       27 +**3. Chunk Key = Physical Location** (`src/chunk/types.ts`)                                                                                                                                     
+       28 +- `chunkKey = "file_path:startLine:endLine"` — EXACTLY our Layer 2 primary key!                                                                                                                 
+       29 +- This validates our PRD Big-Rock-02 design completely.                                                                                                                                         
+       30 +                                                                                                                                                                                                
+       31 +**4. Tree-Sitter Chunking** (`src/chunk/treesitter.ts`)                                                                                                                                         
+       32 +- `topLevelNodes` per language (e.g., Rust: function_item, struct_item, enum_item, impl_item, trait_item...)                                                                                    
+       33 +- `splitNodes`: large items (>150 lines) get split into sub-items (methods within impl/class)                                                                                                   
+       34 +- `extractName()`: language-specific logic for Go methods, Rust impls, Python decorators, etc.                                                                                                  
+       35 +- `extractSignature()`: first line of the node = the signature                                                                                                                                  
+       36 +                                                                                                                                                                                                
+       37 +**5. Turso/libSQL Schema** (`src/db/schema.ts`)                                                                                                                                                 
+       38 +- `codebases` table: id, root_path, name, indexed_at                                                                                                                                            
+       39 +- `chunks` table: id, codebase_id, file_path, chunk_key (UNIQUE), language, kind, name, signature, snippet, start_line, end_line, file_hash, indexed_at, embedding (BLOB), embedding_model      
+       40 +- `indexed_files` table: codebase_id, file_path, file_hash, chunk_count, indexed_at                                                                                                             
+       41 +- Per-codebase FTS tables: `fts_{codebase_id}` with weighted fields (name=5.0, signature=3.0)                                                                                                   
+       42 +- Vector search: `vector_distance_cos(embedding, vector8(?))` — int8 quantized embeddings                                                                                                       
+       43 +                                                                                                                                                                                                
+       44 +**6. RRF Fusion** (`src/search/rank.ts`)                                                                                                                                                        
+       45 +- `score = 0.4/(60+rank_fts) + 0.6/(rank_vec+60)` — standard RRF with k=60                                                                                                                      
+       46 +- Vector gets 60% weight, FTS gets 40%                                                                                                                                                          
+       47 +- Merges by chunkKey, sorts by combined score                                                                                                                                                   
+       48 +                                                                                                                                                                                                
+       49 +**7. Query Preprocessing** (`src/search/query.ts`)                                                                                                                                              
+       50 +- Stopword removal (English + agent-specific filler like "help", "please", "file", "code")                                                                                                      
+       51 +- Token regex: `[a-z0-9]+(?:[-_.][a-z0-9]+)*`                                                                                                                                                   
+       52 +- Max 12 terms, min 3 chars, max 30 chars                                                                                                                                                       
+       53 +                                                                                                                                                                                                
+       54 +**8. MCP Server** (`src/mcp.ts`)                                                                                                                                                                
+       55 +- 3 tools: codemogger_search, codemogger_index, codemogger_reindex                                                                                                                              
+       56 +- Dynamic descriptions: after indexing, search tool description updates with chunk/file counts                                                                                                  
+       57 +- `sendToolListChanged()` after index operations — smart pattern for keeping LLM context fresh                                                                                                  
+       58 +                                                                                                                                                                                                
+       59 +### What NOT to Adopt from Codemogger                                                                                                                                                           
+       60 +- Embeddings (we're CPU-only, no vector search)                                                                                                                                                 
+       61 +- Bun/TypeScript runtime (we're Rust)                                                                                                                                                           
+       62 +- MCP as primary interface (we're HTTP-first)                                                                                                                                                   
+       63 +                                                                                                                                                                                                
+       64 +---                                                                                                                                                                                             
+       65 +                                                                                                                                                                                                
+       66 +## CACHEBRO - File Cache with Diff Tracking (INTERESTING FOR STALE DETECTION)                                                                                                                   
+       67 +                                                                                                                                                                                                
+       68 +**What it is**: Token-saving layer for AI agents. Caches file reads, returns diffs on subsequent reads instead of full content. 26-36% token savings.                                           
+       69 +                                                                                                                                                                                                
+       70 +### Patterns to Adopt                                                                                                                                                                           
+       71 +                                                                                                                                                                                                
+       72 +**1. Content-Addressed File Versioning**                                                                                                                                                        
+       73 +- Schema: `file_versions(path, hash, content, lines, created_at)` — composite PK on (path, hash)                                                                                                
+       74 +- Every version of a file is stored. Hash = SHA-256 truncated to 16 chars.                                                                                                                      
+       75 +- `session_reads(session_id, path, hash, read_at)` — tracks what each session last saw                                                                                                          
+       76 +                                                                                                                                                                                                
+       77 +**2. FRESH/STALE Detection Pattern**                                                                                                                                                            
+       78 +- Compare current file hash to last-seen hash in session                                                                                                                                        
+       79 +- Same hash → FRESH (return one-line confirmation)                                                                                                                                              
+       80 +- Different hash → STALE (compute and return unified diff)                                                                                                                                      
+       81 +- This maps directly to our Screen 3 FRESH/STALE badge and Screen 7 staleness check                                                                                                             
+       82 +                                                                                                                                                                                                
+       83 +**3. Line-Based LCS Diff** (`src/differ.ts`)                                                                                                                                                    
+       84 +- Longest Common Subsequence for line-level diffs                                                                                                                                               
+       85 +- Returns unified diff format + exact changed line numbers                                                                                                                                      
+       86 +- Could be useful for incremental re-analysis: only re-parse changed line ranges                                                                                                                
+       87 +                                                                                                                                                                                                
+       88 +**4. Session Isolation**                                                                                                                                                                        
+       89 +- Different sessions can be at different file versions                                                                                                                                          
+       90 +- Useful if we ever need multi-user or multi-branch scenarios                                                                                                                                   
+       91 +                                                                                                                                                                                                
+       92 +### What NOT to Adopt from Cachebro                                                                                                                                                             
+       93 +- The caching layer itself (we don't cache file reads, we index)                                                                                                                                
+       94 +- The MCP proxy pattern (we're HTTP-first)                                                                                                                                                      
+       95 +- Token tracking/stats (interesting but out of scope)                                                                                                                                           
+       96 +                                                                                                                                                                                                
+       97 +---                                                                                                                                                                                             
+       98 +                                                                                                                                                                                                
+       99 +## MEMELORD - Persistent Agent Memory (LOW PRIORITY BUT INTERESTING)                                                                                                                            
+      100 +                                                                                                                                                                                                
+      101 +**What it is**: Per-project persistent memory for coding agents. Memories survive across sessions, improve through reinforcement learning (weight adjustment based on agent feedback).          
+      102 +                                                                                                                                                                                                
+      103 +### Patterns Worth Noting                                                                                                                                                                       
+      104 +                                                                                                                                                                                                
+      105 +**1. Turso Connection Pattern — Short-Lived Connections**                                                                                                                                       
+      106 +- Opens/closes DB connection per operation to avoid multi-process lock contention                                                                                                               
+      107 +- `PRAGMA busy_timeout = 5000` for concurrent access                                                                                                                                            
+      108 +- Retry with exponential backoff (max 10 attempts) if DB locked                                                                                                                                 
+      109 +- IMPORTANT: This is a real-world lesson about Turso embedded driver file locking                                                                                                               
+      110 +                                                                                                                                                                                                
+      111 +**2. Per-Project DB Pattern**                                                                                                                                                                   
+      112 +- Each project gets `.memelord/memory.db` — no shared state across projects                                                                                                                     
+      113 +- Exactly matches our `.parseltongue/index.db` per-codebase pattern                                                                                                                             
+      114 +                                                                                                                                                                                                
+      115 +**3. Vector Search in libSQL**                                                                                                                                                                  
+      116 +- `vector_distance_cos(embedding, ?)` for similarity search                                                                                                                                     
+      117 +- Float32 vectors stored as BLOB                                                                                                                                                                
+      118 +- Works well enough for small-scale (hundreds/thousands of memories)                                                                                                                            
+      119 +                                                                                                                                                                                                
+      120 +### What NOT to Adopt from Memelord                                                                                                                                                             
+      121 +- Memory/reinforcement learning system (different product)                                                                                                                                      
+      122 +- Embeddings/vector search (we're CPU-only)                                                                                                                                                     
+      123 +- Claude Code hooks integration (interesting but not our interface)                                                                                                                             
+      124 +                                                                                                                                                                                                
+      125 +---                                                                                                                                                                                             
+      126 +                                                                                                                                                                                                
+      127 +## SYNTHESIS: What Parseltongue v3 Should Steal                                                                                                                                                 
+      128 +                                                                                                                                                                                                
+      129 +### High Confidence (Validated Patterns)                                                                                                                                                        
+      130 +                                                                                                                                                                                                
+      131 +| Pattern | Source | Parseltongue Mapping |                                                                                                                                                     
+      132 +|---------|--------|---------------------|                                                                                                                                                      
+      133 +| `file:startLine:endLine` as chunk key | codemogger | Our Layer 2 primary key (Big-Rock-02) |                                                                                                  
+      134 +| SHA-256 hash-based incremental indexing | codemogger + cachebro | FRESH/STALE detection + selective re-parsing |                                                                              
+      135 +| Simplified .gitignore (directory names only) | codemogger | File walker for ingestion |                                                                                                       
+      136 +| ALWAYS_IGNORE hardcoded set | codemogger | .git, node_modules, target, build, dist, etc. |                                                                                                    
+      137 +| Per-codebase FTS tables with weighted fields | codemogger | name=5.0, signature=3.0 for our FTS search |                                                                                      
+      138 +| Single .db file per codebase | all three | `.parseltongue/index.db` pattern |                                                                                                                 
+      139 +| Short-lived DB connections | memelord | Avoid file lock contention in multi-process |                                                                                                         
+      140 +| Tree-sitter topLevelNodes + splitNodes | codemogger | Our existing tree-sitter pattern, validated |                                                                                           
+      141 +                                                                                                                                                                                                
+      142 +### Medium Confidence (Adapt for Our Needs)                                                                                                                                                     
+      143 +                                                                                                                                                                                                
+      144 +| Pattern | Source | Adaptation |                                                                                                                                                               
+      145 +|---------|--------|-----------|                                                                                                                                                                
+      146 +| RRF fusion (keyword + semantic) | codemogger | RRF over FTS + symbol trie + trigram (no vector) |                                                                                             
+      147 +| Query preprocessing (stopwords) | codemogger | Strip agent filler before FTS |                                                                                                                
+      148 +| Line-based LCS diff | cachebro | Incremental re-analysis of changed ranges only |                                                                                                             
+      149 +| Batch processing (FILE_BATCH=200) | codemogger | Similar batching for our indexing pipeline |                                                                                                 
+      150 +                                                                                                                                                                                                
+      151 +### Reject (Not Applicable)                                                                                                                                                                     
+      152 +                                                                                                                                                                                                
+      153 +| Pattern | Source | Why Not |                                                                                                                                                                  
+      154 +|---------|--------|---------|                                                                                                                                                                  
+      155 +| Vector embeddings | codemogger + memelord | CPU-only guarantee |                                                                                                                              
+      156 +| MCP as primary interface | codemogger | HTTP-first (D4) |                                                                                                                                     
+      157 +| Token caching layer | cachebro | Different product |                                                                                                                                          
+      158 +| Reinforcement learning | memelord | Different product |                                                                                                                                       
+      159 +                                                                                                                                                                                                
+      160 +---                                                                                                                                                                                             
+      161 +                                                                                                                                                                                                
+      162 +## Key Validation for PRD-v300.md                                                                                                                                                               
+      163 +                                                                                                                                                                                                
+      164 +1. **Big-Rock-02 CONFIRMED**: codemogger uses `file_path:startLine:endLine` as its unique chunk key. Our physical-location-first primary key is the right call.                                 
+      165 +                                                                                                                                                                                                
+      166 +2. **D7 (Turso/libSQL) CONFIRMED**: All three repos use Turso embedded. FTS + vector in single file works. Per-codebase FTS tables with weighted fields is production-proven.                   
+      167 +                                                                                                                                                                                                
+      168 +3. **Incremental indexing via hashing CONFIRMED**: SHA-256 per file, compare to stored hash, skip unchanged. Simple, fast, correct.                                                             
+      169 +                                                                                                                                                                                                
+      170 +4. **.gitignore approach CONFIRMED**: Simplified parsing (directory names only, no glob patterns) is sufficient. Practical tradeoff.                                                            
+      171 +                                                                                                                                                                                                
+      172 +5. **memelord warns**: Turso embedded driver has file locking issues with long-lived connections. Use short-lived connections or handle `SQLITE_BUSY` with retries.                             
+
+⏺ Here's the synthesis of all three Glommer repos:
+
+  ---
+  Codemogger (STEAL HEAVILY)
+
+  The big validation: codemogger uses file_path:startLine:endLine as its unique chunk key — exactly our Big-Rock-02 primary key design. This confirms we're on the right track.
+
+  Key patterns to adopt:
+  - File walker: Hardcoded ALWAYS_IGNORE set + simplified .gitignore (directory names only, no glob patterns). Skips hidden files, empty files, files >1MB.
+  - SHA-256 incremental indexing: Hash per file → compare to stored hash → skip unchanged. 5-phase pipeline: scan → hash → chunk → embed → cleanup → FTS rebuild.
+  - Per-codebase FTS tables with weighted fields: name=5.0, signature=3.0. Production-proven on Kubernetes (16K files), TypeScript (39K files), Bun (9K files).
+  - RRF fusion: 0.4/(60+rank_fts) + 0.6/(60+rank_vec). We'd adapt this for FTS + symbol trie + trigram (no vectors since we're CPU-only).
+  - Query preprocessing: Stopword removal including agent-specific filler ("help", "please", "file", "code").
+  - Tree-sitter chunking: topLevelNodes + splitNodes per language. Items >150 lines split into sub-items. 14 languages.
+
+  Cachebro (USEFUL FOR STALE DETECTION)
+
+  Token-saving file cache. The relevant pattern: content-addressed file versioning with SHA-256 hashing + session tracking. Maps directly to our Screen 3 FRESH/STALE badge. Also has a line-based LCS diff
+  algorithm that could enable incremental re-analysis (only re-parse changed line ranges).
+
+  Memelord (LOW PRIORITY, ONE KEY LESSON)
+
+  Persistent agent memory. The important lesson: Turso embedded driver has file locking issues with long-lived connections. Memelord solves this with short-lived connections (open/close per operation) + PRAGMA
+  busy_timeout = 5000 + exponential backoff retries. We need to handle this in our Turso integration.
+
+  Top-Level Verdict
+
+  All three confirm our PRD decisions. The file:line:line primary key, Turso/libSQL choice, SHA-256 incremental indexing, per-codebase FTS — all battle-tested. The main thing we're doing differently is no
+  embeddings (CPU-only guarantee), which means our search relies on FTS + symbol trie + trigram + graph traversal instead of vector similarity.
+
+⏺ User approved Claude's plan
+  ⎿  Plan saved to: ~/.claude/plans/mighty-sleeping-swan.md · /plan to edit
+     Glommer Research: Complete Findings for Parseltongue v3
+
+     Status: COMPLETE (all 3 repos cloned, all key files read)
+
+     Repos live at docs/research-glommer/{codemogger,cachebro,memelord}.
+
+     ---
+     CODEMOGGER - Code Indexing Library (STEAL HEAVILY)
+
+     What it is: Tree-sitter code chunker + Turso/libSQL store with FTS + vector search. Single .db file per codebase. 14 languages. MCP server + CLI.
+
+     Patterns to Adopt
+
+     1. File Walker + .gitignore (src/scan/walker.ts)
+     - Hardcoded ALWAYS_IGNORE set: .git, node_modules, target, build, dist, pycache, .venv, .cargo, .rustup
+     - Simplified .gitignore parsing: directory names only (no glob patterns). Practical tradeoff.
+     - Skips hidden files (starts with .), empty files, files >1MB
+     - Returns: absPath, relPath, language, SHA-256 hash, content
+
+     2. SHA-256 Hash-Based Incremental Indexing (src/index.ts)
+     - On reindex: compute hash per file, compare to stored hash
+     - Changed → re-chunk + re-embed. Unchanged → skip.
+     - 5-phase pipeline: scan → hash check → chunk+write → embed → cleanup → FTS rebuild
+     - Batch sizes: FILE_BATCH=200, EMBED_BATCH=64
+
+     3. Chunk Key = Physical Location (src/chunk/types.ts)
+     - chunkKey = "file_path:startLine:endLine" — EXACTLY our Layer 2 primary key!
+     - This validates our PRD Big-Rock-02 design completely.
+
+     4. Tree-Sitter Chunking (src/chunk/treesitter.ts)
+     - topLevelNodes per language (e.g., Rust: function_item, struct_item, enum_item, impl_item, trait_item...)
+     - splitNodes: large items (>150 lines) get split into sub-items (methods within impl/class)
+     - extractName(): language-specific logic for Go methods, Rust impls, Python decorators, etc.
+     - extractSignature(): first line of the node = the signature
+
+     5. Turso/libSQL Schema (src/db/schema.ts)
+     - codebases table: id, root_path, name, indexed_at
+     - chunks table: id, codebase_id, file_path, chunk_key (UNIQUE), language, kind, name, signature, snippet, start_line, end_line, file_hash, indexed_at, embedding (BLOB), embedding_model
+     - indexed_files table: codebase_id, file_path, file_hash, chunk_count, indexed_at
+     - Per-codebase FTS tables: fts_{codebase_id} with weighted fields (name=5.0, signature=3.0)
+     - Vector search: vector_distance_cos(embedding, vector8(?)) — int8 quantized embeddings
+
+     6. RRF Fusion (src/search/rank.ts)
+     - score = 0.4/(60+rank_fts) + 0.6/(rank_vec+60) — standard RRF with k=60
+     - Vector gets 60% weight, FTS gets 40%
+     - Merges by chunkKey, sorts by combined score
+
+     7. Query Preprocessing (src/search/query.ts)
+     - Stopword removal (English + agent-specific filler like "help", "please", "file", "code")
+     - Token regex: [a-z0-9]+(?:[-_.][a-z0-9]+)*
+     - Max 12 terms, min 3 chars, max 30 chars
+
+     8. MCP Server (src/mcp.ts)
+     - 3 tools: codemogger_search, codemogger_index, codemogger_reindex
+     - Dynamic descriptions: after indexing, search tool description updates with chunk/file counts
+     - sendToolListChanged() after index operations — smart pattern for keeping LLM context fresh
+
+     What NOT to Adopt from Codemogger
+
+     - Embeddings (we're CPU-only, no vector search)
+     - Bun/TypeScript runtime (we're Rust)
+     - MCP as primary interface (we're HTTP-first)
+
+     ---
+     CACHEBRO - File Cache with Diff Tracking (INTERESTING FOR STALE DETECTION)
+
+     What it is: Token-saving layer for AI agents. Caches file reads, returns diffs on subsequent reads instead of full content. 26-36% token savings.
+
+     Patterns to Adopt
+
+     1. Content-Addressed File Versioning
+     - Schema: file_versions(path, hash, content, lines, created_at) — composite PK on (path, hash)
+     - Every version of a file is stored. Hash = SHA-256 truncated to 16 chars.
+     - session_reads(session_id, path, hash, read_at) — tracks what each session last saw
+
+     2. FRESH/STALE Detection Pattern
+     - Compare current file hash to last-seen hash in session
+     - Same hash → FRESH (return one-line confirmation)
+     - Different hash → STALE (compute and return unified diff)
+     - This maps directly to our Screen 3 FRESH/STALE badge and Screen 7 staleness check
+
+     3. Line-Based LCS Diff (src/differ.ts)
+     - Longest Common Subsequence for line-level diffs
+     - Returns unified diff format + exact changed line numbers
+     - Could be useful for incremental re-analysis: only re-parse changed line ranges
+
+     4. Session Isolation
+     - Different sessions can be at different file versions
+     - Useful if we ever need multi-user or multi-branch scenarios
+
+     What NOT to Adopt from Cachebro
+
+     - The caching layer itself (we don't cache file reads, we index)
+     - The MCP proxy pattern (we're HTTP-first)
+     - Token tracking/stats (interesting but out of scope)
+
+     ---
+     MEMELORD - Persistent Agent Memory (LOW PRIORITY BUT INTERESTING)
+
+     What it is: Per-project persistent memory for coding agents. Memories survive across sessions, improve through reinforcement learning (weight adjustment based on agent feedback).
+
+     Patterns Worth Noting
+
+     1. Turso Connection Pattern — Short-Lived Connections
+     - Opens/closes DB connection per operation to avoid multi-process lock contention
+     - PRAGMA busy_timeout = 5000 for concurrent access
+     - Retry with exponential backoff (max 10 attempts) if DB locked
+     - IMPORTANT: This is a real-world lesson about Turso embedded driver file locking
+
+     2. Per-Project DB Pattern
+     - Each project gets .memelord/memory.db — no shared state across projects
+     - Exactly matches our .parseltongue/index.db per-codebase pattern
+
+     3. Vector Search in libSQL
+     - vector_distance_cos(embedding, ?) for similarity search
+     - Float32 vectors stored as BLOB
+     - Works well enough for small-scale (hundreds/thousands of memories)
+
+     What NOT to Adopt from Memelord
+
+     - Memory/reinforcement learning system (different product)
+     - Embeddings/vector search (we're CPU-only)
+     - Claude Code hooks integration (interesting but not our interface)
+
+     ---
+     SYNTHESIS: What Parseltongue v3 Should Steal
+
+     High Confidence (Validated Patterns)
+
+     ┌──────────────────────────────────────────────┬───────────────────────┬───────────────────────────────────────────────┐
+     │                   Pattern                    │        Source         │             Parseltongue Mapping              │
+     ├──────────────────────────────────────────────┼───────────────────────┼───────────────────────────────────────────────┤
+     │ file:startLine:endLine as chunk key          │ codemogger            │ Our Layer 2 primary key (Big-Rock-02)         │
+     ├──────────────────────────────────────────────┼───────────────────────┼───────────────────────────────────────────────┤
+     │ SHA-256 hash-based incremental indexing      │ codemogger + cachebro │ FRESH/STALE detection + selective re-parsing  │
+     ├──────────────────────────────────────────────┼───────────────────────┼───────────────────────────────────────────────┤
+     │ Simplified .gitignore (directory names only) │ codemogger            │ File walker for ingestion                     │
+     ├──────────────────────────────────────────────┼───────────────────────┼───────────────────────────────────────────────┤
+     │ ALWAYS_IGNORE hardcoded set                  │ codemogger            │ .git, node_modules, target, build, dist, etc. │
+     ├──────────────────────────────────────────────┼───────────────────────┼───────────────────────────────────────────────┤
+     │ Per-codebase FTS tables with weighted fields │ codemogger            │ name=5.0, signature=3.0 for our FTS search    │
+     ├──────────────────────────────────────────────┼───────────────────────┼───────────────────────────────────────────────┤
+     │ Single .db file per codebase                 │ all three             │ .parseltongue/index.db pattern                │
+     ├──────────────────────────────────────────────┼───────────────────────┼───────────────────────────────────────────────┤
+     │ Short-lived DB connections                   │ memelord              │ Avoid file lock contention in multi-process   │
+     ├──────────────────────────────────────────────┼───────────────────────┼───────────────────────────────────────────────┤
+     │ Tree-sitter topLevelNodes + splitNodes       │ codemogger            │ Our existing tree-sitter pattern, validated   │
+     └──────────────────────────────────────────────┴───────────────────────┴───────────────────────────────────────────────┘
+
+     Medium Confidence (Adapt for Our Needs)
+
+     ┌───────────────────────────────────┬────────────┬──────────────────────────────────────────────────┐
+     │              Pattern              │   Source   │                    Adaptation                    │
+     ├───────────────────────────────────┼────────────┼──────────────────────────────────────────────────┤
+     │ RRF fusion (keyword + semantic)   │ codemogger │ RRF over FTS + symbol trie + trigram (no vector) │
+     ├───────────────────────────────────┼────────────┼──────────────────────────────────────────────────┤
+     │ Query preprocessing (stopwords)   │ codemogger │ Strip agent filler before FTS                    │
+     ├───────────────────────────────────┼────────────┼──────────────────────────────────────────────────┤
+     │ Line-based LCS diff               │ cachebro   │ Incremental re-analysis of changed ranges only   │
+     ├───────────────────────────────────┼────────────┼──────────────────────────────────────────────────┤
+     │ Batch processing (FILE_BATCH=200) │ codemogger │ Similar batching for our indexing pipeline       │
+     └───────────────────────────────────┴────────────┴──────────────────────────────────────────────────┘
+
+     Reject (Not Applicable)
+
+     ┌──────────────────────────┬───────────────────────┬────────────────────┐
+     │         Pattern          │        Source         │      Why Not       │
+     ├──────────────────────────┼───────────────────────┼────────────────────┤
+     │ Vector embeddings        │ codemogger + memelord │ CPU-only guarantee │
+     ├──────────────────────────┼───────────────────────┼────────────────────┤
+     │ MCP as primary interface │ codemogger            │ HTTP-first (D4)    │
+     ├──────────────────────────┼───────────────────────┼────────────────────┤
+     │ Token caching layer      │ cachebro              │ Different product  │
+     ├──────────────────────────┼───────────────────────┼────────────────────┤
+     │ Reinforcement learning   │ memelord              │ Different product  │
+     └──────────────────────────┴───────────────────────┴────────────────────┘
+
+     ---
+     Key Validation for PRD-v300.md
+
+     1. Big-Rock-02 CONFIRMED: codemogger uses file_path:startLine:endLine as its unique chunk key. Our physical-location-first primary key is the right call.
+     2. D7 (Turso/libSQL) CONFIRMED: All three repos use Turso embedded. FTS + vector in single file works. Per-codebase FTS tables with weighted fields is production-proven.
+     3. Incremental indexing via hashing CONFIRMED: SHA-256 per file, compare to stored hash, skip unchanged. Simple, fast, correct.
+     4. .gitignore approach CONFIRMED: Simplified parsing (directory names only, no glob patterns) is sufficient. Practical tradeoff.
+     5. memelord warns: Turso embedded driver has file locking issues with long-lived connections. Use short-lived connections or handle SQLITE_BUSY with retries.
+
+⏺ Now let me save the key findings to memory for future sessions.
+
+⏺ Write(~/.claude/projects/-Users-amuldotexe-Desktop-parseltongue-rust-LLM-companion/memory/MEMORY.md)
+  ⎿  Wrote 39 lines to ../../.claude/projects/-Users-amuldotexe-Desktop-parseltongue-rust-LLM-companion/memory/MEMORY.md
+       1 # Parseltongue Project Memory
+       2
+       3 ## Project State
+       4 - **Version**: v3.0 in design phase (PRD at root: `PRD-v300.md`)
+       5 - **Branch**: codex/v200
+       6 - **Hiatus**: User paused for 2 months, returned 2026-03-16
+       7
+       8 ## Key Decisions (PRD-v300.md)
+       9 - D1: Tauri Mac app is priority one (workspace management)
+      10 - D2: rustc_private for Rust compiler enrichment (pinned nightly)
+     … +29 lines (ctrl+o to expand)
+
+⏺ Write(~/.claude/projects/-Users-amuldotexe-Desktop-parseltongue-rust-LLM-companion/memory/glommer-research.md)
+  ⎿  Wrote 26 lines to ../../.claude/projects/-Users-amuldotexe-Desktop-parseltongue-rust-LLM-companion/memory/glommer-research.md
+       1 # Glommer Research Details
+       2
+       3 ## Codemogger (docs/research-glommer/codemogger/)
+       4 - Tree-sitter chunker + Turso/libSQL + FTS + vector search
+       5 - Key files: src/scan/walker.ts, src/db/schema.ts, src/db/store.ts, src/index.ts, src/chunk/treesitter.ts
+       6 - chunkKey = `file_path:startLine:endLine` (validates our Big-Rock-02)
+       7 - 5-phase pipeline: scan -> hash -> chunk+write -> embed -> cleanup -> FTS rebuild
+       8 - Per-codebase FTS: `fts_{id}` with weighted fields (name=5.0, signature=3.0)
+       9 - RRF: `0.4/(60+rank_fts) + 0.6/(60+rank_vec)`, k=60
+      10 - ALWAYS_IGNORE: .git, node_modules, target, build, dist, __pycache__, .venv, .cargo, .rustup
+     … +16 lines (ctrl+o to expand)
+
+⏺ Research is complete. The full synthesis is in the plan file at /Users/amuldotexe/.claude/plans/mighty-sleeping-swan.md and saved to memory for future sessions.
+
+  The bottom line: codemogger is absolutely worth picking up from. It validates three of our core PRD decisions:
+  1. Physical location (file:line:line) as primary key
+  2. SHA-256 hash-based incremental indexing
+  3. Per-codebase FTS with weighted fields in Turso/libSQL
+
+  Cachebro gives us the FRESH/STALE detection pattern. Memelord warns us about Turso file locking (use short-lived connections).
+
+  Where do you want to go next with the PRD?
+
+✻ Sautéed for 9m 27s
+
+⏺ Agent "Explore cachebro repo patterns" completed
+
+⏺ Agent "Explore memelord repo patterns" completed
+
+⏺ Both background agents completed and their findings are already incorporated into the synthesis I presented. The research is complete and saved to memory. Ready for your next direction on the PRD.
+
+❯ I have moved all our old code into @archived-code/  - put it in gitignore we will only visit it when we absolutely have to                                                                                      
+
+⏺ Read(.gitignore)
+  ⎿  Read 54 lines
+
+⏺ Update(/Users/amuldotexe/Desktop/parseltongue-rust-LLM-companion/.gitignore)
+  ⎿  Added 2 lines, removed 1 line
+      35  # Organized artifacts (preserved in artifacts/ directory)
+      36  artifacts/
+      37  
+      38 -# Archive folder (for cleanup - can be deleted later)                                                                                                                                            
+      38 +# Archived v1/v2 code                                                                                                                                                                            
+      39 +archived-code/                                                                                                                                                                                   
+      40  
+      41  # Competitor research
+      42  competitor_research/
+
+⏺ Done. archived-code/ is now in .gitignore.
+
+✻ Churned for 32s
+
+❯ So is it true that we can just pick up the exact code search piece from Codemogger, but then we are not just looking at the languages, right? We are looking at tests being separate. We are also looking at    
+folder names. We are looking at non-files, which we cannot parse. My point would be that anything that we can't parse will be just an address, but whatever we can parse will become searchable, I think. Also, I 
+ don't know how we will manage tests, because tests are repetitive in nature. Should we keep them, or not keep them? I'm not too sure. Maybe we need a new database schema. Can you think of multiple database    
+schemas for what we have discussed till now as per the rate @PRD-v300.md                                                                                                                                          
+  ⎿  Read PRD-v300.md (399 lines)
+
+∴ Thinking…
+
+  The user wants me to think through database schemas for Parseltongue v3, considering:
+
+  1. We can't just copy codemogger's schema directly because we have more entity types:
+    - Folders (Layer 0)
+    - Files - parsable and unparsable (Layer 1)
+    - Line ranges within parsable files (Layer 2)
+    - Rust compiler enrichment (Layer 3)
+  2. Tests are repetitive - should they be included?
+  3. Non-parsable files are just addresses
+  4. Everything parsable should be searchable
+  5. They want me to propose multiple schema options
+
+  This is a design/brainstorming task.
+
+  Now I'm mapping out the core entities and their relationships. I need folders with relative paths as primary keys, files that track whether they're parsable along with their hashes, code spans that capture
+  location and metadata like kind and signature, and Rust-specific enrichment data layered on top for source files. The main relationship is folders pointing to their parents.
+
+  For search, I'm thinking about full-text indexing across names and signatures similar to codemogger, but I also need folder and file names to be discoverable. Tests are a consideration—I could flag them
+  separately or isolate them in their own table.
+
+  I'm weighing three schema approaches: a single entities table with a layer column and sparse higher-layer columns, separate tables per layer with a unified FTS view, or a hybrid with one entities table plus a
+   separate enrichment table for additional Rust data.
+
+  On tests specifically, they're repetitive but useful because they reference production code, so I could either tag them with an is_test flag and optionally filter them from search, or keep them in a separate
+  partition. I'll present these options to the user and let them decide what works best.
+
+⏺ Good question. Let me think through this carefully against the PRD.
+
+  You're right — codemogger's schema is flat (just "chunks" = code spans). We need to model a richer hierarchy: folders, files (parsable and not), code spans, Rust enrichment, edges between all of them, and the
+   test question. Let me propose a few schema approaches.
+
+⏺ Reading Plan(~/.claude/plans/mighty-sleeping-swan.md)
+  ⎿  Read 173 lines
+
+∴ Thinking…
+
+  The user wants me to think through multiple database schema options for Parseltongue v3. Let me analyze what we need to store based on the PRD:
+
+  What codemogger stores (flat):
+  - chunks (code spans only)
+  - indexed_files (file metadata)
+  - codebases
+
+  What Parseltongue v3 needs to store (hierarchical):
+
+  Layer 0: Folders
+  - pk: relative path (e.g., "src/auth/")
+  - parent folder edge
+  - name
+
+  Layer 1: Files
+  - pk: relative path (e.g., "src/auth/service.rs")
+
+  - parent folder edge
+  - file_hash (SHA-256)
+  - is_parsable flag
+  - language (if parsable)
+  - unparsable files = just the address
+
+  Layer 2: Code spans (within parsable files)
+  - pk: file_path:start_line:end_line
+  - kind (function, struct, enum, trait, impl, import, comment, statement)
+  - name
+  - signature
+  - snippet (actual code)
+  - language
+
+  Layer 3: Rust enrichment (extra columns on Layer 2 for .rs files)
+  - rustc_scope
+  - rustc_sig
+  - visibility
+  - mir_calls (JSON array)
+  - trait
+  - _impls (JSON array)
+
+  Now I'm thinking through the relationship structure: folders contain parent folders, files belong to folders, code spans are part of files, and code spans reference each other through calls, imports, and
+  implementations. For Rust specifically, I can leverage compiler-verified call edges from MIR. Full-text search needs to span folders, files, and code spans—folder and file names are straightforward, but code
+  span names and signatures require indexing. Tests are flagged as code spans and their edges to production code matter, though their repetitive naming creates a tradeoff between including them in search with
+  reduced weight or handling them separately.
+
+  I'm weighing three schema approaches: a single entities table treating everything uniformly with location as the primary key, separate normalized tables per layer which requires more joins, or a pragmatic
+  middle ground with structure and code tables. The PRD's emphasis on "everything is a physical location first" suggests the unified approach might be strongest—location becomes the anchor and layer/kind are
+  just attributes. I need a dedicated edges table regardless.
+
+  For full-text search, folders and files are indexed by name while code spans need both name and signature searchable. Tests should live as entities with an is_test flag so they can be included in the graph
+  but optionally filtered from search results.
+
+  Now I'm preparing schema examples with concrete previews so the user can compare the tradeoffs directly.
+
+⏺ Let me think through the differences between what codemogger stores vs what we need.
+
+  Codemogger: flat — just code chunks. No folders, no files-as-entities, no unparsable files, no test awareness, no graph edges.
+
+  Parseltongue v3: hierarchical — folders, files (parsable + unparsable), code spans, Rust enrichment, edges between everything, test awareness, FTS across all layers.
+
+  Here are three schema approaches:
+  ⎿  Tool use rejected with user message: The user wants to clarify these questions.
+         This means they may have additional information, context or questions for you.
+         Take their response into account and then reformulate the questions if appropriate.
+         Start by asking them what they would like to clarify.
+
+         Questions asked:
+     - "Which database schema approach for Parseltongue v3?"
+       (No answer provided)
+     - "What should we do with test entities?"
+       (No answer provided)
+
+⏺ What would you like to clarify about the schema options or the test question?
+
+✻ Cogitated for 1m 32s
+
+❯ Let's just first find out what are all the entities that are possible. We will have a graphical database that will connect the entities, so let's not worry about how they will be connected to each other.     
+Right now, we are trying to list out each and every type of entity that is possible in a codebase after removing everything that is in.gitignore. Just thoroughly, thoroughly figure out that list.So list out,   
+for example, folder name and what will be the primary key, or you can think of the primary key. What will be the primary key format? Our primary key format is file path line start line end. Line start line end 
+ will be -1 -1 for anything that is not a line's name, because we know either it is a file path or a folder or whatever. Maybe we can create a code for that. Whenever it is 0 0, it is basically a file; if it   
+is -1 -1, then it is a folder. I don't know, but the point is that we can figure out what the total list of types of entities that can be possible after you do a.gitignore.                                      
+                                                                                                                                                                                                                  
+There will be files which are parsable, and there will be files that are not possible. Anyways, the full file content will not be stored in the parser team; it will only store a parsable piece out of that. A   
+full file path node will not be put, because that will corrupt our search queries. Our search queries will be limited to parsable file path snippets.                                                             
+
+∴ Thinking…
+
+  The user wants me to create an exhaustive list of every possible entity type in a codebase after .gitignore filtering. They want:
+
+  1. A complete taxonomy of entity types
+  2. A unified primary key format (file_path:start_line:end_line)
+  3. Special sentinel values for non-line-range entities (folders, files)
+  4. Only parsable snippets stored — NOT full file content
+  5. Search limited to parsable content only
+
+  Let me think through this systematically. After .gitignore filtering, what exists in a codebase?
+
+  Structural entities (no code):
+  - Root folder (the codebase itself)
+
+  - Folders and subfolders
+  - Files (both parsable and unparsable)
+
+  For parsable files, tree-sitter can extract:
+  - Functions and methods
+  - Structs, classes, and type definitions
+  - Enums
+  - Traits and interfaces
+  - Implementation blocks
+  - Constants and static variables
+  - Macros
+  - Module declarations
+  - Import and use statements
+  - Top-level variable declarations
+  - Test functions
+  - Type aliases
+  - Decorators and annotations (Python, Java)
+
+  For Rust specifically (Layer 3):
+  - Same entities but enriched with compiler data
+
+  For non-code parsable files:
+  - Configuration files like Cargo.toml, package.json, and pyproject.toml
+  - Structured data in TOML, YAML, and JSON formats
+  - Documentation in Markdown
+  - Build files like Makefiles and Dockerfiles
+
+  Since the user specified that full file content won't be stored and search queries are limited to parsable file path snippets, unparsable files are just stored as addresses without content. Even for parsable
+  files, I'm not storing the entire file as a single entity — only the extracted pieces. For the primary key format, I'm thinking file_path:start_line:end_line for code spans, file_path:0:0 for files, and maybe
+   folder_path:-1:-1 for folders as sentinel values.
+
+  Actually, a simpler approach might be cleaner: code spans use actual line numbers like src/auth/service.rs:8:25, files have no line suffix like src/auth/service.rs, and folders get a trailing slash like
+  src/auth/. But the user wants a uniform format with consistent line number fields, so I should stick with the file_path:start:end pattern where -1 indicates non-line entities.
+
+  Now I'm thinking through the entity taxonomy itself. Folders and unparsable files are straightforward entities, but parsable files are trickier—the user said full file paths won't be stored as entities since
+  that would corrupt search queries. So maybe only the parsed code snippets within files become entities, not the files themselves. Though I still need files in the graph structure to connect folders to their
+  code spans.
+
+  Let me reconsider: files probably do exist as entities for graph connectivity, but they don't get full content stored or indexed for search. Only the extracted code spans get snippets and become searchable.
+  So I'm building out the complete taxonomy by walking the codebase after .gitignore filtering—distinguishing between parsable code files, config files, and other file types. I need to reconsider what
+  tree-sitter actually extracts across different languages rather than relying on my initial categorization. Let me think through this more carefully by examining what nodes I'd actually encounter when walking
+  a codebase, starting with structural elements like folders and files, then distinguishing between unparsable binaries, text files like markdown, and actual code files that tree-sitter can parse. I'm
+  continuing to map out the remaining code-level entities that tree-sitter can extract across different languages—things like impl blocks, type aliases, constants, static variables, macros, modules, imports,
+  and various language-specific constructs like C# namespaces, Java records, and Python decorators.
+
+  But I'm realizing this list is getting unwieldy. The real structure here should be a clean taxonomy of "kinds"—every entity has a kind attribute. I should organize this around what actually matters:
+  structural elements like folders and files, then the universal code constructs that tree-sitter can identify across all languages, which gives us function, method, class, struct, enum, trait or interface,
+  impl blocks, type aliases, constants, statics, macros, modules, imports, and variables.
+
+  Now I'm adding a few more kinds that are language-agnostic or commonly needed: constructor, namespace, test, and comment. But I'm also wondering how to handle config files like Cargo.toml or
+  package.json—these are parsable as structured data, but the "code spans" concept doesn't quite apply the same way. The user mentioned treating Rust config as parsable TOML rather than code, so maybe config
+  files need their own parsing strategy separate from the code span taxonomy.
+
+  For the primary key format, I'm thinking of a unified three-part scheme using file path, start line, and end line with sentinel values to distinguish the layer: folders get -1:-1, file-level entities get 0:0,
+   and actual code spans use their real line numbers.
+
+⏺ Let me think about this systematically. Walk a codebase after .gitignore, and enumerate every possible thing that could become an entity.
+
+⏺ Updated plan
+  ⎿  Added 138 lines, removed 1 line
+        1 -# Glommer Research: Complete Findings for Parseltongue v3                                                                                                                                       
+        1 +# Entity Taxonomy: Every Possible Entity in a Codebase                                                                                                                                          
+        2  
+        3 +## Goal                                                                                                                                                                                         
+        4 +After .gitignore filtering, exhaustively list every entity type, its kind, and its primary key format.                                                                                          
+        5 +                                                                                                                                                                                                
+        6 +## Primary Key Format                                                                                                                                                                           
+        7 +                                                                                                                                                                                                
+        8 +Uniform format for ALL entities: `path:start_line:end_line`                                                                                                                                     
+        9 +                                                                                                                                                                                                
+       10 +Sentinel values:                                                                                                                                                                                
+       11 +- `-1:-1` → FOLDER (the path is a directory)                                                                                                                                                    
+       12 +- `0:0` → FILE (the path is a file, no line-level content)                                                                                                                                      
+       13 +- `N:M` where N ≥ 1 → CODE SPAN (parsed snippet within a file)                                                                                                                                  
+       14 +                                                                                                                                                                                                
+       15 +Examples:                                                                                                                                                                                       
+       16 +```                                                                                                                                                                                             
+       17 +src/auth/:-1:-1                    → folder                                                                                                                                                     
+       18 +src/auth/service.rs:0:0            → file                                                                                                                                                       
+       19 +src/auth/service.rs:8:25           → code span (fn login)                                                                                                                                       
+       20 +```                                                                                                                                                                                             
+       21 +                                                                                                                                                                                                
+       22 +## Searchability Rule                                                                                                                                                                           
+       23 +                                                                                                                                                                                                
+       24 +- **SEARCHABLE**: Only code spans (N:M) go into FTS. These have parsed name + signature + snippet.                                                                                              
+       25 +- **NOT SEARCHABLE**: Folders and files are graph-only entities. They exist for connectivity (folder→file→code_span) and for staleness checks (file_hash), but they don't pollute search results
+          +.                                                                                                                                                                                               
+       26 +- **NOT STORED**: Full file content is NEVER stored. Only parsed snippets.                                                                                                                      
+       27 +                                                                                                                                                                                                
+       28 +---                                                                                                                                                                                             
+       29 +                                                                                                                                                                                                
+       30 +## Complete Entity Taxonomy                                                                                                                                                                     
+       31 +                                                                                                                                                                                                
+       32 +### A. STRUCTURAL ENTITIES (graph-only, not searchable)                                                                                                                                         
+       33 +                                                                                                                                                                                                
+       34 +| # | Kind | PK Example | Description | Stored Data |                                                                                                                                           
+       35 +|---|------|-----------|-------------|-------------|                                                                                                                                            
+       36 +| 1 | `folder` | `src/auth/:-1:-1` | Every directory in the tree | name, depth |                                                                                                                
+       37 +| 2 | `file_parsable` | `src/auth/service.rs:0:0` | File that tree-sitter can parse | language, file_hash, indexed_at |                                                                         
+       38 +| 3 | `file_unparsable` | `README.md:0:0` | File we can't/don't parse | file_hash, indexed_at |                                                                                                 
+       39 +| 4 | `file_config` | `Cargo.toml:0:0` | Config file (TOML/JSON/YAML) — parsable as data, not code | file_hash, indexed_at |                                                                    
+       40 +                                                                                                                                                                                                
+       41 +Notes:                                                                                                                                                                                          
+       42 +- `file_parsable` has child code_span entities. It itself stores NO content.                                                                                                                    
+       43 +- `file_unparsable` is just an address. It exists for graph completeness (folder→file edge).                                                                                                    
+       44 +- `file_config` is a parsable file but with a different parse strategy (TOML/JSON/YAML sections, not tree-sitter code nodes).                                                                   
+       45 +- All files store `file_hash` for incremental indexing (SHA-256 change detection).                                                                                                              
+       46 +                                                                                                                                                                                                
+       47 +### B. CODE SPAN ENTITIES (searchable, extracted by tree-sitter)                                                                                                                                
+       48 +                                                                                                                                                                                                
+       49 +These are the actual parsed pieces. Each is a contiguous line range within a parsable file.                                                                                                     
+       50 +                                                                                                                                                                                                
+       51 +**Universal kinds (all tree-sitter-supported languages):**                                                                                                                                      
+       52 +                                                                                                                                                                                                
+       53 +| # | Kind | PK Example | Languages | tree-sitter node types |                                                                                                                                  
+       54 +|---|------|-----------|-----------|----------------------|                                                                                                                                     
+       55 +| 5 | `function` | `src/main.rs:10:25` | All | function_item, function_definition, function_declaration |                                                                                       
+       56 +| 6 | `method` | `src/auth.rs:30:45` | All with classes/impls | method_declaration, function_definition (inside class/impl) |                                                                   
+       57 +| 7 | `struct` | `src/model.rs:5:15` | Rust, C, C++, Go | struct_item, struct_specifier |                                                                                                       
+       58 +| 8 | `class` | `src/app.py:1:50` | Python, JS/TS, Java, C++, Ruby, PHP, C# | class_definition, class_declaration |                                                                             
+       59 +| 9 | `enum` | `src/status.rs:3:12` | Rust, Java, TS, C, C++, C# | enum_item, enum_declaration |                                                                                                
+       60 +| 10 | `trait` | `src/auth.rs:1:20` | Rust | trait_item |                                                                                                                                       
+       61 +| 11 | `interface` | `src/api.ts:5:30` | TS, Java, Go, C#, PHP | interface_declaration |                                                                                                        
+       62 +| 12 | `impl` | `src/auth.rs:22:60` | Rust | impl_item |                                                                                                                                        
+       63 +| 13 | `type_alias` | `src/types.rs:3:3` | Rust, TS, Go, C | type_item, type_alias_declaration |                                                                                                
+       64 +| 14 | `constant` | `src/config.rs:1:1` | All | const_item, const_declaration |                                                                                                                 
+       65 +| 15 | `static` | `src/global.rs:5:5` | Rust, C, C++ | static_item |                                                                                                                            
+       66 +| 16 | `macro` | `src/macros.rs:1:20` | Rust, C, C++ | macro_definition, preproc_def |                                                                                                          
+       67 +| 17 | `module` | `src/lib.rs:1:1` | Rust, Python, Ruby, JS/TS | mod_item, module |                                                                                                             
+       68 +| 18 | `import` | `src/main.rs:1:3` | All | use_declaration, import_statement |                                                                                                                 
+       69 +| 19 | `variable` | `src/app.js:1:1` | JS/TS, Python, Go | lexical_declaration, variable_declaration |                                                                                          
+       70 +| 20 | `constructor` | `src/App.java:10:20` | Java, C++, TS, PHP, C# | constructor_declaration |                                                                                                
+       71 +| 21 | `namespace` | `src/lib.cpp:1:50` | C++, C#, PHP | namespace_definition |                                                                                                                 
+       72 +| 22 | `test` | `src/auth.rs:70:85` | All (language-specific detection) | Same as function, but flagged |                                                                                       
+       73 +| 23 | `comment` | `src/main.rs:1:5` | All | comment, block_comment, doc_comment |                                                                                                              
+       74 +| 24 | `record` | `src/User.java:1:10` | Java, C# | record_declaration |                                                                                                                        
+       75 +| 25 | `object` | `src/App.scala:1:20` | Scala | object_definition |                                                                                                                            
+       76 +                                                                                                                                                                                                
+       77 +**How `test` is detected (not a tree-sitter node type — it's a flag):**                                                                                                                         
+       78 +- Rust: `#[test]` or `#[cfg(test)]` attribute on function                                                                                                                                       
+       79 +- Python: function name starts with `test_` or file in `tests/`                                                                                                                                 
+       80 +- JS/TS: inside `describe()/it()/test()` blocks, or file matches `*.test.*` / `*.spec.*`                                                                                                        
+       81 +- Go: function name starts with `Test` in `*_test.go` files                                                                                                                                     
+       82 +- Java: `@Test` annotation                                                                                                                                                                      
+       83 +                                                                                                                                                                                                
+       84 +So `test` is really `kind=function` with `is_test=true`. The kind `test` is a convenience alias.                                                                                                
+       85 +                                                                                                                                                                                                
+       86 +### C. CONFIG SPAN ENTITIES (if we parse config files)                                                                                                                                          
+       87 +                                                                                                                                                                                                
+       88 +If we parse Cargo.toml, package.json, etc., these would be the entity types:                                                                                                                    
+       89 +                                                                                                                                                                                                
+       90 +| # | Kind | PK Example | Source File | Description |                                                                                                                                           
+       91 +|---|------|-----------|-------------|-------------|                                                                                                                                            
+       92 +| 26 | `dependency` | `Cargo.toml:5:5` | Cargo.toml | A crate dependency declaration |                                                                                                          
+       93 +| 27 | `package_meta` | `Cargo.toml:1:4` | Cargo.toml/package.json | Package name, version, description |                                                                                       
+       94 +| 28 | `script` | `package.json:8:8` | package.json | npm script definition |                                                                                                                   
+       95 +| 29 | `config_section` | `pyproject.toml:10:15` | Any config file | A named section in a config file |                                                                                         
+       96 +                                                                                                                                                                                                
+       97 +**Question: Do we parse config files at all in v3?** The PRD says "rust config (Cargo.toml) → parsable as TOML, not as code." This is optional and low-priority. Could defer to v3.1.           
+       98 +                                                                                                                                                                                                
+       99 +### D. RUST ENRICHMENT (not new entities — extra columns on existing code spans)                                                                                                                
+      100 +                                                                                                                                                                                                
+      101 +For .rs files, code_span entities get additional data:                                                                                                                                          
+      102 +                                                                                                                                                                                                
+      103 +| Column | Source | Example |                                                                                                                                                                   
+      104 +|--------|--------|---------|                                                                                                                                                                   
+      105 +| `rustc_scope` | `tcx.def_path_str()` | `"crate::auth::service::login"` |                                                                                                                      
+      106 +| `rustc_sig` | `tcx.fn_sig()` | `"fn(&Credentials) -> Result<Token>"` |                                                                                                                        
+      107 +| `visibility` | `tcx.visibility()` | `"pub(crate)"` |                                                                                                                                          
+      108 +| `mir_calls` | `tcx.optimized_mir()` | `["crate::db::lookup", ...]` |                                                                                                                          
+      109 +| `trait_impls` | `tcx.all_impls()` | `[...]` |                                                                                                                                                 
+      110 +                                                                                                                                                                                                
+      111 +These are NOT new entity types. Same pk, same row, just more columns filled in.                                                                                                                 
+      112 +                                                                                                                                                                                                
+      113 +---                                                                                                                                                                                             
+      114 +                                                                                                                                                                                                
+      115 +## Summary: Entity Count by Layer                                                                                                                                                               
+      116 +                                                                                                                                                                                                
+      117 +| Layer | Entity Types | Searchable? | Content Stored? |                                                                                                                                        
+      118 +|-------|-------------|-------------|-----------------|                                                                                                                                         
+      119 +| L0: Folder | 1 kind (`folder`) | No (graph only) | No |                                                                                                                                       
+      120 +| L1: File | 3 kinds (`file_parsable`, `file_unparsable`, `file_config`) | No (graph only) | No (only hash) |                                                                                   
+      121 +| L2: Code Span | ~21 kinds (function through object) | YES (FTS on name + signature) | YES (snippet) |                                                                                         
+      122 +| L3: Rust Enrichment | 0 new kinds (extra columns on L2) | YES (FTS includes rustc_scope) | YES (enriched) |                                                                                   
+      123 +| L2c: Config Span | ~4 kinds (dependency, etc.) | Maybe | Maybe |                                                                                                                              
+      124 +                                                                                                                                                                                                
+      125 +**Total distinct kinds: ~25 core + ~4 optional config**                                                                                                                                         
+      126 +                                                                                                                                                                                                
+      127 +---                                                                                                                                                                                             
+      128 +                                                                                                                                                                                                
+      129 +## The is_test Question                                                                                                                                                                         
+      130 +                                                                                                                                                                                                
+      131 +`test` is not a separate kind — it's a flag (`is_test = true`) on any code span entity (usually functions). This means:                                                                         
+      132 +- Test entities use the same pk format, same table, same schema                                                                                                                                 
+      133 +- They differ only in the `is_test` column                                                                                                                                                      
+      134 +- Search can filter them in or out                                                                                                                                                              
+      135 +- Graph edges FROM tests TO production code are preserved (useful for blast radius)                                                                                                             
+      136 +                                                                                                                                                                                                
+      137 +---                                                                                                                                                                                             
+      138 +                                                                                                                                                                                                
+      139 +# Previous Research (Glommer)                                                                                                                                                                   
+      140  ## Status: COMPLETE (all 3 repos cloned, all key files read)
+      141  
+      142  Repos live at `docs/research-glommer/{codemogger,cachebro,memelord}`.
+
+⏺ Here's the full taxonomy. Let me walk you through the key points:
+
+  Unified PK format: path:start_line:end_line for everything.
+  - -1:-1 = folder
+  - 0:0 = file (no content stored, just address + hash)
+  - N:M = code span (the only thing that's searchable)
+
+  Searchability rule: Only code spans go into FTS. Folders and files are graph-only nodes. Full file content is never stored — only parsed snippets.
+
+  ~25 entity kinds broken into:
+  - 4 structural (folder, file_parsable, file_unparsable, file_config)
+  - ~21 code span kinds (function, method, struct, class, enum, trait, interface, impl, type_alias, constant, static, macro, module, import, variable, constructor, namespace, test, comment, record, object)
+  - ~4 optional config span kinds (dependency, package_meta, script, config_section)
+
+  Tests: Not a separate kind — it's is_test=true on function entities. Same table, same PK, filterable in search.
+
+⏺ User answered Claude's questions:
+  ⎿  · Two things I want to confirm before we lock this down: → Comments are NOT entities, Imports are entities, Rust related config etc. everything IS IMPORTANT for other languages just treat as files
+
+⏺ Clear. Let me update the taxonomy:
+
+  1. Comments are NOT entities — skip them entirely
+  2. Imports ARE entities — useful for dependency edges
+  3. Rust config (Cargo.toml, build.rs, etc.) IS parsed — but for other languages, config files are just file_unparsable entities (address only)
+
+⏺ Updated plan
+  ⎿  Added 1 line, removed 1 line
+      41  Notes:
+      42  - `file_parsable` has child code_span entities. It itself stores NO content.
+      43  - `file_unparsable` is just an address. It exists for graph completeness (folder→file edge).
+      44 -- `file_config` is a parsable file but with a different parse strategy (TOML/JSON/YAML sections, not tree-sitter code nodes).                                                                    
+      44 +- `file_config` applies ONLY to Rust ecosystem config (Cargo.toml, build.rs). Parsed as data, not code. For all other languages, config files (package.json, pyproject.toml, etc.) are treated as
+         + `file_unparsable` — just an address.                                                                                                                                                            
+      45  - All files store `file_hash` for incremental indexing (SHA-256 change detection).
+      46  
+      47  ### B. CODE SPAN ENTITIES (searchable, extracted by tree-sitter)
+
+⏺ Updated plan
+  ⎿  Added 1 line, removed 1 line
+      70  | 20 | `constructor` | `src/App.java:10:20` | Java, C++, TS, PHP, C# | constructor_declaration |
+      71  | 21 | `namespace` | `src/lib.cpp:1:50` | C++, C#, PHP | namespace_definition |
+      72  | 22 | `test` | `src/auth.rs:70:85` | All (language-specific detection) | Same as function, but flagged |
+      73 -| 23 | `comment` | `src/main.rs:1:5` | All | comment, block_comment, doc_comment |                                                                                                               
+      73 +| ~~23~~ | ~~`comment`~~ | ~~REMOVED~~ | ~~All~~ | ~~Comments are NOT entities — skipped entirely~~ |                                                                                            
+      74  | 24 | `record` | `src/User.java:1:10` | Java, C# | record_declaration |
+      75  | 25 | `object` | `src/App.scala:1:20` | Scala | object_definition |
+      76  
+
+⏺ Updated plan
+  ⎿  Added 5 lines, removed 8 lines
+       83  
+       84  So `test` is really `kind=function` with `is_test=true`. The kind `test` is a convenience alias.
+       85  
+       86 -### C. CONFIG SPAN ENTITIES (if we parse config files)                                                                                                                                          
+       86 +### C. RUST CONFIG SPAN ENTITIES (Cargo.toml, build.rs only)                                                                                                                                    
+       87  
+       88 -If we parse Cargo.toml, package.json, etc., these would be the entity types:                                                                                                                    
+       88 +Rust ecosystem config files are parsed as data (TOML), not code. Other languages' config files (package.json, pyproject.toml, etc.) are `file_unparsable` — just addresses.                     
+       89  
+       90  | # | Kind | PK Example | Source File | Description |
+       91  |---|------|-----------|-------------|-------------|
+       92 -| 26 | `dependency` | `Cargo.toml:5:5` | Cargo.toml | A crate dependency declaration |                                                                                                          
+       93 -| 27 | `package_meta` | `Cargo.toml:1:4` | Cargo.toml/package.json | Package name, version, description |                                                                                       
+       94 -| 28 | `script` | `package.json:8:8` | package.json | npm script definition |                                                                                                                   
+       95 -| 29 | `config_section` | `pyproject.toml:10:15` | Any config file | A named section in a config file |                                                                                         
+       92 +| 23 | `dependency` | `Cargo.toml:5:5` | Cargo.toml | A crate dependency declaration |                                                                                                          
+       93 +| 24 | `package_meta` | `Cargo.toml:1:4` | Cargo.toml | Package name, version, edition |                                                                                                        
+       94 +| 25 | `config_section` | `Cargo.toml:10:15` | Cargo.toml | A named section ([features], [workspace], etc.) |                                                                                   
+       95  
+       97 -**Question: Do we parse config files at all in v3?** The PRD says "rust config (Cargo.toml) → parsable as TOML, not as code." This is optional and low-priority. Could defer to v3.1.           
+       98 -                                                                                                                                                                                                
+       96  ### D. RUST ENRICHMENT (not new entities — extra columns on existing code spans)
+       97  
+       98  For .rs files, code_span entities get additional data:
+
+⏺ Updated plan
+  ⎿  Added 6 lines, removed 3 lines
+      115  |-------|-------------|-------------|-----------------|
+      116  | L0: Folder | 1 kind (`folder`) | No (graph only) | No |
+      117  | L1: File | 3 kinds (`file_parsable`, `file_unparsable`, `file_config`) | No (graph only) | No (only hash) |
+      118 -| L2: Code Span | ~21 kinds (function through object) | YES (FTS on name + signature) | YES (snippet) |                                                                                         
+      118 +| L2: Code Span | ~20 kinds (function through object, NO comments) | YES (FTS on name + signature) | YES (snippet) |                                                                            
+      119 +| L2c: Rust Config Span | 3 kinds (dependency, package_meta, config_section) | YES | YES |                                                                                                      
+      120  | L3: Rust Enrichment | 0 new kinds (extra columns on L2) | YES (FTS includes rustc_scope) | YES (enriched) |
+      120 -| L2c: Config Span | ~4 kinds (dependency, etc.) | Maybe | Maybe |                                                                                                                              
+      121  
+      122 -**Total distinct kinds: ~25 core + ~4 optional config**                                                                                                                                         
+      122 +**Total distinct kinds: ~27**                                                                                                                                                                   
+      123 +- 4 structural (folder, file_parsable, file_unparsable, file_config)                                                                                                                            
+      124 +- 20 code span (function, method, struct, class, enum, trait, interface, impl, type_alias, constant, static, macro, module, import, variable, constructor, namespace, record, object + is_test f
+          +lag)                                                                                                                                                                                            
+      125 +- 3 Rust config span (dependency, package_meta, config_section)                                                                                                                                 
+      126  
+      127  ---
+      128  
+
+⏺ Updated. Here's the final count:
+
+  27 entity kinds total:
+  - 4 structural (folder, file_parsable, file_unparsable, file_config) — graph-only, not searchable
+  - 20 code spans (function, method, struct, class, enum, trait, interface, impl, type_alias, constant, static, macro, module, import, variable, constructor, namespace, record, object + is_test flag) —
+  searchable via FTS
+  - 3 Rust config spans (dependency, package_meta, config_section) — Cargo.toml only; other languages' configs are just file_unparsable
+
+  Key decisions locked:
+  - Comments: skipped entirely
+  - Imports: kept as entities (drive dependency edges)
+  - Config parsing: Rust ecosystem only (Cargo.toml, build.rs); everything else is just a file address
+
+⏺ User approved Claude's plan
+  ⎿  Plan saved to: ~/.claude/plans/mighty-sleeping-swan.md · /plan to edit
+     Entity Taxonomy: Every Possible Entity in a Codebase
+
+     Goal
+
+     After .gitignore filtering, exhaustively list every entity type, its kind, and its primary key format.
+
+     Primary Key Format
+
+     Uniform format for ALL entities: path:start_line:end_line
+
+     Sentinel values:
+     - -1:-1 → FOLDER (the path is a directory)
+     - 0:0 → FILE (the path is a file, no line-level content)
+     - N:M where N ≥ 1 → CODE SPAN (parsed snippet within a file)
+
+     Examples:
+     src/auth/:-1:-1                    → folder
+     src/auth/service.rs:0:0            → file
+     src/auth/service.rs:8:25           → code span (fn login)
+
+     Searchability Rule
+
+     - SEARCHABLE: Only code spans (N:M) go into FTS. These have parsed name + signature + snippet.
+     - NOT SEARCHABLE: Folders and files are graph-only entities. They exist for connectivity (folder→file→code_span) and for staleness checks (file_hash), but they don't pollute search results.
+     - NOT STORED: Full file content is NEVER stored. Only parsed snippets.
+
+     ---
+     Complete Entity Taxonomy
+
+     A. STRUCTURAL ENTITIES (graph-only, not searchable)
+
+     ┌─────┬─────────────────┬─────────────────────────┬───────────────────────────────────────────────────────────┬─────────────────────────────────┐
+     │  #  │      Kind       │       PK Example        │                        Description                        │           Stored Data           │
+     ├─────┼─────────────────┼─────────────────────────┼───────────────────────────────────────────────────────────┼─────────────────────────────────┤
+     │ 1   │ folder          │ src/auth/:-1:-1         │ Every directory in the tree                               │ name, depth                     │
+     ├─────┼─────────────────┼─────────────────────────┼───────────────────────────────────────────────────────────┼─────────────────────────────────┤
+     │ 2   │ file_parsable   │ src/auth/service.rs:0:0 │ File that tree-sitter can parse                           │ language, file_hash, indexed_at │
+     ├─────┼─────────────────┼─────────────────────────┼───────────────────────────────────────────────────────────┼─────────────────────────────────┤
+     │ 3   │ file_unparsable │ README.md:0:0           │ File we can't/don't parse                                 │ file_hash, indexed_at           │
+     ├─────┼─────────────────┼─────────────────────────┼───────────────────────────────────────────────────────────┼─────────────────────────────────┤
+     │ 4   │ file_config     │ Cargo.toml:0:0          │ Config file (TOML/JSON/YAML) — parsable as data, not code │ file_hash, indexed_at           │
+     └─────┴─────────────────┴─────────────────────────┴───────────────────────────────────────────────────────────┴─────────────────────────────────┘
+
+     Notes:
+     - file_parsable has child code_span entities. It itself stores NO content.
+     - file_unparsable is just an address. It exists for graph completeness (folder→file edge).
+     - file_config applies ONLY to Rust ecosystem config (Cargo.toml, build.rs). Parsed as data, not code. For all other languages, config files (package.json, pyproject.toml, etc.) are treated as
+     file_unparsable — just an address.
+     - All files store file_hash for incremental indexing (SHA-256 change detection).
+
+     B. CODE SPAN ENTITIES (searchable, extracted by tree-sitter)
+
+     These are the actual parsed pieces. Each is a contiguous line range within a parsable file.
+
+     Universal kinds (all tree-sitter-supported languages):
+
+     ┌────────┬───────────────┬────────────────────┬─────────────────────────────────────────┬─────────────────────────────────────────────────────────────┐
+     │   #    │     Kind      │     PK Example     │                Languages                │                   tree-sitter node types                    │
+     ├────────┼───────────────┼────────────────────┼─────────────────────────────────────────┼─────────────────────────────────────────────────────────────┤
+     │ 5      │ function      │ src/main.rs:10:25  │ All                                     │ function_item, function_definition, function_declaration    │
+     ├────────┼───────────────┼────────────────────┼─────────────────────────────────────────┼─────────────────────────────────────────────────────────────┤
+     │ 6      │ method        │ src/auth.rs:30:45  │ All with classes/impls                  │ method_declaration, function_definition (inside class/impl) │
+     ├────────┼───────────────┼────────────────────┼─────────────────────────────────────────┼─────────────────────────────────────────────────────────────┤
+     │ 7      │ struct        │ src/model.rs:5:15  │ Rust, C, C++, Go                        │ struct_item, struct_specifier                               │
+     ├────────┼───────────────┼────────────────────┼─────────────────────────────────────────┼─────────────────────────────────────────────────────────────┤
+     │ 8      │ class         │ src/app.py:1:50    │ Python, JS/TS, Java, C++, Ruby, PHP, C# │ class_definition, class_declaration                         │
+     ├────────┼───────────────┼────────────────────┼─────────────────────────────────────────┼─────────────────────────────────────────────────────────────┤
+     │ 9      │ enum          │ src/status.rs:3:12 │ Rust, Java, TS, C, C++, C#              │ enum_item, enum_declaration                                 │
+     ├────────┼───────────────┼────────────────────┼─────────────────────────────────────────┼─────────────────────────────────────────────────────────────┤
+     │ 10     │ trait         │ src/auth.rs:1:20   │ Rust                                    │ trait_item                                                  │
+     ├────────┼───────────────┼────────────────────┼─────────────────────────────────────────┼─────────────────────────────────────────────────────────────┤
+     │ 11     │ interface     │ src/api.ts:5:30    │ TS, Java, Go, C#, PHP                   │ interface_declaration                                       │
+     ├────────┼───────────────┼────────────────────┼─────────────────────────────────────────┼─────────────────────────────────────────────────────────────┤
+     │ 12     │ impl          │ src/auth.rs:22:60  │ Rust                                    │ impl_item                                                   │
+     ├────────┼───────────────┼────────────────────┼─────────────────────────────────────────┼─────────────────────────────────────────────────────────────┤
+     │ 13     │ type_alias    │ src/types.rs:3:3   │ Rust, TS, Go, C                         │ type_item, type_alias_declaration                           │
+     ├────────┼───────────────┼────────────────────┼─────────────────────────────────────────┼─────────────────────────────────────────────────────────────┤
+     │ 14     │ constant      │ src/config.rs:1:1  │ All                                     │ const_item, const_declaration                               │
+     ├────────┼───────────────┼────────────────────┼─────────────────────────────────────────┼─────────────────────────────────────────────────────────────┤
+     │ 15     │ static        │ src/global.rs:5:5  │ Rust, C, C++                            │ static_item                                                 │
+     ├────────┼───────────────┼────────────────────┼─────────────────────────────────────────┼─────────────────────────────────────────────────────────────┤
+     │ 16     │ macro         │ src/macros.rs:1:20 │ Rust, C, C++                            │ macro_definition, preproc_def                               │
+     ├────────┼───────────────┼────────────────────┼─────────────────────────────────────────┼─────────────────────────────────────────────────────────────┤
+     │ 17     │ module        │ src/lib.rs:1:1     │ Rust, Python, Ruby, JS/TS               │ mod_item, module                                            │
+     ├────────┼───────────────┼────────────────────┼─────────────────────────────────────────┼─────────────────────────────────────────────────────────────┤
+     │ 18     │ import        │ src/main.rs:1:3    │ All                                     │ use_declaration, import_statement                           │
+     ├────────┼───────────────┼────────────────────┼─────────────────────────────────────────┼─────────────────────────────────────────────────────────────┤
+     │ 19     │ variable      │ src/app.js:1:1     │ JS/TS, Python, Go                       │ lexical_declaration, variable_declaration                   │
+     ├────────┼───────────────┼────────────────────┼─────────────────────────────────────────┼─────────────────────────────────────────────────────────────┤
+     │ 20     │ constructor   │ src/App.java:10:20 │ Java, C++, TS, PHP, C#                  │ constructor_declaration                                     │
+     ├────────┼───────────────┼────────────────────┼─────────────────────────────────────────┼─────────────────────────────────────────────────────────────┤
+     │ 21     │ namespace     │ src/lib.cpp:1:50   │ C++, C#, PHP                            │ namespace_definition                                        │
+     ├────────┼───────────────┼────────────────────┼─────────────────────────────────────────┼─────────────────────────────────────────────────────────────┤
+     │ 22     │ test          │ src/auth.rs:70:85  │ All (language-specific detection)       │ Same as function, but flagged                               │
+     ├────────┼───────────────┼────────────────────┼─────────────────────────────────────────┼─────────────────────────────────────────────────────────────┤
+     │ ~~23~~ │ ~~`comment`~~ │ ~~REMOVED~~        │ ~~All~~                                 │ ~~Comments are NOT entities — skipped entirely~~            │
+     ├────────┼───────────────┼────────────────────┼─────────────────────────────────────────┼─────────────────────────────────────────────────────────────┤
+     │ 24     │ record        │ src/User.java:1:10 │ Java, C#                                │ record_declaration                                          │
+     ├────────┼───────────────┼────────────────────┼─────────────────────────────────────────┼─────────────────────────────────────────────────────────────┤
+     │ 25     │ object        │ src/App.scala:1:20 │ Scala                                   │ object_definition                                           │
+     └────────┴───────────────┴────────────────────┴─────────────────────────────────────────┴─────────────────────────────────────────────────────────────┘
+
+     How test is detected (not a tree-sitter node type — it's a flag):
+     - Rust: #[test] or #[cfg(test)] attribute on function
+     - Python: function name starts with test_ or file in tests/
+     - JS/TS: inside describe()/it()/test() blocks, or file matches *.test.* / *.spec.*
+     - Go: function name starts with Test in *_test.go files
+     - Java: @Test annotation
+
+     So test is really kind=function with is_test=true. The kind test is a convenience alias.
+
+     C. RUST CONFIG SPAN ENTITIES (Cargo.toml, build.rs only)
+
+     Rust ecosystem config files are parsed as data (TOML), not code. Other languages' config files (package.json, pyproject.toml, etc.) are file_unparsable — just addresses.
+
+     ┌─────┬────────────────┬──────────────────┬─────────────┬─────────────────────────────────────────────────┐
+     │  #  │      Kind      │    PK Example    │ Source File │                   Description                   │
+     ├─────┼────────────────┼──────────────────┼─────────────┼─────────────────────────────────────────────────┤
+     │ 23  │ dependency     │ Cargo.toml:5:5   │ Cargo.toml  │ A crate dependency declaration                  │
+     ├─────┼────────────────┼──────────────────┼─────────────┼─────────────────────────────────────────────────┤
+     │ 24  │ package_meta   │ Cargo.toml:1:4   │ Cargo.toml  │ Package name, version, edition                  │
+     ├─────┼────────────────┼──────────────────┼─────────────┼─────────────────────────────────────────────────┤
+     │ 25  │ config_section │ Cargo.toml:10:15 │ Cargo.toml  │ A named section ([features], [workspace], etc.) │
+     └─────┴────────────────┴──────────────────┴─────────────┴─────────────────────────────────────────────────┘
+
+     D. RUST ENRICHMENT (not new entities — extra columns on existing code spans)
+
+     For .rs files, code_span entities get additional data:
+
+     ┌─────────────┬─────────────────────┬─────────────────────────────────────┐
+     │   Column    │       Source        │               Example               │
+     ├─────────────┼─────────────────────┼─────────────────────────────────────┤
+     │ rustc_scope │ tcx.def_path_str()  │ "crate::auth::service::login"       │
+     ├─────────────┼─────────────────────┼─────────────────────────────────────┤
+     │ rustc_sig   │ tcx.fn_sig()        │ "fn(&Credentials) -> Result<Token>" │
+     ├─────────────┼─────────────────────┼─────────────────────────────────────┤
+     │ visibility  │ tcx.visibility()    │ "pub(crate)"                        │
+     ├─────────────┼─────────────────────┼─────────────────────────────────────┤
+     │ mir_calls   │ tcx.optimized_mir() │ ["crate::db::lookup", ...]          │
+     ├─────────────┼─────────────────────┼─────────────────────────────────────┤
+     │ trait_impls │ tcx.all_impls()     │ [...]                               │
+     └─────────────┴─────────────────────┴─────────────────────────────────────┘
+
+     These are NOT new entity types. Same pk, same row, just more columns filled in.
+
+     ---
+     Summary: Entity Count by Layer
+
+     ┌───────────────────────┬───────────────────────────────────────────────────────┬────────────────────────────────┬─────────────────┐
+     │         Layer         │                     Entity Types                      │          Searchable?           │ Content Stored? │
+     ├───────────────────────┼───────────────────────────────────────────────────────┼────────────────────────────────┼─────────────────┤
+     │ L0: Folder            │ 1 kind (folder)                                       │ No (graph only)                │ No              │
+     ├───────────────────────┼───────────────────────────────────────────────────────┼────────────────────────────────┼─────────────────┤
+     │ L1: File              │ 3 kinds (file_parsable, file_unparsable, file_config) │ No (graph only)                │ No (only hash)  │
+     ├───────────────────────┼───────────────────────────────────────────────────────┼────────────────────────────────┼─────────────────┤
+     │ L2: Code Span         │ ~20 kinds (function through object, NO comments)      │ YES (FTS on name + signature)  │ YES (snippet)   │
+     ├───────────────────────┼───────────────────────────────────────────────────────┼────────────────────────────────┼─────────────────┤
+     │ L2c: Rust Config Span │ 3 kinds (dependency, package_meta, config_section)    │ YES                            │ YES             │
+     ├───────────────────────┼───────────────────────────────────────────────────────┼────────────────────────────────┼─────────────────┤
+     │ L3: Rust Enrichment   │ 0 new kinds (extra columns on L2)                     │ YES (FTS includes rustc_scope) │ YES (enriched)  │
+     └───────────────────────┴───────────────────────────────────────────────────────┴────────────────────────────────┴─────────────────┘
+
+     Total distinct kinds: ~27
+     - 4 structural (folder, file_parsable, file_unparsable, file_config)
+     - 20 code span (function, method, struct, class, enum, trait, interface, impl, type_alias, constant, static, macro, module, import, variable, constructor, namespace, record, object + is_test flag)
+     - 3 Rust config span (dependency, package_meta, config_section)
+
+     ---
+     The is_test Question
+
+     test is not a separate kind — it's a flag (is_test = true) on any code span entity (usually functions). This means:
+     - Test entities use the same pk format, same table, same schema
+     - They differ only in the is_test column
+     - Search can filter them in or out
+     - Graph edges FROM tests TO production code are preserved (useful for blast radius)
+
+     ---
+     Previous Research (Glommer)
+
+     Status: COMPLETE (all 3 repos cloned, all key files read)
+
+     Repos live at docs/research-glommer/{codemogger,cachebro,memelord}.
+
+     ---
+     CODEMOGGER - Code Indexing Library (STEAL HEAVILY)
+
+     What it is: Tree-sitter code chunker + Turso/libSQL store with FTS + vector search. Single .db file per codebase. 14 languages. MCP server + CLI.
+
+     Patterns to Adopt
+
+     1. File Walker + .gitignore (src/scan/walker.ts)
+     - Hardcoded ALWAYS_IGNORE set: .git, node_modules, target, build, dist, pycache, .venv, .cargo, .rustup
+     - Simplified .gitignore parsing: directory names only (no glob patterns). Practical tradeoff.
+     - Skips hidden files (starts with .), empty files, files >1MB
+     - Returns: absPath, relPath, language, SHA-256 hash, content
+
+     2. SHA-256 Hash-Based Incremental Indexing (src/index.ts)
+     - On reindex: compute hash per file, compare to stored hash
+     - Changed → re-chunk + re-embed. Unchanged → skip.
+     - 5-phase pipeline: scan → hash check → chunk+write → embed → cleanup → FTS rebuild
+     - Batch sizes: FILE_BATCH=200, EMBED_BATCH=64
+
+     3. Chunk Key = Physical Location (src/chunk/types.ts)
+     - chunkKey = "file_path:startLine:endLine" — EXACTLY our Layer 2 primary key!
+     - This validates our PRD Big-Rock-02 design completely.
+
+     4. Tree-Sitter Chunking (src/chunk/treesitter.ts)
+     - topLevelNodes per language (e.g., Rust: function_item, struct_item, enum_item, impl_item, trait_item...)
+     - splitNodes: large items (>150 lines) get split into sub-items (methods within impl/class)
+     - extractName(): language-specific logic for Go methods, Rust impls, Python decorators, etc.
+     - extractSignature(): first line of the node = the signature
+
+     5. Turso/libSQL Schema (src/db/schema.ts)
+     - codebases table: id, root_path, name, indexed_at
+     - chunks table: id, codebase_id, file_path, chunk_key (UNIQUE), language, kind, name, signature, snippet, start_line, end_line, file_hash, indexed_at, embedding (BLOB), embedding_model
+     - indexed_files table: codebase_id, file_path, file_hash, chunk_count, indexed_at
+     - Per-codebase FTS tables: fts_{codebase_id} with weighted fields (name=5.0, signature=3.0)
+     - Vector search: vector_distance_cos(embedding, vector8(?)) — int8 quantized embeddings
+
+     6. RRF Fusion (src/search/rank.ts)
+     - score = 0.4/(60+rank_fts) + 0.6/(rank_vec+60) — standard RRF with k=60
+     - Vector gets 60% weight, FTS gets 40%
+     - Merges by chunkKey, sorts by combined score
+
+     7. Query Preprocessing (src/search/query.ts)
+     - Stopword removal (English + agent-specific filler like "help", "please", "file", "code")
+     - Token regex: [a-z0-9]+(?:[-_.][a-z0-9]+)*
+     - Max 12 terms, min 3 chars, max 30 chars
+
+     8. MCP Server (src/mcp.ts)
+     - 3 tools: codemogger_search, codemogger_index, codemogger_reindex
+     - Dynamic descriptions: after indexing, search tool description updates with chunk/file counts
+     - sendToolListChanged() after index operations — smart pattern for keeping LLM context fresh
+
+     What NOT to Adopt from Codemogger
+
+     - Embeddings (we're CPU-only, no vector search)
+     - Bun/TypeScript runtime (we're Rust)
+     - MCP as primary interface (we're HTTP-first)
+
+     ---
+     CACHEBRO - File Cache with Diff Tracking (INTERESTING FOR STALE DETECTION)
+
+     What it is: Token-saving layer for AI agents. Caches file reads, returns diffs on subsequent reads instead of full content. 26-36% token savings.
+
+     Patterns to Adopt
+
+     1. Content-Addressed File Versioning
+     - Schema: file_versions(path, hash, content, lines, created_at) — composite PK on (path, hash)
+     - Every version of a file is stored. Hash = SHA-256 truncated to 16 chars.
+     - session_reads(session_id, path, hash, read_at) — tracks what each session last saw
+
+     2. FRESH/STALE Detection Pattern
+     - Compare current file hash to last-seen hash in session
+     - Same hash → FRESH (return one-line confirmation)
+     - Different hash → STALE (compute and return unified diff)
+     - This maps directly to our Screen 3 FRESH/STALE badge and Screen 7 staleness check
+
+     3. Line-Based LCS Diff (src/differ.ts)
+     - Longest Common Subsequence for line-level diffs
+     - Returns unified diff format + exact changed line numbers
+     - Could be useful for incremental re-analysis: only re-parse changed line ranges
+
+     4. Session Isolation
+     - Different sessions can be at different file versions
+     - Useful if we ever need multi-user or multi-branch scenarios
+
+     What NOT to Adopt from Cachebro
+
+     - The caching layer itself (we don't cache file reads, we index)
+     - The MCP proxy pattern (we're HTTP-first)
+     - Token tracking/stats (interesting but out of scope)
+
+     ---
+     MEMELORD - Persistent Agent Memory (LOW PRIORITY BUT INTERESTING)
+
+     What it is: Per-project persistent memory for coding agents. Memories survive across sessions, improve through reinforcement learning (weight adjustment based on agent feedback).
+
+     Patterns Worth Noting
+
+     1. Turso Connection Pattern — Short-Lived Connections
+     - Opens/closes DB connection per operation to avoid multi-process lock contention
+     - PRAGMA busy_timeout = 5000 for concurrent access
+     - Retry with exponential backoff (max 10 attempts) if DB locked
+     - IMPORTANT: This is a real-world lesson about Turso embedded driver file locking
+
+     2. Per-Project DB Pattern
+     - Each project gets .memelord/memory.db — no shared state across projects
+     - Exactly matches our .parseltongue/index.db per-codebase pattern
+
+     3. Vector Search in libSQL
+     - vector_distance_cos(embedding, ?) for similarity search
+     - Float32 vectors stored as BLOB
+     - Works well enough for small-scale (hundreds/thousands of memories)
+
+     What NOT to Adopt from Memelord
+
+     - Memory/reinforcement learning system (different product)
+     - Embeddings/vector search (we're CPU-only)
+     - Claude Code hooks integration (interesting but not our interface)
+
+     ---
+     SYNTHESIS: What Parseltongue v3 Should Steal
+
+     High Confidence (Validated Patterns)
+
+     ┌──────────────────────────────────────────────┬───────────────────────┬───────────────────────────────────────────────┐
+     │                   Pattern                    │        Source         │             Parseltongue Mapping              │
+     ├──────────────────────────────────────────────┼───────────────────────┼───────────────────────────────────────────────┤
+     │ file:startLine:endLine as chunk key          │ codemogger            │ Our Layer 2 primary key (Big-Rock-02)         │
+     ├──────────────────────────────────────────────┼───────────────────────┼───────────────────────────────────────────────┤
+     │ SHA-256 hash-based incremental indexing      │ codemogger + cachebro │ FRESH/STALE detection + selective re-parsing  │
+     ├──────────────────────────────────────────────┼───────────────────────┼───────────────────────────────────────────────┤
+     │ Simplified .gitignore (directory names only) │ codemogger            │ File walker for ingestion                     │
+     ├──────────────────────────────────────────────┼───────────────────────┼───────────────────────────────────────────────┤
+     │ ALWAYS_IGNORE hardcoded set                  │ codemogger            │ .git, node_modules, target, build, dist, etc. │
+     ├──────────────────────────────────────────────┼───────────────────────┼───────────────────────────────────────────────┤
+     │ Per-codebase FTS tables with weighted fields │ codemogger            │ name=5.0, signature=3.0 for our FTS search    │
+     ├──────────────────────────────────────────────┼───────────────────────┼───────────────────────────────────────────────┤
+     │ Single .db file per codebase                 │ all three             │ .parseltongue/index.db pattern                │
+     ├──────────────────────────────────────────────┼───────────────────────┼───────────────────────────────────────────────┤
+     │ Short-lived DB connections                   │ memelord              │ Avoid file lock contention in multi-process   │
+     ├──────────────────────────────────────────────┼───────────────────────┼───────────────────────────────────────────────┤
+     │ Tree-sitter topLevelNodes + splitNodes       │ codemogger            │ Our existing tree-sitter pattern, validated   │
+     └──────────────────────────────────────────────┴───────────────────────┴───────────────────────────────────────────────┘
+
+     Medium Confidence (Adapt for Our Needs)
+
+     ┌───────────────────────────────────┬────────────┬──────────────────────────────────────────────────┐
+     │              Pattern              │   Source   │                    Adaptation                    │
+     ├───────────────────────────────────┼────────────┼──────────────────────────────────────────────────┤
+     │ RRF fusion (keyword + semantic)   │ codemogger │ RRF over FTS + symbol trie + trigram (no vector) │
+     ├───────────────────────────────────┼────────────┼──────────────────────────────────────────────────┤
+     │ Query preprocessing (stopwords)   │ codemogger │ Strip agent filler before FTS                    │
+     ├───────────────────────────────────┼────────────┼──────────────────────────────────────────────────┤
+     │ Line-based LCS diff               │ cachebro   │ Incremental re-analysis of changed ranges only   │
+     ├───────────────────────────────────┼────────────┼──────────────────────────────────────────────────┤
+     │ Batch processing (FILE_BATCH=200) │ codemogger │ Similar batching for our indexing pipeline       │
+     └───────────────────────────────────┴────────────┴──────────────────────────────────────────────────┘
+
+     Reject (Not Applicable)
+
+     ┌──────────────────────────┬───────────────────────┬────────────────────┐
+     │         Pattern          │        Source         │      Why Not       │
+     ├──────────────────────────┼───────────────────────┼────────────────────┤
+     │ Vector embeddings        │ codemogger + memelord │ CPU-only guarantee │
+     ├──────────────────────────┼───────────────────────┼────────────────────┤
+     │ MCP as primary interface │ codemogger            │ HTTP-first (D4)    │
+     ├──────────────────────────┼───────────────────────┼────────────────────┤
+     │ Token caching layer      │ cachebro              │ Different product  │
+     ├──────────────────────────┼───────────────────────┼────────────────────┤
+     │ Reinforcement learning   │ memelord              │ Different product  │
+     └──────────────────────────┴───────────────────────┴────────────────────┘
+
+     ---
+     Key Validation for PRD-v300.md
+
+     1. Big-Rock-02 CONFIRMED: codemogger uses file_path:startLine:endLine as its unique chunk key. Our physical-location-first primary key is the right call.
+     2. D7 (Turso/libSQL) CONFIRMED: All three repos use Turso embedded. FTS + vector in single file works. Per-codebase FTS tables with weighted fields is production-proven.
+     3. Incremental indexing via hashing CONFIRMED: SHA-256 per file, compare to stored hash, skip unchanged. Simple, fast, correct.
+     4. .gitignore approach CONFIRMED: Simplified parsing (directory names only, no glob patterns) is sufficient. Practical tradeoff.
+     5. memelord warns: Turso embedded driver has file locking issues with long-lived connections. Use short-lived connections or handle SQLITE_BUSY with retries.
+
+⏺ Entity taxonomy is locked. 27 kinds across 4 layers, unified PK format path:start_line:end_line with sentinels. Ready to move to the next piece — whether that's the database schema, the edge types, or
+  updating the PRD with this taxonomy.
+

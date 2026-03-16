@@ -35,7 +35,8 @@ parseltongue-v*-macos-arm64
 # Organized artifacts (preserved in artifacts/ directory)
 artifacts/
 
-# Archive folder (for cleanup - can be deleted later)
+# Archived v1/v2 code
+archived-code/
 
 # Competitor research
 competitor_research/
