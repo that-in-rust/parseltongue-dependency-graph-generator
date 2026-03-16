@@ -14,6 +14,7 @@ Uniform for ALL entities: `path:start_line:end_line`
 Sentinels: `-1:-1` = folder, `0:0` = file, `N:M` (N >= 1) = code span.
 
 # Coverage Model (grounded in apache/iggy: 2712 files, 775 dirs, 379K lines)
+# (iggy cloned to: docs/research-glommer/iggy-sample/)
 
 Every byte in every file is accounted for. Zero gaps. 100% coverage by construction.
 
@@ -229,6 +230,8 @@ For .rs code entities, same pk, same row, more columns filled in:
 
 Every tree-sitter node exposes these properties. This is the raw material for entity extraction.
 Source: tree-sitter 0.25 C/Rust API (verified via Context7 + cargo cache node-types.json).
+Grammar crate versions: Cargo.toml lines 31-45.
+node-types.json files: ~/.cargo/registry/src/index.crates.io-*/tree-sitter-{lang}-*/src/node-types.json
 
     Property/Method              Returns              Used for
     ---------------              -------              --------
@@ -284,6 +287,8 @@ for every grammar version we ship. No manual maintenance.
 
 Every concrete node type that can appear as a direct child of the root node,
 mapped to our entity_type. Extracted from node-types.json files in cargo cache.
+Codemogger reference: docs/research-glommer/codemogger/src/chunk/languages.ts (topLevelNodes per lang)
+Codemogger walker:    docs/research-glommer/codemogger/src/chunk/treesitter.ts (processNode + splitLargeNode)
 
 Key: S = searchable (FTS), G = graph edges, C = coverage only, A = attach to next entity.
 
@@ -563,7 +568,7 @@ Some root children wrap the real entity. We unwrap before classifying:
     template_declaration (C++)     → inner is class/function/struct
     type_declaration (Go)          → inner type_spec reveals struct vs interface vs alias
 
-Codemogger already implements all four unwrapping patterns in treesitter.ts.
+Codemogger implements all four: docs/research-glommer/codemogger/src/chunk/treesitter.ts:36-52,228-280
 
 ## 3. splitNodes: One Level Deeper for Large Containers
 
@@ -586,6 +591,7 @@ Only one level deep — never recurse into function bodies.
 
 Body wrapper nodes to walk into: class_body, declaration_list, field_declaration_list,
 body_statement, block (varies by language).
+Ref: docs/research-glommer/codemogger/src/chunk/treesitter.ts:296-301 (bodyWrappers set)
 
 ## 4. Module-Level Only Rule
 
@@ -600,8 +606,9 @@ Anything nested inside a function body is an implementation detail:
     NO:  struct/enum inside function body
     NO:  block expression items
 
-This matches codemogger's approach: processNode() only walks tree.rootNode.children,
-and splitLargeNode() only goes one level into body wrappers.
+This matches codemogger's approach: processNode() only walks tree.rootNode.children (line 334),
+and splitLargeNode() only goes one level into body wrappers (line 304).
+Ref: docs/research-glommer/codemogger/src/chunk/treesitter.ts:228-339
 
 ## 5. is_test Detection (per language)
 
@@ -623,6 +630,17 @@ and splitLargeNode() only goes one level into body wrappers.
 v1.6.1 used declarative `.scm` tree-sitter query files (12 languages, ~15 lines each).
 Codemogger uses imperative AST walking with data-driven LanguageConfig (~587 lines total).
 
+v1.6.1 source:  toBeDeleted/archived-code/parseltongue-core/src/query_extractor.rs
+v1.6.1 queries: toBeDeleted/archived-code/parseltongue-core/src/entity_queries/*.scm (12 files)
+v1.6.1 deps:    toBeDeleted/archived-code/parseltongue-core/src/dependency_queries/*.scm
+v1.6.1 keys:    toBeDeleted/archived-code/parseltongue-core/src/isgl1_v2.rs
+v1.6.1 types:   toBeDeleted/archived-code/parseltongue-core/src/entities.rs
+v1.6.1 storage: toBeDeleted/archived-code/parseltongue-core/src/storage/cozo_client.rs
+Codemogger:     docs/research-glommer/codemogger/src/chunk/treesitter.ts (340 lines)
+Codemogger cfg: docs/research-glommer/codemogger/src/chunk/languages.ts (247 lines)
+Codemogger idx: docs/research-glommer/codemogger/src/index.ts (370 lines)
+TS query guide: docs/pre202602/ACTIVE-Reference/AR035-Prep-Tree-Sitter-Query-Patterns.md (68.7KB)
+
     Approach              v1.6.1 (.scm queries)       Codemogger (imperative walk)
     --------              ---------------------        ----------------------------
     Code per language     ~15 lines .scm + Rust glue  ~50 lines config (shared walker)
@@ -638,10 +656,14 @@ Codemogger uses imperative AST walking with data-driven LanguageConfig (~587 lin
 
 1. **FileWordCoverage schema** — had source_word_count, entity_word_count, import_word_count,
    comment_word_count, raw_coverage_pct, effective_coverage_pct. Validates our wc model.
+   Ref: toBeDeleted/archived-code/parseltongue-core/src/storage/cozo_client.rs
 2. **8 dependency edge types** — calls, uses, implements, type_refs, field_access,
-   async_await, iterators, generics (from dependency_queries/rust.scm, 180 lines).
+   async_await, iterators, generics.
+   Ref: toBeDeleted/archived-code/parseltongue-core/src/dependency_queries/rust.scm (180 lines)
 3. **Deduplication** — HashSet<(name, line_range)> to handle overlapping query matches.
+   Ref: toBeDeleted/archived-code/parseltongue-core/src/query_extractor.rs:407-416
 4. **include_str!() embedding** — compile-time config embedding, zero runtime I/O.
+   Ref: toBeDeleted/archived-code/parseltongue-core/src/query_extractor.rs (include_str! calls)
 
 ## What v1.6.1 Got Wrong (avoid these)
 
@@ -674,7 +696,7 @@ Reasons:
 
 ## Reindexing Speed (from codemogger benchmarks)
 
-Codemogger benchmarks on Apple M2:
+Codemogger benchmarks on Apple M2 (from docs/research-glommer/codemogger/README.md):
 
     Project         Files     Keyword search    Semantic search    ripgrep
     -------         -----     --------------    ---------------    -------
@@ -732,8 +754,9 @@ User clicks Browse Folder. Native macOS file dialog opens.
 They pick ~/code/my-rust-project.
 
 **What happens behind the screen:**
-- Tauri native file dialog (already researched in docs/tauri-research)
+- Tauri native file dialog (researched in docs/tauri-research/)
 - No database exists yet. Nothing to configure.
+- Tauri research: docs/tauri-research/
 
 ---
 
@@ -827,6 +850,8 @@ The 7-event journey runs server-side:
   - Symbol trie (exact matches)
   - Trigram index (fuzzy matches)
   - Git history (recent edits)
+  - RRF ref: docs/research-glommer/codemogger/src/search/rank.ts (k=60, fts=0.4, vec=0.6)
+  - Query preprocessing ref: docs/research-glommer/codemogger/src/search/query.ts (stopwords)
 
 **Event 3: ANCHOR** — BFS upward to public API boundary (<50ms)
   - For private entities: walk callers until a public fn/trait is found
@@ -1004,9 +1029,11 @@ LLM pays ~200 tokens to choose, then up to 20k for ONE deep dive (not 80k for al
     - Every entity has: pk, entity_type, wc (word count)
     - 30 entity_types for 100% file coverage — see Entity Taxonomy above
     - Module-level only: nested items (closures, inner fns) are part of parent snippet
-    - Validated by codemogger (uses same `file:line:line` chunk key, same module-level-only rule)
+    - Validated by codemogger (docs/research-glommer/codemogger/src/chunk/types.ts — same `file:line:line` chunk key)
 
 - Big-Rock-03: code-graph-building
+    - Graph DB thesis: docs/parseltongue-code-graph-db/
+    - File walker ref: docs/research-glommer/codemogger/src/scan/walker.ts
     - .gitignore-driven walk (simplified: directory names only, no globs)
     - Hardcoded ALWAYS_IGNORE: .git, node_modules, target, build, dist, __pycache__, .venv, .cargo, .rustup
     - SHA-256 hash per file for incremental indexing (skip unchanged files on re-analyze)
@@ -1032,6 +1059,7 @@ LLM pays ~200 tokens to choose, then up to 20k for ONE deep dive (not 80k for al
 ## D2: Rust Gets rustc_private Enrichment
 - Pin nightly toolchain. Extract: resolved types, real call graphs, trait impls, visibility, MIR.
 - Proven by: Miri, Flowistry, Aquascope, Prusti, Kani, Rudra.
+- Rationale: docs/v300/rustc_private_stability_rationale_202603091530.md
 
 ## D3: Other Languages Get Basic Tree-Sitter Only
 - Entity extraction + basic edges. No deep analysis.
@@ -1047,11 +1075,18 @@ LLM pays ~200 tokens to choose, then up to 20k for ONE deep dive (not 80k for al
 
 ## D7: Database is Turso/libSQL
 - Replacing CozoDB. Single file. FTS5 built-in.
+- Codemogger schema ref: docs/research-glommer/codemogger/src/db/schema.ts
+- Codemogger store ref: docs/research-glommer/codemogger/src/db/store.ts
+- Memelord Turso warning: docs/research-glommer/memelord/ (file locking — use short-lived connections)
+- Cachebro FRESH/STALE: docs/research-glommer/cachebro/ (content-addressed file versioning)
 
 ## D8: Primary Key is Physical Location
 - file_path + optional start_line:end_line. ISG_L1_V3 is derived, not identity.
 
 ## D9: Entity Taxonomy is 30 Types with `entity_type` Column (2026-03-17)
+- Grounded in: codemogger (docs/research-glommer/codemogger/src/chunk/languages.ts)
+- Grounded in: cargo cache node-types.json (see Tree-Sitter API Reference section above)
+- v1.6.1 entity types: toBeDeleted/archived-code/parseltongue-core/src/entities.rs
 - Every entity has: pk, entity_type, wc (word count).
 - 4 structural (folder, file_parsable, file_unparsable, file_config)
 - 18 searchable code entities (function, method, struct, class, enum, trait, interface, impl,
@@ -1067,6 +1102,8 @@ LLM pays ~200 tokens to choose, then up to 20k for ONE deep dive (not 80k for al
 - Only code entities are FTS-searchable. Everything else is graph/coverage only.
 
 ## D10: Coverage via Word Count (2026-03-17, grounded in apache/iggy)
+- Validated by v1.6.1's FileWordCoverage: toBeDeleted/archived-code/parseltongue-core/src/storage/cozo_client.rs
+- apache/iggy sample: docs/research-glommer/iggy-sample/ (gitignored)
 - Every entity stores `wc` (word count). File stores `total_wc`.
 - For parsable files: sum(entity.wc) = file.total_wc. Verified on save. Zero gaps.
 - Coverage computable at file, folder, and repo level via SQL GROUP BY entity_type.
@@ -1076,6 +1113,11 @@ LLM pays ~200 tokens to choose, then up to 20k for ONE deep dive (not 80k for al
 - .svelte could be added if tree-sitter-svelte grammar is included (adds 70 files in iggy).
 
 ## D11: Data-Driven Tree-Sitter Walker (2026-03-17, codemogger-validated)
+- Codemogger walker: docs/research-glommer/codemogger/src/chunk/treesitter.ts
+- Codemogger config: docs/research-glommer/codemogger/src/chunk/languages.ts
+- v1.6.1 .scm files: toBeDeleted/archived-code/parseltongue-core/src/entity_queries/*.scm
+- v1.6.1 query engine: toBeDeleted/archived-code/parseltongue-core/src/query_extractor.rs
+- Architecture decisions: docs/v300/minimal_v200_architecture_decisions_202603091545.md
 - Follow codemogger's imperative AST walking, not v1.6.1's .scm query files.
 - LanguageConfig struct: name, extensions, top_level_nodes, split_nodes (const, compile-time).
 - Shared walker for all languages. Classify via node.kind() → entity_type.
