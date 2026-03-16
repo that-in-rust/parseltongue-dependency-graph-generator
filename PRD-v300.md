@@ -13,6 +13,86 @@ Uniform for ALL entities: `path:start_line:end_line`
 
 Sentinels: `-1:-1` = folder, `0:0` = file, `N:M` (N >= 1) = code span.
 
+# Coverage Model (grounded in apache/iggy: 2712 files, 775 dirs, 379K lines)
+
+Every file in the repo belongs to exactly one category. Every line is accounted for.
+
+## File Categories (what happens to each file after .gitignore)
+
+    Category              iggy count    What Parseltongue does
+    --------              ----------    ----------------------
+    CODE (tree-sitter)    2143 files    Parse → code span entities (Layer 2). Searchable.
+      .rs                 1237            208K lines (Rust — also gets Layer 3 enrichment)
+      .java               320             36K lines
+      .ts                 224             18K lines
+      .cs                 220             25K lines
+      .go                 127             17K lines
+      .py                 11              2K lines
+      .js                 4               177 lines
+      .svelte             70              7K lines (if we add tree-sitter-svelte)
+
+    RUST CONFIG           83 files      Parse as TOML → dependency/package_meta/config_section entities
+      Cargo.toml          83              5K lines
+      (build.rs)          2               (counted in .rs above)
+
+    DATA/CONFIG           132 files     Layer 1 only (file entity + hash). NOT parsed.
+      .toml (non-Cargo)   0
+      .yml/.yaml          65              12K lines
+      .json               63              14K lines
+      .xml                3               238 lines
+      .proto              1               41 lines
+
+    DOCUMENTATION         56 files      Layer 1 only. NOT parsed.
+      .md                 52              8K lines
+      .txt                4               61 lines
+
+    SCRIPTS/TOOLING       66 files      Layer 1 only. NOT parsed.
+      .sh                 31              4K lines
+      Dockerfile          8
+      justfile            2
+      .http               3               665 lines
+      .editorconfig       3
+      .gitignore          10
+      .dockerignore       6
+      other (no ext)      ~20
+
+    BUILD SYSTEM          49 files      Layer 1 only. NOT parsed.
+      .csproj/.sln/.props 23
+      .kts                15
+      .properties         7
+      .bazel              2
+      other               2
+
+    BINARY/OPAQUE         56 files      Layer 1 only. NOT parsed. No line count.
+      .png                34
+      .svg                12
+      .pem                3
+      .lock               7               (16K lines but generated, not useful)
+
+## Line-Level Coverage
+
+    Total text lines in repo:              379,365
+    Lines in parsable code files:          305,375   (80.5%)
+    Lines in config/data/docs/scripts:      57,421   (15.1%)
+    Lines in lock files (generated):        16,569   (4.4%)
+
+    Within parsable code files (.rs):
+      Code lines (→ entities):             155,717   (74.9% of .rs lines)
+      Comment lines (→ NOT entities):       30,200   (14.5% of .rs lines)
+      Blank lines (→ NOT entities):         22,119   (10.6% of .rs lines)
+
+## The Coverage Accounting
+
+Every file entity stores: `total_lines`, `parsed_lines`, `comment_lines`, `blank_lines`.
+This lets us compute coverage at every level:
+
+    Per file:    "service.rs: 54 lines total, 35 parsed (65%), 15 comment, 4 blank"
+    Per folder:  "src/auth/: 12 files, 2400 lines total, 1800 parsed (75%)"
+    Per repo:    "iggy: 2712 files, 379K lines, 305K in code files, ~229K parsed into entities (60%)"
+
+The ~40% not in entities is: comments (14.5%), blanks (10.6%), non-code files (15%).
+This is expected and correct. We parse what's parsable. We track what we didn't.
+
 # Searchability Rule
 
 - SEARCHABLE: Only code spans (N:M) go into FTS. They have name + signature + snippet.
@@ -24,9 +104,12 @@ Sentinels: `-1:-1` = folder, `0:0` = file, `N:M` (N >= 1) = code span.
 ## A. Structural Entities (graph-only, not searchable, no content stored)
 
     folder            src/auth/:-1:-1             Every directory in the tree
-    file_parsable     src/auth/service.rs:0:0     Tree-sitter can parse it. Has child code spans. Stores file_hash only.
-    file_unparsable   README.md:0:0               Can't parse. Just an address. Stores file_hash only.
-    file_config       Cargo.toml:0:0              Rust config only. Parsed as TOML, not code. Other langs' configs = file_unparsable.
+    file_parsable     src/auth/service.rs:0:0     Tree-sitter can parse it. Has child code spans.
+    file_unparsable   README.md:0:0               Can't parse. Just an address.
+    file_config       Cargo.toml:0:0              Rust config only. Parsed as TOML, not code.
+
+All files store: file_hash (SHA-256), total_lines, parsed_lines, comment_lines, blank_lines.
+Other languages' config files (package.json, pyproject.toml) = file_unparsable.
 
 ## B. Code Span Entities (searchable, extracted by tree-sitter)
 
@@ -412,6 +495,14 @@ LLM pays ~200 tokens to choose, then up to 20k for ONE deep dive (not 80k for al
 - Imports ARE entities (drive dependency edges).
 - Rust config (Cargo.toml) IS parsed. Other languages' configs are file_unparsable.
 - Only code spans are searchable (FTS). Folders and files are graph-only.
+
+## D10: Coverage Accounting (2026-03-17, grounded in apache/iggy)
+- Every file stores: total_lines, parsed_lines, comment_lines, blank_lines.
+- Coverage computable at file, folder, and repo level.
+- Expected coverage: ~60% of total lines become entities (code lines in parsable files).
+- The ~40% gap is: comments (15%), blanks (11%), non-code files (15%). This is correct.
+- Lock files, binaries, generated files are tracked as file entities but not parsed.
+- .svelte could be added if tree-sitter-svelte grammar is included (adds 70 files in iggy).
 
 ---
 
