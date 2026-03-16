@@ -616,6 +616,90 @@ and splitLargeNode() only goes one level into body wrappers.
 
 ---
 
+# v1.6.1 Retrospective: What We Learned
+
+## Two Approaches Compared
+
+v1.6.1 used declarative `.scm` tree-sitter query files (12 languages, ~15 lines each).
+Codemogger uses imperative AST walking with data-driven LanguageConfig (~587 lines total).
+
+    Approach              v1.6.1 (.scm queries)       Codemogger (imperative walk)
+    --------              ---------------------        ----------------------------
+    Code per language     ~15 lines .scm + Rust glue  ~50 lines config (shared walker)
+    Total code            12 .scm files + glue         587 lines for 14 languages
+    splitNodes            NOT implemented              Built-in (>150 lines → split)
+    Comment detection     NOT implemented              Manual text inspection
+    Export unwrapping     Nested .scm patterns         Explicit code
+    Fuzzy node matching   Exact node type names        type.includes("function")
+    Compile-time embed    include_str!() → zero I/O    N/A (WASM runtime)
+    Production tested     Internal only                Shipped by Turso team
+
+## What v1.6.1 Got Right (steal these)
+
+1. **FileWordCoverage schema** — had source_word_count, entity_word_count, import_word_count,
+   comment_word_count, raw_coverage_pct, effective_coverage_pct. Validates our wc model.
+2. **8 dependency edge types** — calls, uses, implements, type_refs, field_access,
+   async_await, iterators, generics (from dependency_queries/rust.scm, 180 lines).
+3. **Deduplication** — HashSet<(name, line_range)> to handle overlapping query matches.
+4. **include_str!() embedding** — compile-time config embedding, zero runtime I/O.
+
+## What v1.6.1 Got Wrong (avoid these)
+
+1. **Key format** — rust:fn:name:__path:T170... breaks on renames. Our path:line:line is stable.
+2. **No splitNodes** — large impl blocks became single giant entities.
+3. **No doc comment handling** — known gap, never addressed.
+4. **CozoDB underutilized** — stored data but didn't use graph engine.
+5. **.scm queries are fragile** — grammar updates break exact node type patterns.
+
+## Decision: Data-Driven Approach (like codemogger, in Rust)
+
+Follow codemogger's architecture, not v1.6.1's .scm approach:
+
+    struct LanguageConfig {
+        name: &'static str,
+        extensions: &'static [&'static str],
+        top_level_nodes: &'static [&'static str],
+        split_nodes: &'static [&'static str],
+    }
+
+Walk root_node.children(), classify via node.kind(), normalize to entity_type.
+Add our v3.0 innovations on top: wc tracking, doc_comment folding, 100% coverage.
+
+Reasons:
+- ONE shared walker for all languages (not 12 separate .scm files + glue)
+- splitNodes, comment detection, export unwrapping need imperative code anyway
+- Data-driven config is auditable and extensible
+- Proven in production by Turso team
+- Fuzzy matching (kind.contains("function")) survives grammar updates
+
+## Reindexing Speed (from codemogger benchmarks)
+
+Codemogger benchmarks on Apple M2:
+
+    Project         Files     Keyword search    Semantic search    ripgrep
+    -------         -----     --------------    ---------------    -------
+    Turso (Rust)    748       1 ms              35 ms              25 ms
+    Bun (Zig)       9,255     2 ms              137 ms             166 ms
+    TypeScript      39,298    4 ms              242 ms             1,500 ms
+    Kubernetes (Go) 16,668    12 ms             617 ms             731 ms
+
+Key insight: embedding is 97% of codemogger's indexing time. We skip embedding entirely.
+
+    For Parseltongue (no embedding), single-file reindex estimate:
+      SHA-256 hash         ~instant
+      Tree-sitter parse    10-20ms
+      Delete old entities  <5ms (single SQL DELETE)
+      Insert new entities  <5ms (batch INSERT)
+      Update FTS           <5ms (incremental)
+      ─────────────────────────────
+      Total:               <50ms per changed file
+
+    Full initial index (748-file Rust project like Turso):
+      Without embedding:   ~5-15 seconds (tree-sitter only)
+      With embedding:      ~60-120 seconds (97% embedding time)
+
+---
+
 # The Screens
 
 Everything follows from the screens. The screens ARE the product.
@@ -990,6 +1074,17 @@ LLM pays ~200 tokens to choose, then up to 20k for ONE deep dive (not 80k for al
 - Expected breakdown: ~65% searchable code, ~10% doc comments (also searchable), ~25% overhead.
 - Lock files, binaries, generated files are file entities with total_wc but no child entities.
 - .svelte could be added if tree-sitter-svelte grammar is included (adds 70 files in iggy).
+
+## D11: Data-Driven Tree-Sitter Walker (2026-03-17, codemogger-validated)
+- Follow codemogger's imperative AST walking, not v1.6.1's .scm query files.
+- LanguageConfig struct: name, extensions, top_level_nodes, split_nodes (const, compile-time).
+- Shared walker for all languages. Classify via node.kind() → entity_type.
+- splitNodes for large containers (>150 lines → extract methods).
+- Comment detection via text inspection (/// vs // are same node type).
+- Export/decorator/template unwrapping in shared code.
+- v1.6.1's FileWordCoverage schema validates our wc model.
+- v1.6.1's 8 dependency edge types are the right set to extract.
+- Reindexing: <50ms per changed file (no embedding bottleneck).
 
 ---
 
