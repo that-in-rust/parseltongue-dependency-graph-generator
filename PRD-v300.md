@@ -223,6 +223,399 @@ For .rs code entities, same pk, same row, more columns filled in:
 
 ---
 
+# Tree-Sitter API Reference
+
+## Core Node API (what we get per node)
+
+Every tree-sitter node exposes these properties. This is the raw material for entity extraction.
+Source: tree-sitter 0.25 C/Rust API (verified via Context7 + cargo cache node-types.json).
+
+    Property/Method              Returns              Used for
+    ---------------              -------              --------
+    node.kind()                  &str                 entity_type classification
+    node.start_byte()            u32                  wc = end_byte - start_byte (→ byte count)
+    node.end_byte()              u32                  wc calculation
+    node.start_position()        { row, column }      start_line (row + 1, 1-based)
+    node.end_position()          { row, column }      end_line (row + 1, 1-based)
+    node.child_by_field_name()   Option<Node>         extract "name", "type", "trait" fields
+    node.children()              Iterator<Node>       walk all children
+    node.named_children()        Iterator<Node>       skip anonymous nodes (punctuation)
+    node.parent()                Option<Node>         walk upward
+    node.next_sibling()          Option<Node>         find adjacent doc_comments
+    node.prev_sibling()          Option<Node>         find adjacent doc_comments
+    node.is_named()              bool                 skip anonymous (keywords, brackets)
+    node.text                    &str (via bytes)     snippet extraction
+
+## Language Enumeration API (runtime node type discovery)
+
+We do NOT need to hardcode node types. The Language API lets us enumerate at runtime:
+
+    language.node_kind_count()            → total number of node kinds
+    language.node_kind_for_id(id: u16)    → name string for each id
+    language.node_kind_is_named(id: u16)  → skip anonymous nodes
+    language.field_count()                → number of named fields
+    language.field_name_for_id(id: u16)   → field name by id
+
+This means: at build time or first-run, we can generate the complete mapping table
+for every grammar version we ship. No manual maintenance.
+
+## Root Node Names Per Language
+
+    Language       Root node type         Grammar crate in Cargo.toml
+    --------       --------------         ---------------------------
+    Rust           source_file            tree-sitter-rust 0.23
+    Python         module                 tree-sitter-python 0.25
+    JavaScript     program                tree-sitter-javascript 0.25
+    TypeScript     program                tree-sitter-typescript 0.23
+    Java           program                tree-sitter-java 0.23
+    Go             source_file            tree-sitter-go 0.25
+    C              translation_unit       tree-sitter-c 0.24
+    C++            translation_unit       tree-sitter-cpp 0.23
+    C#             compilation_unit       tree-sitter-c-sharp 0.23
+    Ruby           program                tree-sitter-ruby 0.23
+    Scala          compilation_unit       tree-sitter-scala 0.24
+    PHP            program                tree-sitter-php 0.24
+    Swift          source_file            tree-sitter-swift 0.7
+    Kotlin         source_file            tree-sitter-kotlin 0.3
+
+---
+
+# Tree-Sitter Node Type → entity_type Mapping (per language)
+
+Every concrete node type that can appear as a direct child of the root node,
+mapped to our entity_type. Extracted from node-types.json files in cargo cache.
+
+Key: S = searchable (FTS), G = graph edges, C = coverage only, A = attach to next entity.
+
+## Rust (root: source_file)
+
+    tree-sitter node type        entity_type    S/G/C/A   notes
+    -------------------------    -----------    -------   -----
+    function_item                function       S
+    function_signature_item      function       S         trait fn signatures
+    struct_item                  struct         S
+    enum_item                    enum           S
+    impl_item                   impl           S         splitNodes → methods
+    trait_item                   trait          S         splitNodes → methods
+    type_item                    type_alias     S
+    const_item                   constant       S
+    static_item                  static         S
+    macro_definition             macro          S
+    mod_item                     module         S         splitNodes
+    union_item                   struct         S         treat as struct
+    foreign_mod_item             module         S         extern blocks
+    associated_type              type_alias     S
+    macro_invocation             macro          S         top-level macro calls
+    use_declaration              import         G         dependency edges
+    extern_crate_declaration     import         G         dependency edges
+    attribute_item               attribute      A         #[...], attach to next
+    inner_attribute_item         attribute      A         #![...], attach to file
+    line_comment (///)           doc_comment    C         fold into next entity FTS
+    line_comment (//)            comment        C         wc only
+    block_comment (/** */)       doc_comment    C         fold into next entity FTS
+    block_comment (/* */)        comment        C         wc only
+    empty_statement              whitespace     C
+    expression_statement         variable       C         rare at top-level
+    let_declaration              variable       C         rare at top-level
+    shebang                      comment        C
+
+    Comment detection: both /// and // are `line_comment` — inspect first chars to classify.
+    Doc markers: //! and /*! are module-level doc_comments → fold into file entity.
+
+## Python (root: module)
+
+    tree-sitter node type        entity_type    S/G/C/A   notes
+    -------------------------    -----------    -------   -----
+    function_definition          function       S
+    class_definition             class          S         splitNodes → methods
+    decorated_definition         function/class S         unwrap to inner definition
+    type_alias_statement         type_alias     S
+    expression_statement         variable       S         top-level X = 5 assignments
+    import_statement             import         G
+    import_from_statement        import         G
+    future_import_statement      import         G
+    if_statement                 comment        C         rare at module level
+    for_statement                comment        C
+    while_statement              comment        C
+    try_statement                comment        C
+    with_statement               comment        C
+    match_statement              comment        C
+    assert_statement             comment        C
+    pass_statement               comment        C
+    return_statement             comment        C
+    break_statement              comment        C
+    continue_statement           comment        C
+    raise_statement              comment        C
+    delete_statement             comment        C
+    exec_statement               comment        C
+    print_statement              comment        C
+    global_statement             comment        C
+    nonlocal_statement           comment        C
+    comment                      comment/doc    C         # vs docstring position
+
+    is_test detection: function name starts with test_ or file in tests/.
+
+## JavaScript (root: program)
+
+    tree-sitter node type            entity_type    S/G/C/A   notes
+    -------------------------        -----------    -------   -----
+    function_declaration             function       S
+    generator_function_declaration   function       S
+    class_declaration                class          S         splitNodes → methods
+    lexical_declaration              variable       S         const/let at top level
+    variable_declaration             variable       S         var at top level
+    export_statement                 (unwrap)       S         unwrap to inner declaration
+    expression_statement             variable       S         module.exports = ...
+    import_statement                 import         G
+    if_statement                     comment        C
+    for_statement                    comment        C
+    for_in_statement                 comment        C
+    while_statement                  comment        C
+    do_statement                     comment        C
+    switch_statement                 comment        C
+    try_statement                    comment        C
+    with_statement                   comment        C
+    return_statement                 comment        C
+    throw_statement                  comment        C
+    break_statement                  comment        C
+    continue_statement               comment        C
+    debugger_statement               comment        C
+    labeled_statement                comment        C
+    statement_block                  comment        C
+    empty_statement                  whitespace     C
+    comment (/** */)                 doc_comment    C         JSDoc → fold into next entity
+    comment (//)                     comment        C
+    hash_bang_line                   comment        C         #!/usr/bin/env node
+
+    is_test: inside describe()/it()/test() blocks, or file matches *.test.* / *.spec.*.
+
+## TypeScript (root: program)
+
+    Same as JavaScript, plus:
+
+    tree-sitter node type            entity_type    S/G/C/A   notes
+    -------------------------        -----------    -------   -----
+    interface_declaration            interface      S
+    type_alias_declaration           type_alias     S
+    enum_declaration                 enum           S
+    abstract_class_declaration       class          S         splitNodes
+    using_declaration                variable       S
+
+## Java (root: program)
+
+    tree-sitter node type                entity_type    S/G/C/A   notes
+    -------------------------            -----------    -------   -----
+    class_declaration                    class          S         splitNodes → methods
+    interface_declaration                interface      S         splitNodes
+    enum_declaration                     enum           S         splitNodes
+    record_declaration                   record         S
+    annotation_interface_declaration     interface      S
+    import_declaration                   import         G
+    package_declaration                  module         S
+    block_comment (/** */)               doc_comment    C         Javadoc → fold into next
+    block_comment (/* */)                comment        C
+    line_comment                         comment        C
+
+    is_test: @Test annotation on method.
+
+## Go (root: source_file)
+
+    tree-sitter node type        entity_type    S/G/C/A   notes
+    -------------------------    -----------    -------   -----
+    function_declaration         function       S
+    method_declaration           method         S         receiver.Type.Name
+    type_declaration             (inspect)      S         contains struct/interface/type_alias
+    const_declaration            constant       S
+    var_declaration              variable       S
+    import_declaration           import         G
+    package_clause               module         S
+    comment                      comment/doc    C         // before func = doc_comment
+
+    type_declaration unwrapping: inspect child type_spec to determine struct vs interface vs type_alias.
+    is_test: function starts with Test in *_test.go files.
+
+## C (root: translation_unit)
+
+    tree-sitter node type        entity_type    S/G/C/A   notes
+    -------------------------    -----------    -------   -----
+    function_definition          function       S
+    declaration                  variable       S         top-level vars, externs
+    type_definition              type_alias     S         typedef
+    struct_specifier             struct         S
+    enum_specifier               enum           S
+    union_specifier              struct         S         treat as struct
+    preproc_def                  macro          S         #define VALUE
+    preproc_function_def         macro          S         #define FUNC(x)
+    preproc_include              import         G         #include
+    preproc_if                   attribute      C
+    preproc_ifdef                attribute      C
+    preproc_call                 macro          C
+    linkage_specification        module         S         extern "C" { }
+    comment                      comment        C
+
+## C++ (root: translation_unit)
+
+    Same as C, plus:
+
+    tree-sitter node type            entity_type    S/G/C/A   notes
+    -------------------------        -----------    -------   -----
+    class_specifier                  class          S         splitNodes → methods
+    namespace_definition             namespace      S         splitNodes
+    template_declaration             (unwrap)       S         unwrap to inner class/fn
+    using_declaration                import         G
+    namespace_alias_definition       type_alias     S
+    concept_definition               trait          S         C++20 concepts ≈ traits
+    alias_declaration                type_alias     S         using X = Y
+    static_assert_declaration        comment        C
+
+## C# (root: compilation_unit)
+
+    tree-sitter node type                entity_type    S/G/C/A   notes
+    -------------------------            -----------    -------   -----
+    class_declaration                    class          S         splitNodes
+    interface_declaration                interface      S
+    struct_declaration                   struct         S
+    enum_declaration                     enum           S
+    record_declaration                   record         S
+    namespace_declaration                namespace      S         splitNodes
+    file_scoped_namespace_declaration    namespace      S
+    delegate_declaration                 type_alias     S
+    method_declaration                   method         S
+    constructor_declaration              constructor    S
+    destructor_declaration               method         S
+    property_declaration                 variable       S
+    field_declaration                    variable       S
+    event_declaration                    variable       S
+    event_field_declaration              variable       S
+    indexer_declaration                  method         S
+    operator_declaration                 method         S
+    conversion_operator_declaration      method         S
+    using_directive                      import         G
+    extern_alias_directive               import         G
+    global_attribute                     attribute      A
+    comment                              comment        C
+
+    is_test: [Test] or [TestMethod] attribute.
+
+## Ruby (root: program)
+
+    tree-sitter node type        entity_type    S/G/C/A   notes
+    -------------------------    -----------    -------   -----
+    module                       module         S         splitNodes
+    class                        class          S         splitNodes
+    method                       function       S
+    singleton_method             function       S         self.method
+    assignment                   variable       S         top-level CONST = ...
+    alias                        type_alias     S
+    call                         variable       C         top-level method calls (rare)
+    begin_block                  comment        C
+    end_block                    comment        C
+    undef                        comment        C
+    comment                      comment/doc    C         # comment (RDoc before def = doc)
+
+## Scala (root: compilation_unit)
+
+    tree-sitter node type        entity_type    S/G/C/A   notes
+    -------------------------    -----------    -------   -----
+    class_definition             class          S         splitNodes
+    object_definition            object         S         splitNodes
+    trait_definition             trait          S         splitNodes
+    function_definition          function       S
+    function_declaration         function       S
+    val_definition               constant       S
+    val_declaration              constant       S
+    var_definition               variable       S
+    var_declaration              variable       S
+    type_definition              type_alias     S
+    enum_definition              enum           S
+    given_definition             impl           S         Scala 3 given ≈ Rust impl
+    extension_definition         impl           S         Scala 3 extension ≈ Rust impl
+    import_declaration           import         G
+    export_declaration           import         G
+    package_clause               module         S
+    package_object               module         S
+    block_comment                comment        C
+    comment                      comment        C         Scaladoc (/** */) = doc_comment
+
+---
+
+# Tree-Sitter Implementation Notes
+
+## 1. Comment Detection Requires Text Inspection
+
+Tree-sitter does NOT distinguish doc comments from plain comments at the node type level.
+Both `///` and `//` parse as `line_comment` in Rust. Both `/** */` and `/* */` parse as
+`block_comment`. We must inspect the first characters of the comment text:
+
+    Rust:    /// or //! → doc_comment. // → comment. /** */ or /*! */ → doc_comment.
+    Python:  Docstrings are expression_statement containing a string, not comment nodes.
+    JS/TS:   /** */ → JSDoc (doc_comment). // and /* */ → comment.
+    Java:    /** */ → Javadoc (doc_comment). // and /* */ → comment.
+    Go:      // comment immediately before a declaration → doc_comment (by convention).
+    Ruby:    # comment before def/class → RDoc (doc_comment, by convention).
+
+## 2. Nodes That Need Unwrapping
+
+Some root children wrap the real entity. We unwrap before classifying:
+
+    export_statement (JS/TS)       → inner is class/function/variable declaration
+    decorated_definition (Python)  → inner is function_definition or class_definition
+    template_declaration (C++)     → inner is class/function/struct
+    type_declaration (Go)          → inner type_spec reveals struct vs interface vs alias
+
+Codemogger already implements all four unwrapping patterns in treesitter.ts.
+
+## 3. splitNodes: One Level Deeper for Large Containers
+
+When an entity exceeds ~150 lines, we split into sub-items (methods within class/impl).
+Only one level deep — never recurse into function bodies.
+
+    Language    Split targets
+    --------    -------------
+    Rust        impl_item, trait_item, mod_item
+    Python      class_definition
+    JS          class_declaration
+    TS          class_declaration, abstract_class_declaration, interface_declaration
+    Java        class_declaration, interface_declaration, enum_declaration
+    Go          (none — Go has flat top-level declarations)
+    C           (none)
+    C++         class_specifier, struct_specifier, namespace_definition
+    C#          class_declaration, interface_declaration, struct_declaration, namespace_declaration
+    Ruby        module, class
+    Scala       class_definition, object_definition, trait_definition
+
+Body wrapper nodes to walk into: class_body, declaration_list, field_declaration_list,
+body_statement, block (varies by language).
+
+## 4. Module-Level Only Rule
+
+We only extract entities from root node children (+ one splitNodes level).
+Anything nested inside a function body is an implementation detail:
+
+    YES: top-level fn, struct, class, impl, trait, module
+    YES: methods inside impl/class (via splitNodes — one level deep)
+    YES: items inside mod tests { } (module-level within test module)
+    NO:  closure inside function body
+    NO:  fn nested inside another fn
+    NO:  struct/enum inside function body
+    NO:  block expression items
+
+This matches codemogger's approach: processNode() only walks tree.rootNode.children,
+and splitLargeNode() only goes one level into body wrappers.
+
+## 5. is_test Detection (per language)
+
+    Rust:      #[test] or #[cfg(test)] attribute on function
+    Python:    function name starts with test_ or file in tests/
+    JS/TS:     inside describe()/it()/test(), or file matches *.test.* / *.spec.*
+    Go:        function starts with Test in *_test.go files
+    Java:      @Test annotation
+    C#:        [Test] or [TestMethod] attribute
+    Ruby:      method inside RSpec describe block, or file in spec/
+    Scala:     extends FunSuite/FlatSpec, or method annotated with test
+
+---
+
 # The Screens
 
 Everything follows from the screens. The screens ARE the product.
