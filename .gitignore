@@ -26,7 +26,9 @@ demo-walkthroughs/*/step*.json
 demo-walkthroughs/*/*.db/
 demo-walkthroughs/*/contexts/
 parseltongue-v*-macos-arm64
+# Ignore parseltongue binary but not parseltongue/ crate directory
 /parseltongue
+!/parseltongue/
 
 # Workspace directories (timestamped analysis outputs) - anchored to root
 /parseltongue[0-9]*/

@@ -1,0 +1,19 @@
+[package]
+name = "parseltongue"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "parseltongue"
+path = "src/main.rs"
+
+[dependencies]
+parseltongue-core.workspace = true
+pt01-codebase-ingestion-engine.workspace = true
+pt08-http-query-api-server.workspace = true
+anyhow.workspace = true
+clap.workspace = true
+tokio.workspace = true
+tracing.workspace = true
