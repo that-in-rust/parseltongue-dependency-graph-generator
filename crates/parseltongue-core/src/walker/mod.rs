@@ -1,5 +1,8 @@
 pub mod directory_tree_scanner;
+pub mod doc_comment_folding_logic;
 pub mod language_config_registry;
+pub mod treesitter_entity_extractor;
+pub mod word_count_coverage_tracker;
 
 #[cfg(test)]
 mod tests {
