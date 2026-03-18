@@ -94,6 +94,21 @@ impl TursoStorageClient {
         Ok(id)
     }
 
+    /// Return the id of the first codebase in the database, or `None` if
+    /// no codebases exist yet.
+    pub async fn get_first_codebase_id(&self) -> Result<Option<i64>> {
+        let mut rows = self
+            .conn
+            .query("SELECT id FROM codebases ORDER BY id ASC LIMIT 1", ())
+            .await?;
+
+        if let Some(row) = rows.next().await? {
+            let id: i64 = row.get(0)?;
+            return Ok(Some(id));
+        }
+        Ok(None)
+    }
+
     // ------------------------------------------------------------------
     // 4. File hash lookup
     // ------------------------------------------------------------------

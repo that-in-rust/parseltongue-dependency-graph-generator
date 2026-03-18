@@ -29,7 +29,12 @@ pub struct SharedServerAppState {
 /// search indexes, and entity visibility map.
 pub async fn build_server_app_state(db_path: &str) -> Result<Arc<SharedServerAppState>> {
     let store = TursoStorageClient::open_database_connection_path(db_path).await?;
-    let codebase_id = store.get_or_create_codebase_entry("default").await?;
+
+    // Use the first existing codebase if one exists, otherwise create a "default" entry.
+    let codebase_id = match store.get_first_codebase_id().await? {
+        Some(id) => id,
+        None => store.get_or_create_codebase_entry("default").await?,
+    };
 
     let entities = store.get_all_entity_records(codebase_id).await?;
     let edges = store.get_all_edge_records(codebase_id).await?;
