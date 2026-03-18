@@ -72,3 +72,4 @@ parseltongue-core = { path = "crates/parseltongue-core" }
 pt01-codebase-ingestion-engine = { path = "crates/pt01-codebase-ingestion-engine" }
 pt08-http-query-api-server = { path = "crates/pt08-http-query-api-server" }
 pt09-rustc-compiler-enrichment = { path = "crates/pt09-rustc-compiler-enrichment" }
+pt10-tauri-workspace-manager = { path = "crates/pt10-tauri-workspace-manager" }

@@ -1602,6 +1602,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "pt10-tauri-workspace-manager"
+version = "3.0.0"
+dependencies = [
+ "anyhow",
+ "chrono",
+ "parseltongue-core",
+ "pt01-codebase-ingestion-engine",
+ "pt08-http-query-api-server",
+ "serde",
+ "serde_json",
+ "tempfile",
+ "tokio",
+ "tracing",
+ "uuid",
+ "walkdir",
+]
+
+[[package]]
 name = "quote"
 version = "1.0.45"
 source = "registry+https://github.com/rust-lang/crates.io-index"

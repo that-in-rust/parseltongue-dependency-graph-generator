@@ -1,0 +1,8 @@
+{
+  "build": { "distDir": "../dist", "devPath": "http://localhost:5173" },
+  "package": { "productName": "Parseltongue", "version": "3.0.0" },
+  "tauri": {
+    "allowlist": { "all": true },
+    "windows": [{ "title": "Parseltongue", "width": 1200, "height": 800 }]
+  }
+}

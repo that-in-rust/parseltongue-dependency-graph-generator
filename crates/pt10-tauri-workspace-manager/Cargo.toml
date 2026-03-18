@@ -1,0 +1,21 @@
+[package]
+name = "pt10-tauri-workspace-manager"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+parseltongue-core = { workspace = true }
+pt01-codebase-ingestion-engine = { workspace = true }
+pt08-http-query-api-server = { workspace = true }
+tokio = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+anyhow = { workspace = true }
+tracing = { workspace = true }
+chrono = { workspace = true }
+uuid = { workspace = true }
+walkdir = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }
+tokio = { workspace = true, features = ["test-util"] }
