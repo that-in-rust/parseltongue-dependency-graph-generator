@@ -38,8 +38,14 @@ async fn main() -> Result<()> {
                 result.duration_ms
             );
         }
-        CliCommand::Serve { db: _, port } => {
-            println!("Server not yet implemented (port {})", port);
+        CliCommand::Serve { db, port } => {
+            let state =
+                pt08_http_query_api_server::shared_server_app_state::build_server_app_state(&db)
+                    .await?;
+            pt08_http_query_api_server::http_server_startup_runner::start_http_server_listener(
+                state, port,
+            )
+            .await?;
         }
         CliCommand::Enrich { path: _, db: _ } => {
             println!("Enrichment not yet implemented");

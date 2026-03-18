@@ -1577,12 +1577,14 @@ version = "3.0.0"
 dependencies = [
  "anyhow",
  "axum 0.8.8",
+ "http-body-util",
  "parseltongue-core",
  "serde",
  "serde_json",
  "tempfile",
  "tokio",
  "tokio-test",
+ "tower 0.5.3",
  "tower-http 0.6.8",
  "tracing",
 ]

@@ -19,3 +19,5 @@ tracing.workspace = true
 tempfile.workspace = true
 tokio-test.workspace = true
 tokio = { workspace = true, features = ["test-util"] }
+tower.workspace = true
+http-body-util.workspace = true
