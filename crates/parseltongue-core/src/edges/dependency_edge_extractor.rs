@@ -92,30 +92,41 @@ pub fn extract_edges_from_source(
 
 /// Find a tree-sitter node whose line range matches (start_row, end_row) (0-based).
 ///
-/// Walks the tree looking for the most specific (deepest) node that spans
-/// exactly the given line range.
+/// Walks the tree looking for the widest (most bytes) node that spans exactly
+/// the given line range. This ensures we get the full entity node (e.g.
+/// `function_item`) rather than a leaf that happens to share the same lines.
 fn find_node_by_line_range<'a>(root: &Node<'a>, start_row: usize, end_row: usize) -> Option<Node<'a>> {
     let mut best: Option<Node<'a>> = None;
+    let mut best_size: usize = 0;
 
-    fn search<'b>(node: &Node<'b>, start_row: usize, end_row: usize, best: &mut Option<Node<'b>>) {
+    fn search<'b>(
+        node: &Node<'b>,
+        start_row: usize,
+        end_row: usize,
+        best: &mut Option<Node<'b>>,
+        best_size: &mut usize,
+    ) {
         let n_start = node.start_position().row;
         let n_end = node.end_position().row;
 
         if n_start == start_row && n_end == end_row {
-            // Prefer deeper matches (overwrite).
-            *best = Some(*node);
+            let size = node.end_byte() - node.start_byte();
+            if size > *best_size {
+                *best = Some(*node);
+                *best_size = size;
+            }
         }
 
         // Only descend if the node contains the target range.
         if n_start <= start_row && n_end >= end_row {
             let mut cursor = node.walk();
             for child in node.children(&mut cursor) {
-                search(&child, start_row, end_row, best);
+                search(&child, start_row, end_row, best, best_size);
             }
         }
     }
 
-    search(root, start_row, end_row, &mut best);
+    search(root, start_row, end_row, &mut best, &mut best_size);
     best
 }
 
@@ -138,7 +149,7 @@ fn walk_for_edges(
 
     match kind {
         // --- Calls ---
-        "call_expression" => {
+        "call_expression" | "call" => {
             if let Some(target_name) = extract_call_target(node, content, lang) {
                 maybe_add_edge(
                     edges,
@@ -422,7 +433,6 @@ fn maybe_add_edge(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::entity_type_definitions::{EntityPrimaryKeyLocation, EntityTypeClassification};
     use crate::walker::language_config_registry::get_language_config;
     use crate::walker::treesitter_entity_extractor::extract_entities_from_source;
 
@@ -445,11 +455,7 @@ mod tests {
     // ------------------------------------------------------------------
     #[test]
     fn test_rust_call_edges() {
-        let source = r#"
-fn add(a: i32, b: i32) -> i32 { a + b }
-fn helper() -> i32 { 42 }
-fn main() { add(1, 2); helper(); }
-"#;
+        let source = "fn add(a: i32, b: i32) -> i32 { a + b }\nfn helper() -> i32 { 42 }\nfn main() { add(1, 2); helper(); }";
         let (_entities, edges) = extract_test_edges("test.rs", source, "rust");
 
         let call_edges: Vec<_> = edges
