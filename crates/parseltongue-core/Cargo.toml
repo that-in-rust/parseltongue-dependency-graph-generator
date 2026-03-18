@@ -17,6 +17,7 @@ libsql.workspace = true
 sha2.workspace = true
 walkdir.workspace = true
 tree-sitter.workspace = true
+tree-sitter-language.workspace = true
 tree-sitter-rust.workspace = true
 tree-sitter-python.workspace = true
 tree-sitter-javascript.workspace = true

@@ -42,6 +42,7 @@ tower-http = { version = "0.6", features = ["cors"] }
 
 # Parsing dependencies
 tree-sitter = "0.25"
+tree-sitter-language = "0.1"
 tree-sitter-rust = "0.23"
 tree-sitter-python = "0.25"
 tree-sitter-javascript = "0.25"
@@ -68,3 +69,4 @@ tokio-test = "0.4"
 parseltongue-core = { path = "crates/parseltongue-core" }
 pt01-codebase-ingestion-engine = { path = "crates/pt01-codebase-ingestion-engine" }
 pt08-http-query-api-server = { path = "crates/pt08-http-query-api-server" }
+pt09-rustc-compiler-enrichment = { path = "crates/pt09-rustc-compiler-enrichment" }

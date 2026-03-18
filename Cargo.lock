@@ -1395,6 +1395,7 @@ dependencies = [
  "tree-sitter-java",
  "tree-sitter-javascript",
  "tree-sitter-kotlin",
+ "tree-sitter-language",
  "tree-sitter-php",
  "tree-sitter-python",
  "tree-sitter-ruby",
@@ -1572,6 +1573,18 @@ dependencies = [
  "tokio",
  "tokio-test",
  "tower-http 0.6.8",
+ "tracing",
+]
+
+[[package]]
+name = "pt09-rustc-compiler-enrichment"
+version = "3.0.0"
+dependencies = [
+ "anyhow",
+ "parseltongue-core",
+ "serde",
+ "serde_json",
+ "tokio",
  "tracing",
 ]
 

@@ -2,3 +2,4 @@
 
 pub mod entity_type_definitions;
 pub mod storage;
+pub mod walker;
