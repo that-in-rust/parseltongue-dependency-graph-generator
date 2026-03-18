@@ -13,7 +13,7 @@ use parseltongue_core::entity_type_definitions::{
 };
 use parseltongue_core::storage::turso_storage_client::TursoStorageClient;
 use parseltongue_core::walker::directory_tree_scanner::{
-    scan_directory_tree_recursive, FolderEntityRecord, ScannedFileRecord,
+    scan_directory_tree_recursive, ScannedFileRecord,
 };
 use parseltongue_core::walker::doc_comment_folding_logic::fold_doc_comments_into_entities;
 use parseltongue_core::walker::language_config_registry::{
