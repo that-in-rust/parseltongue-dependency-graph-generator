@@ -10,6 +10,7 @@ parseltongue-core.workspace = true
 anyhow.workspace = true
 clap.workspace = true
 indicatif.workspace = true
+serde.workspace = true
 tokio.workspace = true
 tracing.workspace = true
 

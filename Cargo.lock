@@ -1554,6 +1554,7 @@ dependencies = [
  "clap",
  "indicatif",
  "parseltongue-core",
+ "serde",
  "tempfile",
  "tokio",
  "tokio-test",
