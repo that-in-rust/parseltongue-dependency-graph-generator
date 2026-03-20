@@ -4,92 +4,99 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Parseltongue v3.0 is a code analysis toolkit that parses codebases into a graph database for LLM-optimized querying. Core value: 99% token reduction (2-5K tokens vs 500K raw dumps), 31x faster than grep.
+Parseltongue is a code analysis toolkit that parses codebases into a graph database (CozoDB) for efficient LLM-optimized querying. Core value: 99% token reduction (2-5K tokens vs 500K raw dumps), 31x faster than grep.
 
-**Version**: 3.0.0 (libsql storage, workspace architecture, 20 HTTP endpoints)
-**Languages Supported**: Rust, Python, JavaScript, TypeScript, Go, Java, C, C++, Ruby, PHP, C#, Swift, Kotlin, Scala
-**Storage**: libsql (no CozoDB, no rusqlite)
-
-## Workspace Structure
-
-```
-parseltongue/                            # Root binary – CLI dispatcher
-crates/
-├── parseltongue-core/                   # Shared types, traits, storage, tree-sitter parsing
-├── pt01-codebase-ingestion-engine/      # Crate 1: Ingest codebase -> libsql
-├── pt08-http-query-api-server/          # Crate 8: HTTP REST API server (Axum)
-├── pt09-rustc-compiler-enrichment/      # Crate 9: rustc_private enrichment (nightly only)
-└── pt10-tauri-workspace-manager/        # Crate 10: Tauri desktop workspace manager
-```
-
-**Dependency Flow**: `parseltongue` (binary) -> `pt01`/`pt08` (tools) -> `parseltongue-core` (shared)
+**Version**: 1.6.1 (HTTP-only architecture with always-on file watching + 7 graph analysis algorithms)
+**Languages Supported**: Rust, Python, JavaScript, TypeScript, Go, Java, C, C++, Ruby, PHP, C#, Swift
 
 ## Build and Test Commands
 
 ```bash
-# Build (stable toolchain – excludes pt09 which requires nightly)
-cargo build --workspace --exclude pt09-rustc-compiler-enrichment
+# Build
+cargo build --release
 
-# Check pt09 (requires nightly for rustc_private)
-cargo +nightly check -p pt09-rustc-compiler-enrichment
+# Run all tests
+cargo test --all
 
-# Run all tests (stable toolchain)
-cargo test --workspace --exclude pt09-rustc-compiler-enrichment
-
-# Run tests for a specific crate
+# Run tests for specific crate
 cargo test -p parseltongue-core
-cargo test -p pt01-codebase-ingestion-engine
-cargo test -p pt08-http-query-api-server
+cargo test -p pt01-folder-to-cozodb-streamer
+cargo test -p pt08-http-code-query-server
+
+# Check for TODOs/stubs (must be clean before commit)
+grep -r "TODO\|STUB\|PLACEHOLDER" --include="*.rs" crates/
+
+# Clean build artifacts (do this regularly)
+cargo clean
 ```
 
-## CLI Usage
+## CLI Usage (HTTP-Only Workflow)
 
 ```bash
-# Ingest a codebase (creates .parseltongue/index.db by default)
-parseltongue ingest <path>
-parseltongue ingest <path> --db custom/path.db
+# Step 1: Ingest codebase (auto-creates parseltongueTIMESTAMP/analysis.db)
+parseltongue pt01-folder-to-cozodb-streamer .
+# Output shows: Workspace: parseltongue20251201125000
+#               Database: rocksdb:parseltongue20251201125000/analysis.db
 
-# Start HTTP query server (default port 8080)
-parseltongue serve --db <path-to-db> --port 8080
+# Step 2: Start HTTP server using the printed path (default port: 7777)
+parseltongue pt08-http-code-query-server \
+  --db "rocksdb:parseltongue20251201125000/analysis.db"
 
-# Rustc enrichment (nightly only)
-parseltongue enrich <path> --db <path-to-db>
+# Or with custom port:
+parseltongue pt08-http-code-query-server \
+  --db "rocksdb:parseltongue20251201125000/analysis.db" \
+  --port 8080
+
+# Step 3: Query via REST API
+curl http://localhost:7777/server-health-check-status
+curl http://localhost:7777/codebase-statistics-overview-summary
+curl http://localhost:7777/code-entities-list-all
+curl "http://localhost:7777/code-entities-search-fuzzy?q=handle"
+curl "http://localhost:7777/blast-radius-impact-analysis?entity=rust:fn:main&hops=2"
 ```
 
-## HTTP Server Endpoints (20 Total)
+**Note**: pt01 always creates a timestamped workspace folder - no `--db` flag needed.
 
-| # | Endpoint | Description |
-|---|----------|-------------|
-| 1 | `/server-health-check-status` | Health check |
-| 2 | `/codebase-statistics-overview-summary` | Stats summary |
-| 3 | `/api-reference-documentation-help` | API docs |
-| 4 | `/code-entities-list-all` | All entities |
-| 5 | `/code-entities-search-fuzzy?q=pattern` | Fuzzy search |
-| 6 | `/code-entity-detail-view/{pk}` | Entity detail by primary key |
-| 7 | `/dependency-edges-list-all` | All dependency edges |
-| 8 | `/strongly-connected-components-analysis` | Tarjan SCC detection |
-| 9 | `/leiden-community-detection-clusters` | Leiden community clustering |
-| 10 | `/centrality-measures-entity-ranking?method=pagerank` | PageRank/Betweenness centrality |
-| 11 | `/kcore-decomposition-layering-analysis?k=N` | K-core graph layering |
-| 12 | `/entropy-complexity-measurement-scores?entity=X` | Shannon entropy |
-| 13 | `/coupling-cohesion-metrics-suite?entity=X` | CK metrics (CBO/LCOM/RFC/WMC) |
-| 14 | `/technical-debt-sqale-scoring?entity=X` | SQALE tech debt (ISO 25010) |
-| 15 | `/ingestion-coverage-folder-report?depth=N` | Ingestion coverage |
-| 16 | `/smart-context-token-budget?focus=X&tokens=N` | LLM context budget |
-| 17 | `/complexity-hotspots-ranking-view?top=N` | Coupling hotspots |
-| 18 | `/circular-dependency-detection-scan` | Cycle detection |
-| 19 | `/semantic-cluster-grouping-list` | Module clusters |
-| 20 | `/query?q=...` | Natural-language journey query |
+## HTTP Server Endpoints (22 Total)
 
-## Key Technical Decisions
+| Category | Endpoint | Description |
+|----------|----------|-------------|
+| Core | `/server-health-check-status` | Health check |
+| Core | `/codebase-statistics-overview-summary` | Stats summary |
+| Core | `/api-reference-documentation-help` | API docs |
+| Entity | `/code-entities-list-all` | All entities |
+| Entity | `/code-entity-detail-view/{key}` | Entity detail |
+| Entity | `/code-entities-search-fuzzy?q=pattern` | Fuzzy search |
+| Graph | `/dependency-edges-list-all` | All edges |
+| Graph | `/reverse-callers-query-graph?entity=X` | Who calls X? |
+| Graph | `/forward-callees-query-graph?entity=X` | What does X call? |
+| Analysis | `/blast-radius-impact-analysis?entity=X&hops=N` | Impact analysis |
+| Analysis | `/circular-dependency-detection-scan` | Cycle detection |
+| Analysis | `/complexity-hotspots-ranking-view?top=N` | Coupling hotspots |
+| Analysis | `/semantic-cluster-grouping-list` | Module clusters |
+| Advanced | `/smart-context-token-budget?focus=X&tokens=N` | LLM context |
+| Graph v1.6 | `/strongly-connected-components-analysis` | Tarjan SCC detection |
+| Graph v1.6 | `/technical-debt-sqale-scoring?entity=X` | SQALE tech debt (ISO 25010) |
+| Graph v1.6 | `/kcore-decomposition-layering-analysis?k=N` | K-core graph layering |
+| Graph v1.6 | `/centrality-measures-entity-ranking?method=pagerank` | PageRank/Betweenness |
+| Graph v1.6 | `/entropy-complexity-measurement-scores?entity=X` | Shannon entropy |
+| Graph v1.6 | `/coupling-cohesion-metrics-suite?entity=X` | CK metrics (CBO/LCOM/RFC/WMC) |
+| Graph v1.6 | `/leiden-community-detection-clusters` | Leiden community clustering |
+| Coverage | `/ingestion-coverage-folder-report?depth=N` | Ingestion coverage |
 
-- **Storage**: libsql only — no CozoDB, no rusqlite
-- **Primary key format**: `path:start:end` (file path, start line, end line)
-- **Search**: 4-signal Reciprocal Rank Fusion (RRF)
-- **CPU-only**: no embeddings, no GPU dependencies
-- **Nightly isolation**: `pt09-rustc-compiler-enrichment` requires `rustc_private` and is always excluded from stable builds
+## Workspace Architecture
 
-## Naming Conventions
+```
+crates/
+├── parseltongue/                        # CLI binary - dispatches to tools
+├── parseltongue-core/                   # Shared types, traits, storage, tree-sitter parsing
+├── pt01-folder-to-cozodb-streamer/      # Tool 1: Ingest codebase -> CozoDB
+└── pt08-http-code-query-server/         # Tool 8: HTTP REST API server
+```
+
+**Dependency Flow**: `parseltongue` (binary) -> `pt01`/`pt08` (tools) -> `parseltongue-core` (shared)
+
+## Naming Conventions (Critical)
 
 **FOUR-WORD NAMING**: All function/crate/command names must be exactly 4 words.
 
@@ -97,19 +104,14 @@ parseltongue enrich <path> --db <path-to-db>
 // Functions: underscore-separated
 filter_implementation_entities_only()    // Good
 render_box_with_title_unicode()          // Good
-filter_entities()                        // Bad – too short
+filter_entities()                        // Bad - Too short
 
 // Crates: hyphen-separated
-pt01-codebase-ingestion-engine           // Good
-pt08-http-query-api-server               // Good
+pt01-folder-to-cozodb-streamer           // Good
+pt08-http-code-query-server              // Good
 ```
 
 **Pattern**: `verb_constraint_target_qualifier()`
-
-## Error Handling
-
-- **Libraries** (`parseltongue-core`): Use `thiserror` for structured errors
-- **Applications** (CLI/tools): Use `anyhow` for context
 
 ## TDD Workflow
 
@@ -119,13 +121,29 @@ Follow STUB -> RED -> GREEN -> REFACTOR cycle:
 3. Minimal implementation to pass
 4. Refactor without breaking tests
 
-## Test Fixtures
+## Error Handling
 
-- `test-fixtures-preV200/` — pre-v2.0 test fixture files (per-language, per-pattern)
-- `tests-preV200/e2e_workspace/` — end-to-end workspace integration tests
+- **Libraries** (`parseltongue-core`): Use `thiserror` for structured errors
+- **Applications** (CLI/tools): Use `anyhow` for context
+
+## Layered Architecture
+
+- **L1 Core**: Ownership, traits, Result/Option, RAII (no_std compatible)
+- **L2 Standard**: Collections, iterators, Arc/Rc, Send/Sync
+- **L3 External**: Async/await (Tokio), Serde, CozoDB, Axum
 
 ## Version Increment Rules
 
 - Each version = ONE complete feature, end-to-end working
 - Zero TODOs/stubs in commits
 - All tests passing before commit
+
+## Database Format
+
+For `pt08-http-code-query-server`, always use RocksDB prefix:
+```bash
+--db "rocksdb:parseltongue20251201/analysis.db"    # Good
+--db "parseltongue20251201/analysis.db"            # Bad - missing prefix
+```
+
+Note: `pt01-folder-to-cozodb-streamer` auto-creates the database - just copy the path it prints.
