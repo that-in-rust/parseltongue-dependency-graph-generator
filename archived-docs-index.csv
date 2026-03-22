@@ -1,0 +1,1138 @@
+filepath,line_count,topic,summary,utility
+archived-docs/ACTIVE-Reference/current-codebase-graph-orientation-20260308.md,174,graph algorithms,Current Codebase Graph Orientation - 2026-03-08,HIGH
+archived-docs/Notes20260317.md,1137,code analysis,Parseltongue: Rust LLM Companion,MEDIUM
+archived-docs/PRD-v300.md,1897,PRD,Parseltongue v3.0,HIGH
+archived-docs/debates/2026-03-09-v200-compiler-truth-storage.md,124,architecture,Debate: Where should rich Rust compiler information live in Parseltongue v200?,HIGH
+archived-docs/journey-of-parseltongue/how-cozodb-connects-relations.md,179,user journey,How CozoDB Connects Relations (ELI5),HIGH
+archived-docs/journey-of-parseltongue/v160-v165-release-notes.md,166,user journey,Release Notes: v1.6.0 through v1.6.5,HIGH
+archived-docs/parseltongue-code-graph-db/embedded_code_graph_db_thesis_20260309.md,572,thesis,Embedded Code Graph Database Thesis,HIGH
+archived-docs/plans/2026-03-20-v300-executable-spec-v2.md,422,implementation plan,Executable Spec v2: Complete Parseltongue v300,HIGH
+archived-docs/plans/2026-03-20-v300-executable-spec-v3.md,564,implementation plan,Executable Spec v3: Complete Parseltongue v300 — Iteration A,HIGH
+archived-docs/plans/2026-03-21-architecture-truth-table.md,150,implementation plan,v300 Architecture Truth Table,HIGH
+archived-docs/pre202602/ACTIVE-PRD/2026-03-02-code-understanding-domain-thesis-design.md,236,thesis,Code-Understanding Domain Thesis - Design Document,HIGH
+archived-docs/pre202602/ACTIVE-PRD/2026-03-02-code-understanding-domain-thesis.md,766,thesis,Code-Understanding Domain Thesis,HIGH
+archived-docs/pre202602/ACTIVE-PRD/2026-03-02-exhaustive-research-journal.md,973,research,EXHAUSTIVE Research Journal: Code-Understanding Domain Thesis,HIGH
+archived-docs/pre202602/ACTIVE-PRD/2026-03-02-research-implementation-plan.md,1186,implementation plan,Code-Understanding Domain Thesis - Implementation Plan,HIGH
+archived-docs/pre202602/ACTIVE-PRD/2026-03-02-research-journal.md,452,research,Research Journal: Code-Understanding Domain Thesis,HIGH
+archived-docs/pre202602/ACTIVE-PRD/ES-V200-Decision-log-01.md,1067,decision log,v200-Decision-log-01,HIGH
+archived-docs/pre202602/ACTIVE-PRD/Parseltongue-Journal-20260220.md,1122,code analysis,I am trying to build Parseltongue v2.0.0. PRD,HIGH
+archived-docs/pre202602/ACTIVE-PRD/V200-context-query-converge-executable-spec.md,216,spec,V200 Context Query Converge - Executable Spec,HIGH
+archived-docs/pre202602/ACTIVE-PRD/V216-PRD.md,91,PRD,V216 - PRD - Parseltongue reborn as a Rust LLM companion,HIGH
+archived-docs/pre202602/ACTIVE-PRD/code-cluster-01-user-journey.md,239,user journey,Parseltongue: Replace Grep for Code,HIGH
+archived-docs/pre202602/ACTIVE-PRD/code-cluster-01-workflow.md,328,workflow,Code Cluster 01 Workflow - The 5-Phase Graph-Based Query Flow,HIGH
+archived-docs/pre202602/ACTIVE-PRD/parseltongue-compiler-endpoints-master.md,1649,API design,Parseltongue Compiler Endpoints — Master Reference,HIGH
+archived-docs/pre202602/ACTIVE-PRD/research_mir_apis.md,1790,research,Rust Compiler MIR APIs: Control Flow & Data Flow Analysis Reference,HIGH
+archived-docs/pre202602/ACTIVE-PRD/research_polonius_smir_plugin.md,829,research,"Rust Compiler Ecosystem Research: Polonius, Stable MIR, rustc_plugin, and Charon",HIGH
+archived-docs/pre202602/ACTIVE-PRD/research_ra_ap_apis.md,1730,research,rust-analyzer `ra_ap_*` API Research,HIGH
+archived-docs/pre202602/ACTIVE-PRD/research_rustc_internals.md,1594,research,rustc Internals Research: APIs for Building a Rich Code Graph,HIGH
+archived-docs/pre202602/ACTIVE-Reference/06-LUCENE-ES-FOR-DATA-FLOW-ANALYSIS.md,531,CozoDB queries,Can Lucene/Elasticsearch Help with Data Flow/Control Flow Analysis?,HIGH
+archived-docs/pre202602/ACTIVE-Reference/07-ARCHITECTURE-RUBBER-DUCK-DEBUG.md,522,architecture,Parseltongue Architecture Options: Rubber Duck Debug Session,HIGH
+archived-docs/pre202602/ACTIVE-Reference/14-V216-SEMANTIC-CONTEXT-COMPRESSOR-THESIS.md,1057,thesis,Parseltongue v216: The Semantic Context Compressor Thesis,HIGH
+archived-docs/pre202602/ACTIVE-Reference/15-API-STABILITY-VERIFICATION.md,330,verification,API Stability Verification: Claims vs Reality,HIGH
+archived-docs/pre202602/ACTIVE-Reference/2026-03-02-code-understanding-domain-thesis-design.md,236,thesis,Code-Understanding Domain Thesis - Design Document,HIGH
+archived-docs/pre202602/ACTIVE-Reference/2026-03-02-code-understanding-domain-thesis.md,766,thesis,Code-Understanding Domain Thesis,HIGH
+archived-docs/pre202602/ACTIVE-Reference/2026-03-02-exhaustive-research-journal.md,973,research,EXHAUSTIVE Research Journal: Code-Understanding Domain Thesis,HIGH
+archived-docs/pre202602/ACTIVE-Reference/2026-03-02-research-implementation-plan.md,1186,implementation plan,Code-Understanding Domain Thesis - Implementation Plan,HIGH
+archived-docs/pre202602/ACTIVE-Reference/2026-03-02-research-journal.md,452,research,Research Journal: Code-Understanding Domain Thesis,HIGH
+archived-docs/pre202602/ACTIVE-Reference/AR000-Else-Block.md,720,code analysis,GOVERNING THOUGHT,HIGH
+archived-docs/pre202602/ACTIVE-Reference/AR001-CONSOLIDATED_FEATURE_PMF_JOURNEY_MATRIX.md,427,user journey,Consolidated Feature PMF + Journey Matrix (Shreyas Doshi Lens),HIGH
+archived-docs/pre202602/ACTIVE-Reference/AR002-CONSOLIDATED_FEATURE_POSSIBILITIES_DEDUP.md,2512,code analysis,Consolidated Feature Possibilities (Deduplicated Union),HIGH
+archived-docs/pre202602/ACTIVE-Reference/AR003-CR-cachebro-202601.md,296,graph algorithms,CR-cachebro-202601: Cachebro Competitive Research Thesis,HIGH
+archived-docs/pre202602/ACTIVE-Reference/AR004-CR-codex-architecture.md,1212,architecture,CR-codex-architecture: OpenAI Codex Deep Architecture Analysis,HIGH
+archived-docs/pre202602/ACTIVE-Reference/AR005-CR-codex-eli5-ascii-summary.md,203,implementation plan,CR-codex-eli5-ascii-summary.md,HIGH
+archived-docs/pre202602/ACTIVE-Reference/AR006-CR-codex-graph-overview.md,334,graph algorithms,CR-codex-graph-overview.md,HIGH
+archived-docs/pre202602/ACTIVE-Reference/AR007-CR-codex-implications.md,676,code analysis,CR-codex-v200-implications.md,HIGH
+archived-docs/pre202602/ACTIVE-Reference/AR008-CR-codex-vs-factory-droid.md,958,architecture,CR-codex-vs-factory-droid.md,HIGH
+archived-docs/pre202602/ACTIVE-Reference/AR009-CR-factory-droid-202601.md,489,code analysis,CR-factory-droid-202601: Factory Droid Binary Decompilation Thesis,HIGH
+archived-docs/pre202602/ACTIVE-Reference/AR010-CR-v173-01.md,581,tree-sitter,CR-v173-01: Low Coverage Repos - Parse Failure Analysis,HIGH
+archived-docs/pre202602/ACTIVE-Reference/AR011-CR-v173-02.md,562,CozoDB queries,CR-v173-02: Competitor Code Patterns -- Deep Parseltongue Analysis,HIGH
+archived-docs/pre202602/ACTIVE-Reference/AR012-CR-v173-03.md,1019,API design,CR-v173-03: Competitor Feature Deep-Dive -- Code-Level Analysis,HIGH
+archived-docs/pre202602/ACTIVE-Reference/AR013-CR-v173-04-oh-my-pi.md,248,code analysis,CR-v173-04: oh-my-pi Competitive Deep-Dive,HIGH
+archived-docs/pre202602/ACTIVE-Reference/AR014-CR07-codex-research-progress-tracker.md,336,research,CR07 Codex Research Progress Tracker,HIGH
+archived-docs/pre202602/ACTIVE-Reference/AR015-ES-Decision-log-01.md,7,decision log,Moved,HIGH
+archived-docs/pre202602/ACTIVE-Reference/AR016-ES-Dependency-Graph-Contract-Hardening.md,102,graph algorithms,ES-V200-Dependency-Graph-Contract-Hardening,HIGH
+archived-docs/pre202602/ACTIVE-Reference/AR017-ES-Hashing-Risks-v01.md,1188,debugging,ES-V200-Hashing-Risks-v01,HIGH
+archived-docs/pre202602/ACTIVE-Reference/AR018-ES-User-Journey-01.md,515,user journey,ES-V200-User-Journey-01,HIGH
+archived-docs/pre202602/ACTIVE-Reference/AR019-ES-User-Journey-Addendum-Tauri-CLI-Philosophy.md,519,Tauri research,ES-V200-User-Journey-Addendum: Tauri App Philosophy,HIGH
+archived-docs/pre202602/ACTIVE-Reference/AR020-ES-attempt-01.md,462,architecture,ES-V200-attempt-01: Executable Contract Ledger (Design101 Style),HIGH
+archived-docs/pre202602/ACTIVE-Reference/AR021-FINAL_FEATURE_EXTRACTION_MASTER_TABLE.md,754,architecture,Parseltongue v2.0 Feature Extraction Master Table,HIGH
+archived-docs/pre202602/ACTIVE-Reference/AR022-IMPLEMENTATION-v173-slim-snapshot-plan.md,285,implementation plan,IMPLEMENTATION: v1.7.3 Slim Snapshot Plan,HIGH
+archived-docs/pre202602/ACTIVE-Reference/AR023-MASTER_FEATURE_EXTRACTION_TABLE.md,271,code analysis,Parseltongue Master Feature Extraction Table,HIGH
+archived-docs/pre202602/ACTIVE-Reference/AR024-PRD-Level01.md,19,PRD,PRD: Parseltongue v2.0.0,HIGH
+archived-docs/pre202602/ACTIVE-Reference/AR025-PRD_v173.md,1336,PRD,PRD: Parseltongue v1.7.3 — Dual-Mode Graph Server + MCP + Desktop App,HIGH
+archived-docs/pre202602/ACTIVE-Reference/AR026-Prep-Competitive-Deep-Dive.md,694,tree-sitter,Prep-V200: Competitive Deep Dive,HIGH
+archived-docs/pre202602/ACTIVE-Reference/AR027-Prep-Compiled-Research-Best-Ideas.md,544,research,Prep-V200-Compiled-Research-Best-Ideas,HIGH
+archived-docs/pre202602/ACTIVE-Reference/AR028-Prep-Cross-Language-Detection-Heuristics.md,1821,tree-sitter,Prep Doc: Cross-Language Boundary Detection Heuristics for v2.0.0,HIGH
+archived-docs/pre202602/ACTIVE-Reference/AR029-Prep-Datalog-Ascent-Rule-Patterns.md,1326,idiomatic patterns,Prep: Datalog Ascent Rule Patterns for Parseltongue v2.0.0,HIGH
+archived-docs/pre202602/ACTIVE-Reference/AR030-Prep-Key-Format-Design.md,761,CozoDB queries,Prep: v2.0.0 Key Format Design,HIGH
+archived-docs/pre202602/ACTIVE-Reference/AR031-Prep-LLM-Context-Optimization-Research.md,1070,research,Prep-V200: LLM Context Optimization Research,HIGH
+archived-docs/pre202602/ACTIVE-Reference/AR032-Prep-MCP-Protocol-Integration.md,1553,MCP research,Prep-V200: MCP Protocol Integration Research,HIGH
+archived-docs/pre202602/ACTIVE-Reference/AR033-Prep-Max-Adoption-Architecture-Strategy.md,1195,tree-sitter,Prep-V200: Max Adoption Architecture Strategy,HIGH
+archived-docs/pre202602/ACTIVE-Reference/AR034-Prep-Rust-Analyzer-API-Surface.md,968,implementation plan,Prep Doc: rust-analyzer API Surface for Parseltongue v2.0.0,HIGH
+archived-docs/pre202602/ACTIVE-Reference/AR035-Prep-Tree-Sitter-Query-Patterns.md,1723,idiomatic patterns,Prep Doc: Tree-Sitter Query Patterns for Parseltongue v2.0.0,HIGH
+archived-docs/pre202602/ACTIVE-Reference/AR036-Prep-isgl1-ambiguity-risk-table.md,770,tree-sitter,v200: ISGL1 Key Format Ambiguity & Risk Assessment (Expanded),HIGH
+archived-docs/pre202602/ACTIVE-Reference/AR037-Priortization-v173.md,812,CozoDB queries,Final Priority to add,HIGH
+archived-docs/pre202602/ACTIVE-Reference/AR039-RESEARCH-v173-rustanalyzer-semantic-supergraph.md,645,research,RESEARCH: v173-rustanalyzer-semantic-supergraph,HIGH
+archived-docs/pre202602/ACTIVE-Reference/AR040-Research-Extraction-Tools-Per-Language.md,1597,research,Research: Dependency Extraction Tools Per Language,HIGH
+archived-docs/pre202602/ACTIVE-Reference/AR041-THESIS-v173-slim-graph-address-model.md,470,thesis,THESIS: v1.7.3 — Slim Graph+Address Model for pt02/pt03,HIGH
+archived-docs/pre202602/ACTIVE-Reference/AR042-ZAI-PRD-contracts-01.md,763,PRD,PRD Contracts: Parseltongue v2.0.0,HIGH
+archived-docs/pre202602/ACTIVE-Reference/AR043-ZAI-PRD-contracts-02.md,969,PRD,PRD Contracts: Parseltongue V200 FINAL,HIGH
+archived-docs/pre202602/ACTIVE-Reference/AR044-ZAI-REUSABLE-Patterns-01.md,839,idiomatic patterns,ZAI-REUSABLE-Patterns-01.md: V200 Pattern Extraction from v173,HIGH
+archived-docs/pre202602/ACTIVE-Reference/AR045-ZAI-doc-progress-tracker.md,98,research,V200 Documentation Analysis Progress Tracker,HIGH
+archived-docs/pre202602/ACTIVE-Reference/AR046-drawio-diagram-lessons-learned.md,251,code analysis,Draw.io Diagram Lessons Learned,HIGH
+archived-docs/pre202602/ACTIVE-Reference/AR048-v173-pt04-bidirectional-workflow.md,2261,workflow,v1.7.3 — pt04 Bidirectional Workflow: Compiler Truth + LLM Judgment,HIGH
+archived-docs/pre202602/ACTIVE-Reference/AR049-v199-Notes.md,493,architecture,Prep Doc: Parseltongue v2.0.0,HIGH
+archived-docs/pre202602/ACTIVE-Reference/AR050-FUJ-Final-User-Journey.md,2152,user journey,v200 Final User Journey (FUJ),HIGH
+archived-docs/pre202602/ACTIVE-Reference/AR052-v210-backlog.md,83,tree-sitter,v210-backlog,HIGH
+archived-docs/pre202602/ACTIVE-Reference/AR053-Research-Graph-Workflow-Internet-Synthesis-20260227.md,207,research,AR053: Internet Synthesis for Graph + Dependency Workflows,HIGH
+archived-docs/pre202602/ACTIVE-Reference/AR054-CR-codemogger-v200-options-20260227.md,180,research,AR054: Codemogger Analysis for Parseltongue V200 PRD,HIGH
+archived-docs/pre202602/ACTIVE-Reference/AR055-ACTIVE-reference-Consolidated-Summary-20260227.md,87,tree-sitter,AR055: ACTIVE-reference Consolidated Summary (AR000-AR054),HIGH
+archived-docs/pre202602/ACTIVE-Reference/ES-V200-arch-patterns-01.md,330,idiomatic patterns,v200-arch-patterns-01,HIGH
+archived-docs/pre202602/ACTIVE-Reference/ES-V200-cocoindex-options-01.md,174,code analysis,ES-V200 Option Set from Cocoindex Code Study,HIGH
+archived-docs/pre202602/ACTIVE-Reference/ES-V200-options-ELI5-mermaid.md,135,research,ES-V200 Options (ELI5) with Mermaid,HIGH
+archived-docs/pre202602/ACTIVE-Reference/THESIS-supermodel-competitive-analysis.md,908,thesis,THESIS: Supermodel Competitive Analysis,HIGH
+archived-docs/pre202602/ACTIVE-Reference/computer-research/01-RUSTC-COMPILER-GRAPH-CFG-DFG-RESEARCH-20260301.md,209,research,Rust Compiler Research for Parseltongue (Code Graph + Control Flow + Data Flow),HIGH
+archived-docs/pre202602/ACTIVE-Reference/cross-domain/12-social-network-transfer.md,363,graph algorithms,Social Network Analysis Algorithms: Transferable Patterns for Code Analysis,HIGH
+archived-docs/pre202602/ACTIVE-Reference/cross-domain/13-fraud-detection-transfer.md,611,graph algorithms,Fraud Detection Graph Algorithms: Transfer Patterns for Code Analysis,HIGH
+archived-docs/pre202602/ACTIVE-Reference/encyclopedia/01-centrality-algorithms.md,644,graph algorithms,Centrality Algorithms for Code Graphs,HIGH
+archived-docs/pre202602/ACTIVE-Reference/encyclopedia/02-community-detection.md,670,architecture,Community Detection Algorithms for Code Graphs,HIGH
+archived-docs/pre202602/ACTIVE-Reference/encyclopedia/03-traversal-search.md,630,graph algorithms,Graph Traversal & Search Algorithms for Code Graphs,HIGH
+archived-docs/pre202602/ACTIVE-Reference/encyclopedia/07-gnn-architectures.md,548,architecture,Graph Neural Network Architectures for Code Graphs,HIGH
+archived-docs/pre202602/ACTIVE-Reference/implementation/16-petgraph-ecosystem.md,447,graph algorithms,petgraph Ecosystem Analysis,HIGH
+archived-docs/pre202602/ACTIVE-Reference/implementation/17-performance-optimization.md,1142,graph algorithms,Performance Optimization Strategies for Graph Algorithms at Scale,HIGH
+archived-docs/pre202602/ACTIVE-Reference/rust-analyzer/01-hir-ty-patterns.md,1015,idiomatic patterns,Idiomatic Rust Patterns: hir-ty (Type System & Inference),HIGH
+archived-docs/pre202602/ACTIVE-Reference/rust-analyzer/02-hir-def-patterns.md,1151,idiomatic patterns,Idiomatic Rust Patterns: hir-def (Definition Layer),HIGH
+archived-docs/pre202602/ACTIVE-Reference/rust-analyzer/03-syntax-parser-patterns.md,1188,idiomatic patterns,Idiomatic Rust Patterns: Syntax & Parser,HIGH
+archived-docs/pre202602/ACTIVE-Reference/rust-analyzer/04-ide-features-patterns.md,1562,idiomatic patterns,Idiomatic Rust Patterns: IDE Features Layer,HIGH
+archived-docs/pre202602/ACTIVE-Reference/rust-analyzer/05-ide-assists-patterns.md,1240,idiomatic patterns,Idiomatic Rust Patterns: IDE Assists (Code Actions),HIGH
+archived-docs/pre202602/ACTIVE-Reference/rust-analyzer/06-ide-completion-patterns.md,1253,idiomatic patterns,Idiomatic Rust Patterns: IDE Completion Engine,HIGH
+archived-docs/pre202602/ACTIVE-Reference/rust-analyzer/07-ide-db-patterns.md,1391,idiomatic patterns,Idiomatic Rust Patterns: IDE Database Layer,HIGH
+archived-docs/pre202602/ACTIVE-Reference/rust-analyzer/08-hir-facade-expand-patterns.md,1863,idiomatic patterns,Idiomatic Rust Patterns: HIR Facade & Macro Expansion,HIGH
+archived-docs/pre202602/ACTIVE-Reference/rust-analyzer/09-lsp-server-patterns.md,1921,idiomatic patterns,Idiomatic Rust Patterns: LSP Server Implementation,HIGH
+archived-docs/pre202602/ACTIVE-Reference/rust-analyzer/10-vfs-base-db-patterns.md,2462,idiomatic patterns,Idiomatic Rust Patterns: VFS & Base Database,HIGH
+archived-docs/pre202602/ACTIVE-Reference/rust-analyzer/11-project-model-patterns.md,1351,idiomatic patterns,Idiomatic Rust Patterns: Project Model,HIGH
+archived-docs/pre202602/ACTIVE-Reference/rust-analyzer/12-token-tree-macro-patterns.md,2801,idiomatic patterns,Idiomatic Rust Patterns: Token Trees & Macro Infrastructure,HIGH
+archived-docs/pre202602/ACTIVE-Reference/rust-analyzer/13-utility-crates-patterns.md,4576,idiomatic patterns,Idiomatic Rust Patterns: Utility Crates,HIGH
+archived-docs/pre202602/ACTIVE-Reference/rust-analyzer/14-lib-arena-lsp-patterns.md,3283,idiomatic patterns,Idiomatic Rust Patterns: Library Crates,HIGH
+archived-docs/pre202602/ACTIVE-Reference/rust-analyzer/15-ide-diagnostics-patterns.md,2895,idiomatic patterns,Idiomatic Rust Patterns: IDE Diagnostics,HIGH
+archived-docs/pre202602/ACTIVE-Reference/rust-analyzer/16-proc-macro-server-patterns.md,1903,idiomatic patterns,Idiomatic Rust Patterns: Proc Macro Server,HIGH
+archived-docs/pre202602/ACTIVE-Reference/rust-analyzer/17-test-infrastructure-patterns.md,1722,idiomatic patterns,Idiomatic Rust Patterns: Test Infrastructure,HIGH
+archived-docs/pre202602/ACTIVE-Reference/rust-analyzer/18-xtask-codegen-patterns.md,2325,idiomatic patterns,Idiomatic Rust Patterns: XTask & Code Generation,HIGH
+archived-docs/pre202602/ACTIVE-Reference/rust-analyzer/19-cross-cutting-architecture-patterns.md,2034,idiomatic patterns,Idiomatic Rust Patterns: Cross-Cutting Architecture,HIGH
+archived-docs/pre202602/ACTIVE-Reference/rust-analyzer/20-ssr-span-cfg-patterns.md,2814,idiomatic patterns,"Idiomatic Rust Patterns: SSR, Span, Cfg & Bridge Crates",HIGH
+archived-docs/pre202602/ACTIVE-Reference/rust-analyzer/ANALYSIS_STATE.md,147,design doc,rust-analyzer Idiomatic Patterns Analysis State,HIGH
+archived-docs/pre202602/ACTIVE-Reference/strategy/18-competitive-landscape.md,433,graph algorithms,Competitive Landscape Analysis,HIGH
+archived-docs/pre202602/ACTIVE-Reference/strategy/19-moat-building.md,445,code analysis,Competitive Moat-Building Strategy for Parseltongue,HIGH
+archived-docs/pre202602/ACTIVE-Reference/strategy/20-research-agenda.md,598,research,Research Agenda for Parseltongue,HIGH
+archived-docs/pre202602/ARCHIVE/A00_preserved_code_patterns/ISGL1-v2-key-generation-system.md,917,graph algorithms,ISGL1 v2 Key Generation System,HIGH
+archived-docs/pre202602/ARCHIVE/CR-delegate-agent-coordination.md,337,agent config,CR-delegate-agent-coordination.md,HIGH
+archived-docs/pre202602/ARCHIVE/CR-delegate-parseltongue-integration.md,335,code analysis,CR-delegate-parseltongue-integration.md,MEDIUM
+archived-docs/pre202602/ARCHIVE/CR-delegate-research-summary.md,480,research,CR-delegate-research-summary.md,MEDIUM
+archived-docs/pre202602/ARCHIVE/CR-droid-factory-20260219/factory-droid/CR-factory-droid-control-flow-202601.md,728,architecture,"CR-factory-droid-control-flow-202601: Control Flow, Data Flow & Claude Code Differentiation",HIGH
+archived-docs/pre202602/ARCHIVE/Firebolt-PRD-20260202/PRD-v001.md,0,PRD,(empty file),OBSOLETE
+archived-docs/pre202602/ARCHIVE/PRD-research-20260131v1/00_EXECUTIVE_SUMMARY.md,388,PRD,Parseltongue v1.7-v1.9: Arize Agent Memory Patterns - Executive Summary,HIGH
+archived-docs/pre202602/ARCHIVE/PRD-research-20260131v1/01_ARCHITECTURE_OVERVIEW.md,160,PRD,Parseltongue Architecture Overview,HIGH
+archived-docs/pre202602/ARCHIVE/PRD-research-20260131v1/02_V16_PRD_IDEAS_EXTRACTED.md,451,PRD,Parseltongue v1.6: Agent-Native PRD Extraction,HIGH
+archived-docs/pre202602/ARCHIVE/PRD-research-20260131v1/03_V17_V19_ARIZE_PATTERNS_EXTRACTED.md,1107,PRD,Parseltongue v1.7-v1.9: Arize Agent Harness Pattern Extraction,HIGH
+archived-docs/pre202602/ARCHIVE/PRD-research-20260131v1/04_VISUAL_ROADMAP_V14_TO_V19.md,568,PRD,Parseltongue Visual Roadmap: v1.4.2 → v1.9,HIGH
+archived-docs/pre202602/ARCHIVE/PRD-research-20260131v1/MERMAID_SYNTAX_GUIDE.md,449,PRD,Mermaid Syntax Guide: Common Mistakes to Avoid,HIGH
+archived-docs/pre202602/ARCHIVE/PRD-research-20260131v1/PARSELTONGUE_V2_BIDIRECTIONAL_LLM_ENHANCEMENT.md,1003,PRD,Parseltongue v2.0+: Bidirectional LLM-CPU Feature Enhancement,HIGH
+archived-docs/pre202602/ARCHIVE/PRD-research-20260131v1/PARSELTONGUE_V2_FEATURES_ELI10.md,561,PRD,Parseltongue v2.0+ Features: Explained Simply (ELI10),HIGH
+archived-docs/pre202602/ARCHIVE/PRD-research-20260131v1/PARSELTONGUE_V2_FEATURES_MERMAID_DIAGRAMS.md,594,PRD,Parseltongue v2.0+ Features: Mermaid Diagram Visualizations,HIGH
+archived-docs/pre202602/ARCHIVE/PRD-research-20260131v1/PARSELTONGUE_V2_FEATURES_RESEARCH_BACKED.md,2575,PRD,Parseltongue v2.0+ Feature Extraction: Research-Backed Roadmap,HIGH
+archived-docs/pre202602/ARCHIVE/PRD-research-20260131v1/PARSELTONGUE_V2_LLM_AGENT_INTERACTIONS.md,643,PRD,Parseltongue v2.0+: LLM Agent Interaction Patterns,HIGH
+archived-docs/pre202602/ARCHIVE/PRD-research-20260131v1/PRD-candidates-20260130.md,542,PRD,PRD-v144: Parseltongue Comprehensive Feature Roadmap,HIGH
+archived-docs/pre202602/ARCHIVE/PRD-research-20260131v1/PRD-candidates-20260131.md,145,PRD,Research reveals MCP is UNSUITABLE for Parseltongue,HIGH
+archived-docs/pre202602/ARCHIVE/PRD-research-20260131v1/PRD-v142-Parseltongue.md,1077,PRD,Product Requirements Document: Parseltongue,HIGH
+archived-docs/pre202602/ARCHIVE/PRD-research-20260131v1/QUICK_REFERENCE_7_PRDS.md,341,PRD,Quick Reference: 7 PRD Ideas for v1.7-v1.9,HIGH
+archived-docs/pre202602/ARCHIVE/PRD-research-20260131v1/README.md,267,PRD,Parseltongue Research Documentation - v1.6 Planning,HIGH
+archived-docs/pre202602/ARCHIVE/drawio-diagram-guide-llm-enhanced.md,1204,architecture,Draw.io Diagram Guide — LLM-Enhanced Edition,HIGH
+archived-docs/pre202602/ARCHIVE/pre154/BUG-ANALYSIS-v1.5.1-qualified-name-key-format.md,308,release notes,Bug Analysis: Qualified Name Key Format Issues (v1.5.1),OBSOLETE
+archived-docs/pre202602/ARCHIVE/pre154/BUGFIX-csharp-edge-detection-v1.4.8.md,327,release notes,Bug Fix Implementation: C# Edge Detection (v1.4.8),OBSOLETE
+archived-docs/pre202602/ARCHIVE/pre154/CK_METRICS_QUICK_REFERENCE.md,185,metrics,CK Metrics Suite - Quick Reference Card,MEDIUM
+archived-docs/pre202602/ARCHIVE/pre154/IMPLEMENTATION-REPORT-java-v1.4.9.md,400,release notes,Java Dependency Pattern Implementation Report (v1.4.9),OBSOLETE
+archived-docs/pre202602/ARCHIVE/pre154/IMPLEMENTATION-REPORT-typescript-v1.4.9.md,428,release notes,Implementation Report: TypeScript Dependency Patterns v1.4.9,OBSOLETE
+archived-docs/pre202602/ARCHIVE/pre154/PHASE5_CK_METRICS_VERIFICATION.md,179,verification,CK Metrics Suite Implementation Verification,OBSOLETE
+archived-docs/pre202602/ARCHIVE/pre154/PHASE5_COMPLETION_CHECKLIST.md,416,design doc,Phase 5 Completion Checklist - CK Metrics Suite,MEDIUM
+archived-docs/pre202602/ARCHIVE/pre154/PHASE5_IMPLEMENTATION_SUMMARY.md,309,implementation plan,Phase 5 Implementation Summary - CK Metrics Suite,MEDIUM
+archived-docs/pre202602/ARCHIVE/pre154/RELEASE-CHECKLIST-v1.5.0.md,328,release notes,Release Checklist: Parseltongue v1.5.0,OBSOLETE
+archived-docs/pre202602/ARCHIVE/pre154/RELEASE-PROGRESS-v1.5.0.md,287,release notes,Release Progress: v1.5.0,OBSOLETE
+archived-docs/pre202602/ARCHIVE/pre154/SESSION-CONTEXT-20260202.md,407,architecture,Session Context Dump - 2026-02-02,HIGH
+archived-docs/pre202602/ARCHIVE/pre154/TDD-PROGRESS-v1.4.9-dependency-patterns.md,1883,TDD journal,TDD Progress Tracker: v1.4.9 Multi-Language Dependency Patterns,MEDIUM
+archived-docs/pre202602/ARCHIVE/pre154/TDD-PROGRESS-v1.5.0-batch-insertion.md,763,TDD journal,TDD Progress Tracker: v1.5.0 Batch Entity Insertion,HIGH
+archived-docs/pre202602/ARCHIVE/pre154/TDD-SPEC-multi-language-dependency-patterns-v1.4.9.md,2339,TDD journal,TDD Specification: Multi-Language Dependency Pattern Enhancement v1.4.9,MEDIUM
+archived-docs/pre202602/ARCHIVE/pre154/TDD-SPEC-v1.5.0-ingestion-performance.md,968,TDD journal,TDD Specification: v1.5.0 Ingestion Performance Optimization,HIGH
+archived-docs/pre202602/ARCHIVE/pre154/THESIS-ingestion-speed-optimization-v1.5.0.md,389,release notes,THESIS: Parseltongue Ingestion Speed Optimization,OBSOLETE
+archived-docs/pre202602/ARCHIVE/pre154/THESIS-parsing-vulnerability-qualified-names-v1.5.1.md,457,release notes,Parsing Vulnerability Thesis: Qualified Name Key Format Issues,OBSOLETE
+archived-docs/pre202602/ARCHIVE/pre154/UserJourney20260202v1.md,572,user journey,Parseltongue v1.4.7 User Journey - Complete API Testing,HIGH
+archived-docs/pre202602/ARCHIVE/pre154/csharp-patterns-quick-reference.md,223,idiomatic patterns,C# Dependency Patterns - Quick Reference,MEDIUM
+archived-docs/pre202602/ARCHIVE/pre154/csharp-remaining-patterns-completion.md,309,idiomatic patterns,C# Remaining Dependency Patterns - Completion Report,MEDIUM
+archived-docs/pre202602/ARCHIVE/pre154/phase2-batch-insertion-complete.md,171,code analysis,Phase 2: Batch Entity Insertion - COMPLETE ✅,MEDIUM
+archived-docs/pre202602/ARCHIVE/pre154/v1.5.0-IMPLEMENTATION-SUMMARY.md,259,release notes,v1.5.0 Implementation Summary,OBSOLETE
+archived-docs/pre202602/ARCHIVE/pre154/v148-ruby-rails-language-verification-20260203.md,495,verification,Ruby and Rails Language Support Verification - v1.4.8,OBSOLETE
+archived-docs/pre202602/ARCHIVE/pre154/v149-go-dependency-patterns-implementation-20260206.md,436,idiomatic patterns,Go Dependency Patterns Implementation (v1.4.9),MEDIUM
+archived-docs/pre202602/ARCHIVE/pre154/v151-CRITICAL-BUG-zero-edges-csharp-typescript.md,276,debugging,CRITICAL BUG: Zero Edges for C# and TypeScript,LOW
+archived-docs/pre202602/ARCHIVE/pre154/v151-RESEARCH-10x-ingestion-optimization-v2.md,373,research,Research v2: 10x Ingestion Speed Optimization (Rubber Duck Debugged),HIGH
+archived-docs/pre202602/ARCHIVE/pre154/v151-RESEARCH-10x-ingestion-optimization.md,408,research,Research: 10x Ingestion Speed Optimization,HIGH
+archived-docs/pre202602/ARCHIVE/pre154/v151-SPEC-rust-ruby-edge-persistence.md,778,spec,SPEC: Rust/Ruby Edge Persistence Bug Investigation,MEDIUM
+archived-docs/pre202602/ARCHIVE/pre154/v151-TDD-PROGRESS.md,1338,TDD journal,TDD Session State: v1.5.1 Bug Fixes,MEDIUM
+archived-docs/pre202602/ARCHIVE/pre154/v151-TDD-SPEC-key-sanitization-qualified-names.md,1665,TDD journal,TDD Specification: ISGL1 Key Format Sanitization for Qualified Names,MEDIUM
+archived-docs/pre202602/ARCHIVE/pre154/v151-primary-PRD.md,1599,PRD,Product Requirements Document: v1.5.1 Bug Fixes,HIGH
+archived-docs/pre202602/ARCHIVE/pre154/v152-ASYNC-PIPELINE-ARCHITECTURE-DIAGRAMS.md,664,architecture,v152 Async Pipeline Architecture Diagrams,HIGH
+archived-docs/pre202602/ARCHIVE/pre154/v152-ASYNC-PIPELINE-RUBBER-DUCK-ANALYSIS.md,910,CozoDB queries,v152 Async Pipeline Rubber Duck Debugging Analysis,MEDIUM
+archived-docs/pre202602/ARCHIVE/pre154/v152-ASYNC-PIPELINE-SUMMARY.md,444,implementation plan,v152 Async Pipeline Research Summary,HIGH
+archived-docs/pre202602/ARCHIVE/pre154/v152-DATABASE-ALTERNATIVES-RESEARCH.md,903,research,v152 Database Alternatives Research,MEDIUM
+archived-docs/pre202602/ARCHIVE/pre154/v152-INDEX.md,340,implementation plan,v152 Documentation Index,MEDIUM
+archived-docs/pre202602/ARCHIVE/pre154/v152-OPTION3-ASYNC-PIPELINE-RESEARCH.md,486,research,V152 Option 3: Async Pipeline Research Document,MEDIUM
+archived-docs/pre202602/ARCHIVE/pre154/v152-PIPELINE-OPTIMIZATION-POV.md,249,API design,Pipeline Optimization POV: Three-Stage Ingestion Architecture,HIGH
+archived-docs/pre202602/ARCHIVE/pre154/v152-README.md,427,architecture,v152 Async Pipeline Research - README,MEDIUM
+archived-docs/pre202602/ARCHIVE/pre154/v153-PRD-WRITE-QUEUE-MAXIMUM-SPEED.md,812,PRD,v153-PRD-WRITE-QUEUE-MAXIMUM-SPEED.md,HIGH
+archived-docs/pre202602/ARCHIVE/pre175/DECISION-v173-pt02-pt03-endpoint-selection.md,312,decision log,DECISION: v1.7.3 — Which Endpoints Should pt02/pt03 Support?,MEDIUM
+archived-docs/pre202602/ARCHIVE/pre175/PRD-v165.md,1268,PRD,PRD: Ingestion Diagnostics Coverage Report (v1.6.5),HIGH
+archived-docs/pre202602/ARCHIVE/pre175/RESEARCH-v173-serialization-formats.md,259,research,RESEARCH: v1.7.3 — Serialization Format Analysis for pt02/pt03,MEDIUM
+archived-docs/pre202602/ARCHIVE/pre175/SPEC-v169-sled-on-windows.md,501,spec,SPEC-v169-sled-on-windows.md,MEDIUM
+archived-docs/pre202602/ARCHIVE/pre175/SPEC-v172-windows-mem-backup.md,172,spec,SPEC: v1.7.2 — Windows In-Memory Ingestion with SQLite Backup,HIGH
+archived-docs/pre202602/ARCHIVE/pre175/TDD-SESSION-STATE-v172.md,375,TDD journal,TDD Session State: v1.7.2 Windows mem→SQLite Backup Implementation,MEDIUM
+archived-docs/pre202602/ARCHIVE/pre175/THESIS-v173-storage-architecture.md,408,thesis,Thesis: Parseltongue Storage Architecture — Beyond CozoDB,HIGH
+archived-docs/pre202602/ARCHIVE/pre175/UserJourney20260202v1.md,946,user journey,Parseltongue User Journey - Complete API Testing,HIGH
+archived-docs/pre202602/ARCHIVE/pre175/WINDOWS-SPECIFIC-CODE-TO-REMOVE.md,415,spec,Windows-Specific Code to Remove for v1.7.2,MEDIUM
+archived-docs/pre202602/ARCHIVE/pre175/v154-PRD-RAYON-SLED-PARALLEL-INGESTION.md,932,PRD,v154 PRD: Rayon + Sled Parallel Ingestion,HIGH
+archived-docs/pre202602/ARCHIVE/pre175/v154-RCA-ENDPOINT-ISSUES.md,633,RCA,Root Cause Analysis: HTTP Endpoint Issues,LOW
+archived-docs/pre202602/ARCHIVE/pre175/v154-RELEASE-CHECKLIST.md,106,release notes,v1.5.4 Release Checklist,OBSOLETE
+archived-docs/pre202602/ARCHIVE/pre175/v154-TDD-PROGRESS.md,540,TDD journal,v154 TDD Progress Journal: Rayon + Sled Parallel Ingestion,HIGH
+archived-docs/pre202602/ARCHIVE/pre175/v154-rayon-sled-parallel-ingestion.md,325,implementation plan,v1.5.4: Rayon + Sled Parallel Ingestion,HIGH
+archived-docs/pre202602/ARCHIVE/pre175/v155-PRD-p1.md,771,PRD,v1.5.5 PRD Part 1: SQL Support Research,HIGH
+archived-docs/pre202602/ARCHIVE/pre175/v155-PRD-p2-CODEBASE-ANALYSIS.md,608,PRD,v1.5.5 PRD Part 2: Codebase Analysis for SQL Support,HIGH
+archived-docs/pre202602/ARCHIVE/pre175/v155-RCA_01.md,259,RCA,v155-RCA_01: CozoDB Query Syntax Error - Generic Type Parameters in ISGL1 Keys,LOW
+archived-docs/pre202602/ARCHIVE/pre175/v155-SPEC-GENERIC-TYPE-SANITIZATION.md,838,spec,v155-SPEC: Generic Type Parameter Sanitization for ISGL1 Keys,MEDIUM
+archived-docs/pre202602/ARCHIVE/pre175/v156-PRD-final.md,1032,PRD,v1.5.6 PRD: SQL Language Support + Generic Type Sanitization,HIGH
+archived-docs/pre202602/ARCHIVE/pre175/v156-RELEASE-CHECKLIST.md,339,release notes,v1.5.6 Release Checklist,OBSOLETE
+archived-docs/pre202602/ARCHIVE/pre175/v160-PRD-7-GRAPH-ANALYSIS-FEATURES.md,2786,PRD,PRD: Parseltongue v1.6.0 - Seven Mathematical Graph Analysis Features,HIGH
+archived-docs/pre202602/ARCHIVE/pre175/v160-development-journal.md,224,release notes,Parseltongue v1.6.0 Development Journal,OBSOLETE
+archived-docs/pre202602/ARCHIVE/pre175/v160-release-dryrun-20260208223938.md,88,release notes,Parseltongue v1.6.0 Release Dry Run Report,OBSOLETE
+archived-docs/pre202602/ARCHIVE/pre175/v161-PRD-ingestion-coverage-report.md,1059,PRD,PRD: Ingestion Coverage Report (v1.6.1),HIGH
+archived-docs/pre202602/ARCHIVE/pre175/v161-release-dryrun-20260209081044.md,95,release notes,Parseltongue v1.6.1 Release Dry Run Report,OBSOLETE
+archived-docs/pre202602/ARCHIVE/pre175/v162-dependency-graph-export-plan.md,179,implementation plan,Plan: Dependency Graph Export Endpoints (v1.6.2),MEDIUM
+archived-docs/pre202602/ARCHIVE/pre175/v162-ingestion-error-logging-plan.md,162,implementation plan,Plan: Ingestion Error Logging (v1.6.2),HIGH
+archived-docs/pre202602/ARCHIVE/pre175/v165-TDD-PROGRESS.md,488,TDD journal,v1.6.5 TDD Progress Journal: Comprehensive Capability Testing,HIGH
+archived-docs/pre202602/ARCHIVE/pre175/v165-executive-implementation-specs.md,1377,spec,v1.6.5 Executive Implementation Specifications,HIGH
+archived-docs/pre202602/ARCHIVE/pre175/v165-wave2-implementation-guide.md,104,implementation plan,v1.6.5 Wave 2 Implementation Guide,MEDIUM
+archived-docs/pre202602/ARCHIVE/pre175/v165-wave2-wave3-completion-plan.md,246,implementation plan,v1.6.5 Waves 2 & 3 Implementation Completion Plan,HIGH
+archived-docs/pre202602/ARCHIVE/pre175/v170-SPEC-concurrent-batch-insertion.md,811,spec,v1.7.0 SPEC: Concurrent Batch Insertion with tokio::join!,MEDIUM
+archived-docs/pre202602/ARCHIVE/pre175/v170-SPEC-rocksdb-windows-75mb-write-stall-fix.md,1200,spec,v1.7.0 SPEC: RocksDB Windows 75MB Write Stall Fix,MEDIUM
+archived-docs/pre202602/ARCHIVE/pre175/v172-STARTING-STATE-SNAPSHOT.md,458,implementation plan,v1.7.2 Starting State Snapshot,MEDIUM
+archived-docs/pre202602/ARCHIVE/pre175/v175-Shreyas-Doshi-Critique.md,288,CozoDB queries,v1.7.5 — Shreyas Doshi Critique of v1.7.3 Research Docs,MEDIUM
+archived-docs/pre202602/ARCHIVE/specs/ingestion-error-logging-spec.md,727,spec,Ingestion Error Logging Specification,HIGH
+archived-docs/pre202602/ARCHIVE/unclassified/CRITICAL-BUGS-ANALYSIS-v143.md,648,implementation plan,CRITICAL BUGS ANALYSIS - Parseltongue v1.4.3,MEDIUM
+archived-docs/pre202602/ARCHIVE/unclassified/FINAL_TEST_SUMMARY.md,148,implementation plan,FINAL TEST SUMMARY - File Watcher Live Dependency Graph,MEDIUM
+archived-docs/pre202602/ARCHIVE/unclassified/File-Watcher-Debug-20260202.md,514,file watching,File Watcher Debugging Report - 2026-02-02,MEDIUM
+archived-docs/pre202602/ARCHIVE/unclassified/ISGL1-v2-Stable-Entity-Identity.md,1108,architecture,ISGL1 v2: Stable Entity Identity Architecture,HIGH
+archived-docs/pre202602/ARCHIVE/unclassified/PRD-candidates-20260131v2.md,912,PRD,Parseltongue v2: LLM-Powered Workflow PMF Analysis,HIGH
+archived-docs/pre202602/ARCHIVE/unclassified/PRD-candidates-20260131v3.md,1162,PRD,Parseltongue v2: Bidirectional LLM-CPU Feature Workflows,HIGH
+archived-docs/pre202602/ARCHIVE/unclassified/PRD-candidates-20260131v4.md,1164,PRD,PRD-v146: Bidirectional LLM-CPU Enhancement Suite,HIGH
+archived-docs/pre202602/ARCHIVE/unclassified/PRD-v3-backlog.md,247,PRD,Parseltongue v3 Backlog,HIGH
+archived-docs/pre202602/ARCHIVE/unclassified/PRD146.md,260,PRD,PRD146: v1.4.6 Critical Bug Fixes + ISGL1 v2 Foundation,HIGH
+archived-docs/pre202602/ARCHIVE/unclassified/PRDv146.md,154,PRD,From v143 we are now going to ship v145,HIGH
+archived-docs/pre202602/ARCHIVE/unclassified/Pr-V200-Notes01.md,337,API design,What I Understand: The Big Picture,HIGH
+archived-docs/pre202602/ARCHIVE/unclassified/QUICK_IMPLEMENTATION_GUIDE.md,549,CozoDB queries,Quick Implementation Guide: Fix Stubbed Reindex,MEDIUM
+archived-docs/pre202602/ARCHIVE/unclassified/RCA-Incremental-Indexing-Failure.md,972,RCA,Root Cause Analysis: Parseltongue Incremental Indexing Failure,LOW
+archived-docs/pre202602/ARCHIVE/unclassified/REINDEX_ARCHITECTURE_DIAGRAM.md,681,architecture,Incremental Reindex Architecture - Visual Reference,HIGH
+archived-docs/pre202602/ARCHIVE/unclassified/REINDEX_IMPLEMENTATION_SPECS.md,1651,spec,Rubber-Duck Debugging: Incremental Reindex Implementation Specs,MEDIUM
+archived-docs/pre202602/ARCHIVE/unclassified/RELEASE_CHECKLISTS_COMPILATION.md,466,release notes,Release Checklists Compilation,OBSOLETE
+archived-docs/pre202602/ARCHIVE/unclassified/RUBBER_DUCK_SUMMARY.md,488,debugging,Rubber-Duck Debugging Summary: Incremental Reindex Implementation,LOW
+archived-docs/pre202602/ARCHIVE/unclassified/TDD_COMPREHENSIVE_TESTING_PLAN_V160.md,691,TDD journal,Comprehensive TDD Testing Plan: v1.6.0 + v1.6.5 Features,HIGH
+archived-docs/pre202602/ARCHIVE/unclassified/TDD_GREEN_PHASE_COMPLETE.md,185,TDD journal,TDD GREEN Phase Complete - External Dependency Placeholder Creation,MEDIUM
+archived-docs/pre202602/ARCHIVE/unclassified/TDD_v173_Slim_Snapshot_Tasks.md,550,TDD journal,TDD Task Tracking: v1.7.3 Slim Graph Snapshots,MEDIUM
+archived-docs/pre202602/ARCHIVE/unclassified/Test-Plan-Incremental-Reindex-20260202.md,671,implementation plan,Test Plan: ISGL1 v2 Incremental Reindex Feature,MEDIUM
+archived-docs/pre202602/ARCHIVE/unclassified/Testing-Journal-ISGL1v2-FileWatcher-20260202.md,771,file watching,Testing Journal: ISGL1 v2 + File Watcher Lifetime Fix,MEDIUM
+archived-docs/pre202602/ARCHIVE/unclassified/V145-BUG3-NULL-KEYS-ARCHITECTURE.md,1102,architecture,Architecture Design: Fix Data Quality Corruption in Parseltongue v1.4.5,HIGH
+archived-docs/pre202602/ARCHIVE/unclassified/final_comprehensive_test_report.md,327,implementation plan,Final Comprehensive Test Report: File Watcher + Live Dependency Graph,MEDIUM
+archived-docs/pre202602/ARCHIVE/unclassified/v1.4.6-File-Watcher-Lifetime-Fix.md,347,release notes,v1.4.6 File Watcher Lifetime Fix,OBSOLETE
+archived-docs/pre202602/ARCHIVE/v199-docs/RESEARCH-isgl1v3-exhaustive-graph-identity.md,345,research,RESEARCH: isgl1v3-exhaustive-graph-identity,MEDIUM
+archived-docs/pre202602/ARCHIVE/v199-docs/RESEARCH-v173-pt04-storage-architecture.md,412,research,RESEARCH: pt04 Storage Architecture — What Goes Beyond CozoDB,HIGH
+archived-docs/pre202602/ARCHIVE/v199-docs/THESIS-taint-analysis-for-parseltongue.md,786,thesis,Structural Taint Analysis via Tree-Sitter + Datalog Graph Reachability,HIGH
+archived-docs/pre202602/ARCHIVE/v199-docs/unstructured-CR-context-20260214.md,27893,research,Unstructured CR Context Dump — 2026-02-14,MEDIUM
+archived-docs/pre202602/ARCHIVE/v199-docs/v173-CR-Shreyas-Feedback-01.md,527,graph algorithms,Shreyas Doshi Evaluation: FEATURE-MATRIX-COMPARISON.md,HIGH
+archived-docs/pre202602/ARCHIVE/v199-docs/v173-bugs01-COVERAGE-REPORTING-BUG-ISSUES.md,74,CozoDB queries,Coverage Reporting Bug Issues,HIGH
+archived-docs/pre202602/ARCHIVE/v199-docs/v173-z3-tradeoff-analysis.md,236,CozoDB queries,v173-z3-tradeoff-analysis: Why Parseltongue Skips Z3,HIGH
+archived-docs/pre202602/ARCHIVE/v199-docs/v173_backlog.md,359,architecture,v1.7.3 Backlog — Deferred Ideas & Future Enhancements,HIGH
+archived-docs/pre202602/ARCHIVE/v199-docs/v199-architecture-opinion-analysis.md,412,architecture,v200-architecture-opinion-analysis: rust-llm v2.0.0 ELI5 + Opinion,HIGH
+archived-docs/pre202602/index.md,412,architecture,docs-index,HIGH
+archived-docs/pre202602/prep-v256/GITNEXUS-DEEP-ANALYSIS.md,787,workflow,GitNexus Deep Analysis for Parseltongue v2.0.0,HIGH
+archived-docs/pre202602/prep-v256/MOMENT-TO-MOMENT-UX-BLUEPRINT.md,569,code analysis,Moment-to-Moment UX Blueprint,HIGH
+archived-docs/pre202602/prep-v256/RUSTC-TOOL-ECOSYSTEM-ANALYSIS.md,461,architecture,Rust Compiler Tool Ecosystem: Comprehensive Use Case Analysis,HIGH
+archived-docs/pre202602/prep-v256/UX-BLUEPRINT-COMPILER-MAPPING.md,766,code analysis,UX Blueprint → Compiler Data Mapping,MEDIUM
+archived-docs/pre202602/prep-v256/active-reference/parseltongue-competitive-intel-2026/01-AMP-SOURCEGRAPH.md,1218,graph algorithms,Sourcegraph Amp/Cody Competitive Intelligence,HIGH
+archived-docs/pre202602/prep-v256/active-reference/parseltongue-competitive-intel-2026/02-AIDER.md,881,research,Aider Competitive Intelligence Analysis,HIGH
+archived-docs/pre202602/prep-v256/active-reference/parseltongue-competitive-intel-2026/03-OPENHANDS.md,927,architecture,OpenHands Deep Source Analysis,HIGH
+archived-docs/pre202602/prep-v256/active-reference/parseltongue-competitive-intel-2026/04-CONTINUE-DEV.md,1468,architecture,Continue.dev Deep Source Analysis: Competitive Intelligence for Parseltongue,HIGH
+archived-docs/pre202602/prep-v256/active-reference/parseltongue-competitive-intel-2026/05-PARSELTONGUE-LEARNINGS-v1.7.2.md,410,release notes,Parseltongue Learnings from Sourcegraph,HIGH
+archived-docs/pre202602/prep-v256/active-reference/parseltongue-competitive-intel-2026/06-LUCENE-ES-FOR-DATA-FLOW-ANALYSIS.md,531,CozoDB queries,Can Lucene/Elasticsearch Help with Data Flow/Control Flow Analysis?,HIGH
+archived-docs/pre202602/prep-v256/active-reference/parseltongue-competitive-intel-2026/06-PARSELTONGUE-EXISTING-TOOLS-RESEARCH.md,408,research,Parseltongue Competitive Research: Existing Tools in the Space,HIGH
+archived-docs/pre202602/prep-v256/active-reference/parseltongue-competitive-intel-2026/07-ARCHITECTURE-RUBBER-DUCK-DEBUG.md,522,architecture,Parseltongue Architecture Options: Rubber Duck Debug Session,HIGH
+archived-docs/pre202602/prep-v256/active-reference/parseltongue-conversational-mcp-simulation.md,960,MCP research,Parseltongue Conversational MCP - Moment to Moment Simulation,HIGH
+archived-docs/pre202602/prep-v256/active-reference/parseltongue-plugin-simulation.md,289,implementation plan,Parseltongue Plugin Simulation,HIGH
+archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/.codex/INSTALL.md,67,code analysis,Installing Superpowers for Codex,HIGH
+archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/.opencode/INSTALL.md,119,code analysis,Installing Superpowers for OpenCode,HIGH
+archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/README.md,157,architecture,Superpowers,HIGH
+archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/RELEASE-NOTES.md,802,release notes,Superpowers Release Notes,HIGH
+archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/TRACKER.md,189,code analysis,Exploration State: 2026-03-02,HIGH
+archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/agents/code-reviewer.md,48,agent config,name: code-reviewer,HIGH
+archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/commands/brainstorm.md,6,design doc,"description: 'You MUST use this before any creative work - creating features, building components, adding functionali...",HIGH
+archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/commands/execute-plan.md,6,implementation plan,description: Execute plan in batches with review checkpoints,HIGH
+archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/commands/write-plan.md,6,implementation plan,description: Create detailed implementation plan with bite-sized tasks,HIGH
+archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/docs/README.codex.md,120,architecture,Superpowers for Codex,HIGH
+archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/docs/README.opencode.md,330,architecture,Superpowers for OpenCode,HIGH
+archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/docs/plans/2025-11-22-opencode-support-design.md,294,implementation plan,OpenCode Support Design,HIGH
+archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/docs/plans/2025-11-22-opencode-support-implementation.md,1095,implementation plan,OpenCode Support Implementation Plan,HIGH
+archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/docs/plans/2025-11-28-skills-improvements-from-user-feedback.md,711,implementation plan,Skills Improvements from User Feedback,HIGH
+archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/docs/testing.md,303,code analysis,Testing Superpowers Skills,HIGH
+archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/docs/windows/polyglot-hooks.md,212,code analysis,Cross-Platform Polyglot Hooks for Claude Code,HIGH
+archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/brainstorming/SKILL.md,96,design doc,name: brainstorming,HIGH
+archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/dispatching-parallel-agents/SKILL.md,180,agent config,name: dispatching-parallel-agents,HIGH
+archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/executing-plans/SKILL.md,84,implementation plan,name: executing-plans,HIGH
+archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/finishing-a-development-branch/SKILL.md,200,implementation plan,name: finishing-a-development-branch,HIGH
+archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/receiving-code-review/SKILL.md,213,implementation plan,name: receiving-code-review,HIGH
+archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/requesting-code-review/SKILL.md,105,implementation plan,name: requesting-code-review,HIGH
+archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/requesting-code-review/code-reviewer.md,146,architecture,Code Review Agent,HIGH
+archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/subagent-driven-development/SKILL.md,242,agent config,name: subagent-driven-development,HIGH
+archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/subagent-driven-development/code-quality-reviewer-prompt.md,20,agent config,Code Quality Reviewer Prompt Template,HIGH
+archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/subagent-driven-development/implementer-prompt.md,78,agent config,Implementer Subagent Prompt Template,HIGH
+archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/subagent-driven-development/spec-reviewer-prompt.md,61,agent config,Spec Compliance Reviewer Prompt Template,HIGH
+archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/systematic-debugging/CREATION-LOG.md,119,debugging,Creation Log: Systematic Debugging Skill,HIGH
+archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/systematic-debugging/SKILL.md,296,debugging,name: systematic-debugging,HIGH
+archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/systematic-debugging/condition-based-waiting.md,115,debugging,Condition-Based Waiting,HIGH
+archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/systematic-debugging/defense-in-depth.md,122,debugging,Defense-in-Depth Validation,HIGH
+archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/systematic-debugging/root-cause-tracing.md,169,RCA,Root Cause Tracing,HIGH
+archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/systematic-debugging/test-academic.md,14,debugging,Academic Test: Systematic Debugging Skill,HIGH
+archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/systematic-debugging/test-pressure-1.md,58,debugging,Pressure Test 1: Emergency Production Fix,HIGH
+archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/systematic-debugging/test-pressure-2.md,68,debugging,Pressure Test 2: Sunk Cost + Exhaustion,HIGH
+archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/systematic-debugging/test-pressure-3.md,69,debugging,Pressure Test 3: Authority + Social Pressure,HIGH
+archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/test-driven-development/SKILL.md,371,implementation plan,name: test-driven-development,HIGH
+archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/test-driven-development/testing-anti-patterns.md,299,idiomatic patterns,Testing Anti-Patterns,HIGH
+archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/using-git-worktrees/SKILL.md,218,implementation plan,name: using-git-worktrees,HIGH
+archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/using-superpowers/SKILL.md,95,code analysis,name: using-superpowers,HIGH
+archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/verification-before-completion/SKILL.md,139,code analysis,name: verification-before-completion,HIGH
+archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/writing-plans/SKILL.md,116,implementation plan,name: writing-plans,HIGH
+archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/writing-skills/SKILL.md,655,code analysis,name: writing-skills,HIGH
+archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/writing-skills/anthropic-best-practices.md,1150,API design,Skill authoring best practices,HIGH
+archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/writing-skills/examples/CLAUDE_MD_TESTING.md,189,code analysis,Testing CLAUDE.md Skills Documentation,HIGH
+archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/writing-skills/persuasion-principles.md,187,design doc,Persuasion Principles for Skill Design,HIGH
+archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/writing-skills/testing-skills-with-subagents.md,384,agent config,Testing Skills With Subagents,HIGH
+archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/tests/claude-code/README.md,158,architecture,Claude Code Skills Tests,HIGH
+archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/tests/subagent-driven-dev/go-fractals/design.md,81,agent config,Go Fractals CLI - Design,HIGH
+archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/tests/subagent-driven-dev/go-fractals/plan.md,172,agent config,Go Fractals CLI - Implementation Plan,HIGH
+archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/tests/subagent-driven-dev/svelte-todo/design.md,70,agent config,Svelte Todo List - Design,HIGH
+archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/tests/subagent-driven-dev/svelte-todo/plan.md,222,agent config,Svelte Todo List - Implementation Plan,HIGH
+archived-docs/pre202602/prep-v256/competitive-intel/01-AMP-SOURCEGRAPH.md,1218,graph algorithms,Sourcegraph Amp/Cody Competitive Intelligence,MEDIUM
+archived-docs/pre202602/prep-v256/competitive-intel/02-AIDER.md,881,research,Aider Competitive Intelligence Analysis,MEDIUM
+archived-docs/pre202602/prep-v256/competitive-intel/03-OPENHANDS.md,927,architecture,OpenHands Deep Source Analysis,MEDIUM
+archived-docs/pre202602/prep-v256/competitive-intel/04-CONTINUE-DEV.md,1468,architecture,Continue.dev Deep Source Analysis: Competitive Intelligence for Parseltongue,HIGH
+archived-docs/pre202602/prep-v256/competitive-intel/05-PARSELTONGUE-LEARNINGS-v1.7.2.md,410,release notes,Parseltongue Learnings from Sourcegraph,OBSOLETE
+archived-docs/pre202602/prep-v256/competitive-intel/06-LUCENE-ES-FOR-DATA-FLOW-ANALYSIS.md,531,CozoDB queries,Can Lucene/Elasticsearch Help with Data Flow/Control Flow Analysis?,HIGH
+archived-docs/pre202602/prep-v256/competitive-intel/06-PARSELTONGUE-EXISTING-TOOLS-RESEARCH.md,408,research,Parseltongue Competitive Research: Existing Tools in the Space,MEDIUM
+archived-docs/pre202602/prep-v256/competitive-intel/07-ARCHITECTURE-RUBBER-DUCK-DEBUG.md,522,architecture,Parseltongue Architecture Options: Rubber Duck Debug Session,HIGH
+archived-docs/pre202602/prep-v256/cross-domain/12-social-network-transfer.md,363,graph algorithms,Social Network Analysis Algorithms: Transferable Patterns for Code Analysis,HIGH
+archived-docs/pre202602/prep-v256/cross-domain/13-fraud-detection-transfer.md,611,graph algorithms,Fraud Detection Graph Algorithms: Transfer Patterns for Code Analysis,HIGH
+archived-docs/pre202602/prep-v256/encyclopedia/01-centrality-algorithms.md,644,graph algorithms,Centrality Algorithms for Code Graphs,HIGH
+archived-docs/pre202602/prep-v256/encyclopedia/02-community-detection.md,670,architecture,Community Detection Algorithms for Code Graphs,HIGH
+archived-docs/pre202602/prep-v256/encyclopedia/03-traversal-search.md,630,graph algorithms,Graph Traversal & Search Algorithms for Code Graphs,MEDIUM
+archived-docs/pre202602/prep-v256/encyclopedia/07-gnn-architectures.md,548,architecture,Graph Neural Network Architectures for Code Graphs,HIGH
+archived-docs/pre202602/prep-v256/implementation/16-petgraph-ecosystem.md,447,graph algorithms,petgraph Ecosystem Analysis,MEDIUM
+archived-docs/pre202602/prep-v256/implementation/17-performance-optimization.md,1142,graph algorithms,Performance Optimization Strategies for Graph Algorithms at Scale,HIGH
+archived-docs/pre202602/prep-v256/root-parseltongue/deep-research-entity-search-context-202602280026.md,338,research,Deep Research: Entity Search & Context Retrieval for LLM Code Understanding,HIGH
+archived-docs/pre202602/prep-v256/root-parseltongue/parseltongue-conversational-mcp-simulation.md,960,MCP research,Parseltongue Conversational MCP - Moment to Moment Simulation,MEDIUM
+archived-docs/pre202602/prep-v256/root-parseltongue/parseltongue-plugin-simulation.md,289,implementation plan,Parseltongue Plugin Simulation,MEDIUM
+archived-docs/pre202602/prep-v256/rust-analyzer-research/00-README.md,1087,research,Rust-Analyzer Architecture Analysis,HIGH
+archived-docs/pre202602/prep-v256/rust-analyzer-research/01-ARCHITECTURE-OVERVIEW.md,248,research,Rust-Analyzer Architecture Overview,HIGH
+archived-docs/pre202602/prep-v256/rust-analyzer-research/02-CONTROL-FLOW.md,405,research,Rust-Analyzer Control Flow Analysis,MEDIUM
+archived-docs/pre202602/prep-v256/rust-analyzer-research/03-DATA-FLOW.md,697,research,Rust-Analyzer Data Flow Analysis,MEDIUM
+archived-docs/pre202602/prep-v256/rust-analyzer-research/04-FOLDER-STRUCTURE-DIAGRAMS.md,516,research,Rust-Analyzer Folder Structure & Organization,HIGH
+archived-docs/pre202602/prep-v256/rust-analyzer-research/05-CONTROL-FLOW-DIAGRAMS.md,523,research,Rust-Analyzer Control Flow Diagrams,MEDIUM
+archived-docs/pre202602/prep-v256/rust-analyzer-research/06-DATA-FLOW-DIAGRAMS.md,585,research,Rust-Analyzer Data Flow Diagrams,MEDIUM
+archived-docs/pre202602/prep-v256/rust-analyzer-research/07-API-USAGE-GUIDE.md,662,research,Rust-Analyzer API Usage Guide,MEDIUM
+archived-docs/pre202602/prep-v256/rust-analyzer-research/08-PER-FILE-DETAILED-DIAGRAMS.md,646,research,Rust-Analyzer: Per-File Detailed Analysis with Mermaid Diagrams,MEDIUM
+archived-docs/pre202602/prep-v256/rust-analyzer-research/09-ELI5-GUIDE.md,432,research,Rust-Analyzer Explained Like You're 5,MEDIUM
+archived-docs/pre202602/prep-v256/rust-analyzer-research/09-RUST-ANALYZER-vs-TREE-SITTER-ENTITY-KEYS.md,433,research,Rust-Analyzer vs Tree-Sitter: Entity Identity & Primary Key Extraction,HIGH
+archived-docs/pre202602/prep-v256/rust-analyzer-research/10-SUPER-HQ-IDIOMATIC-PATTERNS.md,2270,idiomatic patterns,Super HQ Idiomatic Rust Patterns from rust-analyzer,HIGH
+archived-docs/pre202602/prep-v256/rust-analyzer-research/11-DEPENDENCY-GRAPH-PYRAMID-ANALYSIS.md,1089,research,Rust-Analyzer Dependency Graph: Pyramid Analysis,HIGH
+archived-docs/pre202602/prep-v256/rust-analyzer-research/12-DEEP-ANALYSIS-PLAN-SALSA-TO-COZODB.md,868,implementation plan,ULTRATHINK: Deep Analysis Plan - Salsa → CozoDB Migration for Rust-Analyzer,MEDIUM
+archived-docs/pre202602/prep-v256/rust-analyzer-research/13-RUBBER-DUCK-DEBUGGING-SALSA-COZODB.md,684,research,Rubber Duck Debugging: Salsa → CozoDB Migration Deep Thinking,HIGH
+archived-docs/pre202602/prep-v256/rust-analyzer-research/14-V216-SEMANTIC-CONTEXT-COMPRESSOR-THESIS.md,1057,research,Parseltongue v216: The Semantic Context Compressor Thesis,HIGH
+archived-docs/pre202602/prep-v256/rust-analyzer-research/15-API-STABILITY-VERIFICATION.md,330,research,API Stability Verification: Claims vs Reality,MEDIUM
+archived-docs/pre202602/prep-v256/rust-analyzer-research/16-RUSTC-TOOL-ECOSYSTEM-ANALYSIS.md,461,research,Rust Compiler Tool Ecosystem: Comprehensive Use Case Analysis,HIGH
+archived-docs/pre202602/prep-v256/rust-analyzer-research/EXECUTIVE-SUMMARY.md,450,research,Executive Summary: Rust-Analyzer Deep Analysis & Graph Database Migration Feasibility,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/RAPx/README.md,114,architecture,![logo](https://raw.githubusercontent.com/Artisan-Lab/RAPx/main/logo.png),MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/RAPx/rapx/.github/copilot-instructions.md,56,architecture,Copilot Instructions for RAPx,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/Rudra/DEV.md,139,code analysis,Rudra Advanced Usage & Development Guide,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/Rudra/README.md,154,architecture,Rudra,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/Rudra/stdlib-analysis/README.md,74,architecture,Rudra on the Rust Standard Library,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/aeneas/LICENSE.md,201,code analysis,Apache License,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/aeneas/README.md,200,architecture,<p><div style='text-align: center'>,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/aeneas/docs/user/src/README.md,16,architecture,Introduction to Aeneas,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/aeneas/docs/user/src/SUMMARY.md,11,code analysis,Summary,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/aeneas/docs/user/src/lean/tactics/progress.md,2,code analysis,Progress,OBSOLETE
+archived-docs/pre202602/prep-v256/rustc-tools/aeneas/tests/README.md,75,architecture,Aeneas test suite,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/aquascope/ARCHITECTURE.md,40,architecture,Architectural Overview,HIGH
+archived-docs/pre202602/prep-v256/rustc-tools/aquascope/CONTRIBUTING.md,27,architecture,Contributing,HIGH
+archived-docs/pre202602/prep-v256/rustc-tools/aquascope/README.md,96,architecture,<span>Aquascope: Look Beneath the Surface of Rust</span><img src='https://user-images.githubusercontent.com/663326/21...,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/aquascope/crates/aquascope_serve/README.md,7,architecture,Aquascope Server,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/aquascope/crates/mdbook-aquascope/test-book/src/SUMMARY.md,3,code analysis,Summary,OBSOLETE
+archived-docs/pre202602/prep-v256/rustc-tools/aquascope/crates/mdbook-aquascope/test-book/src/chapter_1.md,93,code analysis,Chapter 1,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/argus/README.md,94,architecture,<img src='https://github.com/cognitive-engineering-lab/argus/blob/main/ide/packages/extension/argus-logo-128.png?raw=...,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/argus/book/src/README.md,1,architecture,Introduction,OBSOLETE
+archived-docs/pre202602/prep-v256/rustc-tools/argus/book/src/SUMMARY.md,8,debugging,Summary,LOW
+archived-docs/pre202602/prep-v256/rustc-tools/argus/book/src/debug-media.md,144,debugging,"Example 1, a simple workspace",LOW
+archived-docs/pre202602/prep-v256/rustc-tools/argus/book/src/trait-debugging-101.md,193,debugging,Trait Debugging 101,LOW
+archived-docs/pre202602/prep-v256/rustc-tools/argus/book/src/typestate.md,94,debugging,Trait Methods and Typestate,LOW
+archived-docs/pre202602/prep-v256/rustc-tools/argus/book/src/whirlwind.md,1,code analysis,Whirlwind Tour,OBSOLETE
+archived-docs/pre202602/prep-v256/rustc-tools/cargo-scan/README.md,136,architecture,Cargo Scan,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/cargo-scan/audits/manual-old/TEMPLATE.md,37,code analysis,<!-- crate name/URL -->,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/cargo-scan/audits/manual-old/autocfg.md,66,code analysis,autocfg,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/cargo-scan/audits/manual-old/cc.md,54,code analysis,[cc](https://docs.rs/cc/latest/cc/),MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/cargo-scan/audits/manual-old/chrono.md,47,code analysis,[chrono](https://docs.rs/chrono/latest/chrono/),MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/cargo-scan/audits/manual-old/clap.md,55,implementation plan,[clap](https://docs.rs/clap/latest/clap/index.html),MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/cargo-scan/audits/manual-old/crossbeam-channel.md,38,code analysis,crossbeam-channel,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/cargo-scan/audits/manual-old/env_logger.md,39,code analysis,env_logger,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/cargo-scan/audits/manual-old/getrandom.md,73,code analysis,[getrandom](https://docs.rs/getrandom/latest/getrandom/),MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/cargo-scan/audits/manual-old/h2.md,80,code analysis,[h2](https://docs.rs/h2/latest/h2/),MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/cargo-scan/audits/manual-old/hyper.md,137,code analysis,[hyper](https://docs.rs/hyper/latest/hyper/index.html),MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/cargo-scan/audits/manual-old/libc.md,79,code analysis,[libc](https://docs.rs/libc/0.2.134/libc/),MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/cargo-scan/audits/manual-old/memchr.md,43,code analysis,[memchr](https://docs.rs/memchr/latest/memchr/),MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/cargo-scan/audits/manual-old/mio.md,240,code analysis,[mio](https://docs.rs/mio/latest/mio/),MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/cargo-scan/audits/manual-old/num_cpus.md,51,code analysis,[num_cpus](https://docs.rs/num_cpus/latest/num_cpus/),MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/cargo-scan/audits/manual-old/parking_lot_core.md,48,code analysis,[parking_lot_core](https://docs.rs/parking_lot_core/latest/parking_lot_core/),MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/cargo-scan/audits/manual-old/pkg-config.md,45,code analysis,[pkg-config](https://docs.rs/pkg-config/0.3.25/pkg_config/),MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/cargo-scan/audits/manual-old/proc-macro2.md,51,code analysis,proc-macro2,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/cargo-scan/audits/manual-old/rustc_version.md,46,code analysis,rustc_version,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/cargo-scan/audits/manual-old/socket2.md,92,code analysis,[socket2](https://docs.rs/socket2/latest/socket2/),MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/cargo-scan/audits/manual-old/stable_deref_trait.md,36,implementation plan,stable_deref_trait,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/cargo-scan/audits/manual-old/termcolor.md,36,code analysis,termcolor,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/cargo-scan/audits/manual-old/thiserror.md,42,architecture,[thiserror](https://docs.rs/thiserror/latest/thiserror/),OBSOLETE
+archived-docs/pre202602/prep-v256/rustc-tools/cargo-scan/audits/manual-old/tokio-util.md,81,code analysis,[tokio-util](https://docs.rs/tokio-util/0.7.4/tokio_util/),MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/cargo-scan/audits/manual-old/tokio.md,289,code analysis,[tokio](https://docs.rs/tokio/latest/tokio/),MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/cargo-scan/audits/manual-old/url.md,45,code analysis,[url](https://docs.rs/url/latest/url/),MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/cargo-scan/audits/manual-old/version_check.md,44,code analysis,Audited by: Caleb Stanford,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/charon/.github/ISSUE_TEMPLATE/bug_report.md,51,code analysis,name: Bug report,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/charon/.github/ISSUE_TEMPLATE/feature_request.md,44,code analysis,name: Feature request,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/charon/.github/ISSUE_TEMPLATE/other.md,4,code analysis,name: Other,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/charon/.github/ISSUE_TEMPLATE/unsupported-language-feature.md,44,code analysis,name: Unsupported language feature,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/charon/CONTRIBUTING.md,119,code analysis,Contributing to Charon,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/charon/LICENSE.md,201,code analysis,Apache License,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/charon/README.md,102,architecture,<p><div style='text-align: center'>,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/charon/charon-ml/README.md,4,architecture,Charon ML,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/charon/charon/hax-frontend/README.md,3,architecture,Special core extraction mode,OBSOLETE
+archived-docs/pre202602/prep-v256/rustc-tools/charon/charon/hax-frontend/adt-into/README.md,15,architecture,hax adt into,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/charon/charon/macros/README.md,4,architecture,Macros,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/charon/docs/limitations.md,30,implementation plan,Current limitations of Charon,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/charon/docs/transformations.md,83,code analysis,Charon transformations,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/charon/docs/usage.md,62,implementation plan,Usage,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/charon/docs/what_charon_does_for_you.md,16,implementation plan,What Charon Does For You,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/charon/docs/what_charon_translates.md,26,architecture,What Charon Translates,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/creusot/ARCHITECTURE.md,205,implementation plan,Creusot is a deductive verifier for (safe) Rust code built on top of the [Why3](https://why3.lri.fr) verification pla...,HIGH
+archived-docs/pre202602/prep-v256/rustc-tools/creusot/CHANGELOG.md,880,code analysis,Changelog,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/creusot/CONTRIBUTING.md,146,code analysis,"We thank you, contributor, for working to improve the Creusot tool for Rust verification.",MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/creusot/README.md,88,architecture,![](/static/marteau.jpg),MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/SUMMARY.md,38,code analysis,Summary,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/basic_concepts.md,13,code analysis,Basic concepts,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/basic_concepts/loop_invariants.md,157,code analysis,Loop invariants,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/basic_concepts/proof_assert.md,18,debugging,`proof_assert!`,LOW
+archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/basic_concepts/requires_ensures.md,46,code analysis,requires and ensure,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/basic_concepts/variants.md,7,code analysis,Variants,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/command_line_interface.md,206,code analysis,Command-line Interface,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/erasure.md,207,code analysis,Erasure check,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/ghost.md,78,code analysis,Ghost code,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/ghost/ghost-structures.md,45,code analysis,Ghost structures,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/ghost/int-in-ghost.md,22,code analysis,Int in ghost,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/installation.md,131,code analysis,Installation,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/limitations.md,42,architecture,Known limitations,HIGH
+archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/logic_functions.md,82,code analysis,Logic functions,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/logic_functions/lemma_law.md,84,code analysis,Lemmas and laws,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/logic_functions/open.md,34,code analysis,Visibility of logical functions,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/logic_functions/prophetic.md,7,code analysis,Prophetic functions,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/pearlite.md,35,code analysis,Pearlite,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/quickstart.md,128,code analysis,Quick start,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/quickstart/editor_config.md,15,code analysis,"From the root of your project, write the following in the `.vscode/settings.json` file:",MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/representation_of_types.md,3,code analysis,Representation of types,OBSOLETE
+archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/representation_of_types/most_types.md,14,code analysis,Base types,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/representation_of_types/mutable_borrows.md,93,code analysis,Mutable borrows,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/snapshots.md,47,code analysis,Snapshots,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/termination.md,119,code analysis,Termination,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/trusted.md,14,implementation plan,Trusted,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/tutorial.md,434,code analysis,Tutorial,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/tutorial/gnome_sort.md,142,code analysis,Gnome sort,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/tutorial/linked_list.md,348,implementation plan,Linked list,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/type_invariants.md,111,code analysis,Type Invariants,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/view.md,37,code analysis,Views as models of types,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/creusot/why3/README.md,8,architecture,Why3,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/dylint/CHANGELOG.md,410,debugging,Changelog,LOW
+archived-docs/pre202602/prep-v256/rustc-tools/dylint/CONTRIBUTING.md,18,code analysis,- Please prefix all non-rustdoc comments with your GitHub username.,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/dylint/README.md,283,architecture,Dylint,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/dylint/cargo-dylint/README.md,283,architecture,Dylint,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/dylint/docs/how_dylint_works.md,92,code analysis,How Dylint works,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/dylint/driver/README.md,5,architecture,dylint_driver,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/dylint/dylint-link/README.md,29,architecture,dylint-link,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/dylint/dylint/README.md,283,architecture,Dylint,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/README.md,87,architecture,Example Dylint libraries,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/experimental/README.md,1,experiment,Experimental lints,OBSOLETE
+archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/experimental/derive_opportunity/README.md,43,experiment,derive_opportunity,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/experimental/missing_doc_comment_llm/README.md,81,experiment,missing_doc_comment_llm,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/general/README.md,40,architecture,General-purpose lints,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/general/abs_home_path/README.md,36,architecture,abs_home_path,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/general/await_holding_span_guard/README.md,71,architecture,await_holding_span_guard,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/general/basic_dead_store/README.md,31,architecture,basic_dead_store,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/general/crate_wide_allow/README.md,25,architecture,crate_wide_allow,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/general/incorrect_matches_operation/README.md,47,architecture,incorrect_matches_operation,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/general/non_local_effect_before_error_return/README.md,54,architecture,non_local_effect_before_error_return,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/general/non_thread_safe_call_in_test/README.md,43,architecture,non_thread_safe_call_in_test,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/general/wrong_serialize_struct_arg/README.md,54,architecture,wrong_serialize_struct_arg,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/restriction/README.md,1,architecture,Restriction lints,OBSOLETE
+archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/restriction/assert_eq_arg_misordering/README.md,28,architecture,assert_eq_arg_misordering,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/restriction/collapsible_unwrap/README.md,28,architecture,collapsible_unwrap,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/restriction/const_path_join/README.md,24,architecture,const_path_join,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/restriction/env_literal/README.md,28,architecture,env_literal,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/restriction/inconsistent_qualification/README.md,44,architecture,inconsistent_qualification,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/restriction/misleading_variable_name/README.md,27,architecture,misleading_variable_name,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/restriction/non_topologically_sorted_functions/README.md,29,architecture,non_topologically_sorted_functions,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/restriction/question_mark_in_expression/README.md,23,architecture,question_mark_in_expression,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/restriction/ref_aware_redundant_closure_for_method_calls/README.md,28,architecture,ref_aware_redundant_closure_for_method_calls,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/restriction/register_lints_warn/README.md,35,architecture,register_lints_warn,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/restriction/suboptimal_pattern/README.md,41,architecture,suboptimal_pattern,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/restriction/try_io_result/README.md,37,architecture,try_io_result,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/supplementary/README.md,9,architecture,Supplementary lints,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/supplementary/arg_iter/README.md,42,architecture,arg_iter,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/supplementary/commented_out_code/README.md,33,architecture,commented_out_code,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/supplementary/dir_entry_path_file_name/README.md,36,architecture,dir_entry_path_file_name,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/supplementary/escaping_doc_link/README.md,23,architecture,escaping_doc_link,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/supplementary/inconsistent_struct_pattern/README.md,31,architecture,inconsistent_struct_pattern,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/supplementary/local_ref_cell/README.md,23,architecture,local_ref_cell,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/supplementary/nonexistent_path_in_comment/README.md,43,architecture,nonexistent_path_in_comment,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/supplementary/redundant_reference/README.md,51,architecture,redundant_reference,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/supplementary/unnamed_constant/README.md,29,architecture,unnamed_constant,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/supplementary/unnecessary_borrow_mut/README.md,26,architecture,unnecessary_borrow_mut,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/supplementary/unnecessary_conversion_for_trait/README.md,24,architecture,unnecessary_conversion_for_trait,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/testing/README.md,1,architecture,Testing lints,OBSOLETE
+archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/testing/clippy/README.md,1,architecture,clippy,OBSOLETE
+archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/testing/straggler/README.md,13,architecture,straggler,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/dylint/internal/README.md,5,architecture,dylint_internal,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/dylint/internal/template/README.md,21,architecture,template,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/dylint/utils/linting/README.md,199,architecture,dylint_linting,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/dylint/utils/testing/README.md,118,architecture,dylint_testing,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/eurydice/README.md,83,architecture,<p><div style='text-align: center'>,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/eurydice/cremepat/README.md,4,architecture,"CREMEPAT: CREdible, Meta-Extensible PATterns",MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/flowistry/README.md,198,architecture,<img src='https://user-images.githubusercontent.com/663326/134070630-47b95f41-a4a7-4ded-a5cb-9884d1af2468.png' height...,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/flowistry/crates/flowistry/README.md,18,architecture,Information flow analysis,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/flowistry/crates/flowistry/benches/README.md,20,architecture,Benching process,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/flowistry/crates/flowistry_ide/README.md,116,architecture,<img src='https://user-images.githubusercontent.com/663326/134070630-47b95f41-a4a7-4ded-a5cb-9884d1af2468.png' height...,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/flowistry/ide/CHANGELOG.md,5,code analysis,Change Log,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/flowistry/ide/src/tests/README.md,38,architecture,Extension Unit Tests,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/flux/.github/copilot-instructions.md,137,code analysis,Flux Repository - Copilot Coding Agent Instructions,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/flux/NOTES.md,66,code analysis,RJ Notes,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/flux/README.md,23,architecture,<img,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/flux/book/src/README.md,33,architecture,<img src='img/logo-wide.svg' class='flux-logo' alt='Flux Logo'>,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/flux/book/src/SUMMARY.md,28,architecture,Summary,HIGH
+archived-docs/pre202602/prep-v256/rustc-tools/flux/book/src/about.md,41,code analysis,About Flux,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/flux/book/src/guide/architecture.md,48,architecture,High-level Architecture,HIGH
+archived-docs/pre202602/prep-v256/rustc-tools/flux/book/src/guide/develop.md,183,code analysis,Developer's Guide,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/flux/book/src/guide/install.md,238,code analysis,Installing and Running Flux,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/flux/book/src/guide/specifications.md,1045,spec,Flux Specifications,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/flux/book/src/tutorial/01-refinements.md,285,code analysis,Refining Types,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/flux/book/src/tutorial/02-ownership.md,324,code analysis,Ownership in Flux,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/flux/book/src/tutorial/03-structs.md,348,code analysis,Refining Structs,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/flux/book/src/tutorial/04-enums.md,380,code analysis,Refining Enums,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/flux/book/src/tutorial/05-vectors.md,478,code analysis,Opaque Types: Refined Vectors,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/flux/book/src/tutorial/06-consts.md,197,debugging,Const Generics,LOW
+archived-docs/pre202602/prep-v256/rustc-tools/flux/book/src/tutorial/07-externs.md,508,implementation plan,Extern Specifications,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/flux/book/src/tutorial/08-traits.md,518,code analysis,Traits and Associated Refinements,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/flux/book/src/tutorial/09-sparse.md,89,code analysis,Preamble,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/flux/book/src/tutorial/11-equality.md,348,code analysis,Simple Access Control,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/flux/book/src/tutorial/12-sets.md,594,code analysis,Dynamic Access Control,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/flux/book/src/tutorial/13-bitvectors.md,633,code analysis,Dependent Typestates,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/flux/book/src/tutorial/14-neural.md,494,code analysis,Neural Networks,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/flux/crates/flux-bin/README.md,6,architecture,flux-bin,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/flux/crates/flux-macros/src/diagnostics/LICENSE-MIT.md,23,code analysis,"Permission is hereby granted, free of charge, to any",MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/flux/crates/flux-macros/src/diagnostics/LICENSE.md,1,code analysis,The code under this directory is distributed under the MIT license.,OBSOLETE
+archived-docs/pre202602/prep-v256/rustc-tools/flux/lib/README.md,14,architecture,Crates in this directory are meant to be used as dependencies for projects using Flux. They should be,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/flux/tools/vscode/CHANGELOG.md,9,code analysis,Change Log,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/flux/tools/vscode/README.md,88,architecture,Flux Refinement Type Checker,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/flux/tools/vscode/vsc-extension-quickstart.md,29,code analysis,Welcome to your VS Code Extension,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/CHANGELOG.md,204,code analysis,Changelog,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/CI.md,26,code analysis,Continuous Integration (CI),MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/CONTRIBUTING.md,149,code analysis,Engineering & Contributing Guidelines,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/PUBLISHING.md,67,code analysis,Publishing,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/README.md,240,architecture,<p align='center'>,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/cli/subcommands/src/engine_debug_webapp/README.md,17,architecture,This folder implements a small webapp designed for viewing how a rust,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/RFCs/0000-template.md,46,code analysis,title: 0000 template,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/RFCs/index.md,3,code analysis,RFCs,OBSOLETE
+archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/blog/index.md,8,code analysis,weight: 4,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/blog/posts/announce-v0.1.md,118,graph algorithms,authors:,HIGH
+archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/blog/posts/hax-for-everyone.md,70,code analysis,authors:,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/blog/posts/lucas-departure.md,76,code analysis,authors:,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/blog/posts/reworking-names/reworking-names.md,97,design doc,authors:,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/blog/posts/rust-gcd-1.md,1152,code analysis,authors:,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/blog/posts/rust-gcd-2.md,162,implementation plan,authors:,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/blog/posts/this-month-in-hax/2025-01.md,79,code analysis,authors:,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/blog/posts/this-month-in-hax/2025-02.md,62,code analysis,authors:,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/blog/posts/this-month-in-hax/2025-03.md,60,code analysis,authors:,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/blog/posts/this-month-in-hax/2025-04.md,68,code analysis,authors:,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/blog/posts/this-month-in-hax/2025-05.md,48,code analysis,authors:,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/blog/posts/this-month-in-hax/2025-06.md,48,code analysis,authors:,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/blog/posts/this-month-in-hax/2025-07.md,64,code analysis,authors:,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/blog/posts/this-month-in-hax/2025-08.md,40,debugging,authors:,LOW
+archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/blog/posts/this-month-in-hax/2025-09.md,86,debugging,authors:,LOW
+archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/blog/posts/this-month-in-hax/2025-10.md,40,code analysis,authors:,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/blog/posts/this-month-in-hax/2025-11.md,42,code analysis,authors:,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/blog/posts/this-month-in-hax/2026-01.md,51,code analysis,authors:,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/dev/architecture.md,83,architecture,Architecture,HIGH
+archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/dev/ast_ebnf.md,244,code analysis,"We currently take inputs from the following AST. Literals are strings, numbers and",MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/dev/docs.md,35,code analysis,Docs,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/dev/index.md,8,code analysis,weight: 5,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/dev/libraries_macros.md,25,architecture,Libraries,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/engine/index.md,2,code analysis,Engine,OBSOLETE
+archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/engine/toolchain_structure/index.md,7,code analysis,Toolchain structure,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/frontend/evaluation.md,158,code analysis,Evaluation of the hax Frontend,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/frontend/index.md,171,design doc,Frontend,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/index.md,18,code analysis,hax is a tool for high assurance translations of a large subset of,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/manual/faq/include-flags.md,144,implementation plan,**Rust Item Extraction Using `cargo hax`**,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/manual/faq/index.md,7,code analysis,weight: 200,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/manual/faq/into.md,1,code analysis,Troubleshooting/FAQ,OBSOLETE
+archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/manual/fstar/index.md,0,code analysis,(empty file),OBSOLETE
+archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/manual/fstar/quick_start.md,86,code analysis,weight: 0,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/manual/fstar/tutorial/data-invariants.md,100,code analysis,weight: 2,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/manual/fstar/tutorial/index.md,19,code analysis,weight: 1,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/manual/fstar/tutorial/panic-freedom.md,127,code analysis,weight: 0,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/manual/fstar/tutorial/properties.md,152,code analysis,weight: 1,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/manual/index.md,71,code analysis,weight: -5,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/manual/lean/index.md,0,code analysis,(empty file),OBSOLETE
+archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/manual/lean/internals.md,535,code analysis,weight: 102,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/manual/lean/quick_start.md,87,code analysis,weight: 100,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/manual/lean/tutorial/index.md,8,code analysis,weight: 101,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/manual/lean/tutorial/panic-freedom.md,96,code analysis,weight: 0,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/manual/lean/tutorial/properties.md,27,code analysis,weight: 1,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/publications.md,21,implementation plan,weight: 5,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/engine/DEV.md,63,debugging,Notes about developping on the engine,LOW
+archived-docs/pre202602/prep-v256/rustc-tools/hax/engine/names/README.md,52,architecture,`hax-engine-names`,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/engine/utils/generate_from_ast/README.md,18,architecture,`generate_from_ast`,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/engine/utils/ppx_functor_application/README.md,82,architecture,`ppx_functor_application`,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/engine/utils/ppx_generate_features/README.md,10,architecture,`ppx_generate_features`,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/engine/utils/ppx_inline/README.md,77,architecture,`ppx_inline`,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/engine/utils/ppx_phases_index/README.md,5,architecture,`ppx_phases_index`,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/examples/README.md,109,architecture,Examples,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/examples/coq-example/README.md,49,architecture,Stack example,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/examples/limited-order-book/README.md,1,architecture,This crate comes from https://github.com/oggy-dfin/lob,OBSOLETE
+archived-docs/pre202602/prep-v256/rustc-tools/hax/examples/proverif-psk/Readme.md,77,architecture,A hax ProVerif example,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/frontend/exporter/README.md,3,architecture,Special core extraction mode,OBSOLETE
+archived-docs/pre202602/prep-v256/rustc-tools/hax/frontend/exporter/adt-into/README.md,15,architecture,hax adt into,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/hax-lib-protocol/README.md,19,architecture,Hax Protocol Library,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/hax-lib/README.md,17,architecture,hax library,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/hax-lib/core-models/README.md,64,architecture,This crate contains a partial model of Rust core that should preserve the same types signatures and behaviour as the ...,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/hax-lib/macros/README.md,8,architecture,hax proc macros,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/hax-lib/macros/types/README.md,3,architecture,hax internal types,OBSOLETE
+archived-docs/pre202602/prep-v256/rustc-tools/hax/hax-lib/proof-libs/coq/ssprove/README.md,30,architecture,Dependencies,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/hax-lib/proof-libs/fstar-secret-integers/README.md,35,architecture,Libraries for Hax,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/hax-lib/proof-libs/fstar-secret-integers/core/README.md,29,architecture,Core (and alloc) library,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/hax-lib/proof-libs/fstar/README.md,35,architecture,Libraries for Hax,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/hax-lib/proof-libs/fstar/core/README.md,29,architecture,Core (and alloc) library,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/hax-lib/proof-libs/lean/README.md,7,architecture,Hax Lean library,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/hax-types/README.md,8,architecture,`hax-types`,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/rust-engine/README.md,14,architecture,Hax Rust Engine,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/rustc-coverage-tests/README.md,53,architecture,This crate contains the [rust files](https://github.com/rust-lang/rust/tree/master/tests/coverage) from rustc [covera...,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/test-harness/README.md,67,architecture,Tests the whole toolchain,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/tests/README.md,4,architecture,Tests,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/hax/tests/raw-attributes/README.md,4,architecture,"This example is more interesting with the debug mode enabled, to see all the attributes:",MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/.github/ISSUE_TEMPLATE/bug_report.md,44,implementation plan,name: Bug Report,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/.github/ISSUE_TEMPLATE/dev-improvement.md,13,code analysis,name: Dev Improvement,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/.github/ISSUE_TEMPLATE/feature_request.md,30,code analysis,name: Feature Request,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/.github/PULL_REQUEST_TEMPLATE.md,11,code analysis,> Please ensure your PR description includes the following:,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/.github/SECURITY.md,6,code analysis,"If you think you have discovered a security issue related to Kani, **please write to us**  at kani-verifier-security@...",MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/CHANGELOG.md,783,code analysis,Changelog,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/CODE_OF_CONDUCT.md,14,design doc,Code of Conduct,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/CONTRIBUTING.md,58,code analysis,Contributing Guidelines,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/README.md,69,architecture,![](./kani-logo.png),MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/README.md,27,architecture,Kani documentation development,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/SUMMARY.md,59,code analysis,Kani Rust Verifier,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/application.md,13,debugging,Application,LOW
+archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/benchcomp-cli.md,139,code analysis,`benchcomp` command line,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/benchcomp-conf.md,54,code analysis,`benchcomp` configuration file,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/benchcomp-parse.md,61,code analysis,Custom parsers,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/build-from-source.md,89,code analysis,Installing from source code,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/cargo-kani.md,3,code analysis,Usage on a package,OBSOLETE
+archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/cbmc-hacks.md,65,code analysis,Working with CBMC,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/cheat-sheets.md,162,debugging,Command cheat sheets,LOW
+archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/conventions.md,126,code analysis,Coding conventions,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/crates/index.md,11,code analysis,Crates documentation,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/debugging-slow-proofs.md,107,debugging,Debugging Slow Proofs,LOW
+archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/dev-documentation.md,23,code analysis,Developer documentation,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/faq.md,59,implementation plan,FAQs,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/getting-started.md,27,code analysis,Getting started,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/install-github-ci.md,74,workflow,GitHub Action,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/install-guide.md,84,code analysis,Installation,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/kani-single-file.md,3,code analysis,Usage on a single file,OBSOLETE
+archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/kani-tutorial.md,12,debugging,Tutorial,LOW
+archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/limitations.md,13,code analysis,Limitations,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/overrides.md,22,debugging,Overrides,LOW
+archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/performance-comparisons.md,40,code analysis,Performance comparisons with `benchcomp`,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/profiling.md,26,code analysis,Profiling Kani's Performance,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/reference.md,4,code analysis,Reference,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/reference/arbitrary.md,119,implementation plan,Arbitrary Trait,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/reference/attributes.md,253,code analysis,Attributes,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/reference/bounded_arbitrary.md,81,implementation plan,Bounded Non-deterministic variables,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/reference/experimental/autoharness.md,146,experiment,Automatic Harness Generation,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/reference/experimental/concrete-playback.md,88,experiment,Concrete Playback,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/reference/experimental/contracts.md,66,experiment,Contracts,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/reference/experimental/coverage.md,32,experiment,Coverage,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/reference/experimental/experimental-features.md,4,experiment,Experimental Features,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/reference/experimental/loop-contracts.md,289,experiment,Loop Contracts,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/reference/experimental/quantifiers.md,56,experiment,Quantifiers in Kani,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/reference/experimental/stubbing.md,214,experiment,Stubbing,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/reference/list.md,52,code analysis,List Command,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/regression-testing.md,214,code analysis,Regression testing,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/rust-feature-support.md,202,architecture,Rust feature support,HIGH
+archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/rust-feature-support/intrinsics.md,277,code analysis,Intrinsics,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/rust-feature-support/unstable.md,9,code analysis,Unstable features,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/rustc-hacks.md,250,code analysis,Working with `rustc`,HIGH
+archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/stable-mir.md,94,code analysis,Transition to StableMIR,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/testing.md,18,code analysis,Testing,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/tool-comparison.md,34,code analysis,Comparison with other tools,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/tutorial-first-steps.md,174,code analysis,First steps,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/tutorial-kinds-of-failure.md,224,code analysis,Failures that Kani can spot,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/tutorial-loop-unwinding.md,148,debugging,"Loops, unwinding, and bounds",LOW
+archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/tutorial-nondeterministic-variables.md,131,implementation plan,Nondeterministic variables,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/tutorial-real-code.md,93,code analysis,Where to start on real code,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/undefined-behaviour.md,42,code analysis,Undefined Behaviour,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/usage.md,132,implementation plan,Using Kani,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/verification-results.md,177,verification,Verification results,OBSOLETE
+archived-docs/pre202602/prep-v256/rustc-tools/kani/kani-compiler/README.md,8,architecture,This is a temporary wrapper that can be used to compiler rust into gotoc. This,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/papers/vstte2024/README.md,0,architecture,(empty file),OBSOLETE
+archived-docs/pre202602/prep-v256/rustc-tools/kani/rfc/src/SUMMARY.md,21,code analysis,Kani Rust Verifier - RFCs,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/rfc/src/intro.md,72,code analysis,Introduction,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/rfc/src/rfcs/0001-mir-linker.md,255,code analysis,- **Feature Name:** MIR Linker (`mir_linker`),MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/rfc/src/rfcs/0002-function-stubbing.md,503,design doc,- **Feature Name:** Function and method stubbing (`function-stubbing`),MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/rfc/src/rfcs/0003-cover-statement.md,155,implementation plan,- **Feature Name:** Cover statement (`cover-statement`),MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/rfc/src/rfcs/0004-loop-contract-synthesis.md,225,thesis,- **Feature Name:** Loop-contract synthesis (`loop-contract-synthesis`),MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/rfc/src/rfcs/0005-should-panic-attr.md,270,code analysis,- **Feature Name:** The `kani::should_panic` attribute (`should-panic-attr`),MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/rfc/src/rfcs/0006-unstable-api.md,118,code analysis,- **Feature Name:** Unstable APIs (`unstable-api`),MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/rfc/src/rfcs/0007-global-conditions.md,111,code analysis,- **Feature Name:** Global Conditions (`global-conditions`),MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/rfc/src/rfcs/0008-line-coverage.md,171,code analysis,- **Feature Name:** Line coverage (`line-coverage`),MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/rfc/src/rfcs/0009-function-contracts.md,939,code analysis,- **Feature Name:** Function Contracts,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/rfc/src/rfcs/0010-quantifiers.md,231,code analysis,- **Feature Name:** Quantifiers,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/rfc/src/rfcs/0011-source-coverage.md,647,implementation plan,- **Feature Name:** Source-based code coverage (`source-coverage`),MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/rfc/src/rfcs/0012-loop-contracts.md,353,code analysis,- **Feature Name:** Loop Contracts,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/rfc/src/rfcs/0013-list.md,198,code analysis,- **Feature Name:** List Subcommand,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/rfc/src/rfcs/0014-harness-partition.md,212,code analysis,- **Feature Name:** Partitioned Proofs (`partition-proof`),MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/rfc/src/template.md,86,architecture,- **Feature Name:** *Fill me with pretty name and a unique ident [^unstable_feature]. Example: New Feature (`new_feat...,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/tests/README.md,5,architecture,Kani Test Suites,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/tests/cargo-kani/build-rs-plus-host-with-kani-proofs/README.md,2,architecture,This repo contains contains a minimal example that used to break compilation,OBSOLETE
+archived-docs/pre202602/prep-v256/rustc-tools/kani/tests/cargo-kani/firecracker-block-example/README.md,38,architecture,This example accompanies Kani's post on Firecracker. This describes a proof,HIGH
+archived-docs/pre202602/prep-v256/rustc-tools/kani/tests/cargo-kani/rectangle-example/README.md,48,architecture,"Using an implementation of a `Rectangle` we use unit tests, property-based testing and Kani",MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/tests/cargo-kani/vecdeque-cve/README.md,123,architecture,This example accompanies Kani's post on CVE-2018-1000657 of the Rust Standard Library.,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/tests/perf/overlays/README.md,11,architecture,Copyright Kani Contributors,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/tests/ui/concrete-playback/README.md,1,architecture,These tests check that the correct concrete values are read and formatted into a concrete playback unit test case.,OBSOLETE
+archived-docs/pre202602/prep-v256/rustc-tools/kani/tools/benchcomp/README.md,11,architecture,Benchcomp,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/tools/benchcomp/benchcomp/entry/README.md,3,architecture,"Each file X.py in this directory contains a `main` method, which",OBSOLETE
+archived-docs/pre202602/prep-v256/rustc-tools/kani/tools/benchcomp/benchcomp/parsers/README.md,11,architecture,Each file in this directory implements a 'parser' that is intended to,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/tools/benchcomp/configs/README.md,4,architecture,Example Benchcomp Configurations,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/kani/tools/benchcomp/test/README.md,3,architecture,Benchcomp unit & regression tests,OBSOLETE
+archived-docs/pre202602/prep-v256/rustc-tools/kani/tools/compile-timer/README.md,18,architecture,Compile-Timer,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/lockbud/README.md,264,architecture,lockbud,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/marker/.github/ISSUE_TEMPLATE/blank_issue.md,5,code analysis,name: Blank Issue,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/marker/CHANGELOG.md,222,code analysis,[Unreleased]: https://github.com/rust-marker/marker/compare/v0.5.0...HEAD,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/marker/CODE_OF_CONDUCT.md,3,code analysis,The Rust Code of Conduct,OBSOLETE
+archived-docs/pre202602/prep-v256/rustc-tools/marker/CONTRIBUTING.md,267,code analysis,Contributing to Marker,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/marker/COPYRIGHT.md,642,code analysis,Marker,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/marker/README.md,192,architecture,<h1 align='center'>Marker</h1>,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/marker/cargo-marker/README.md,45,architecture,Cargo Marker,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/marker/docs/README.md,11,architecture,Documentation,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/marker/docs/book/src/README.md,7,architecture,The Marker Book,OBSOLETE
+archived-docs/pre202602/prep-v256/rustc-tools/marker/docs/book/src/SUMMARY.md,11,code analysis,Summary,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/marker/docs/book/src/lint-dev.md,5,code analysis,Lint Development,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/marker/docs/book/src/marker-dev.md,9,architecture,Marker Development,HIGH
+archived-docs/pre202602/prep-v256/rustc-tools/marker/docs/book/src/usage.md,3,code analysis,Usage,OBSOLETE
+archived-docs/pre202602/prep-v256/rustc-tools/marker/docs/book/src/usage/ci.md,154,code analysis,"Marker's primary objective is to offer an excellent linting interface, including the seamless integration with CI ser...",MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/marker/docs/book/src/usage/installation.md,100,code analysis,Installation,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/marker/docs/book/src/usage/lint-crate-declaration.md,42,implementation plan,Lint Crate Declaration,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/marker/docs/book/src/usage/lint-crate-security.md,15,code analysis,Lint Crate Security,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/marker/docs/book/src/usage/setting-lint-levels.md,54,code analysis,Setting Lint Levels,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/marker/docs/internal/README.md,40,architecture,Internal documentation,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/marker/docs/internal/driver-info.md,64,implementation plan,Driver information,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/marker/docs/internal/release.md,130,release notes,This document describes the release processes and artifacts in `marker`.,OBSOLETE
+archived-docs/pre202602/prep-v256/rustc-tools/marker/docs/internal/rustc_driver/conversion.md,32,code analysis,Conversion code,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/marker/docs/internal/type-guidelines.md,11,code analysis,Type guidelines,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/marker/marker_adapter/README.md,41,architecture,Marker Adapter 🔌,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/marker/marker_api/README.md,117,architecture,Marker API,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/marker/marker_error/README.md,141,architecture,[Marker]: https://github.com/rust-marker/marker,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/marker/marker_lints/README.md,50,architecture,Marker Lints,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/marker/marker_rustc_driver/README.md,34,architecture,Marker's driver for rustc,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/marker/marker_uilints/README.md,22,architecture,Marker's UI tests,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/marker/marker_uilints/tests/ui/expr/sugar/README.md,1,architecture,"This folder contains tests, to check that expressions are resugared correctly and their spans also match up.",OBSOLETE
+archived-docs/pre202602/prep-v256/rustc-tools/marker/marker_uitest/README.md,83,architecture,Marker UI-test,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/marker/marker_utils/README.md,53,architecture,Marker Utils,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/marker/rfc/0000-lock-file.md,332,implementation plan,- Feature Name: `lock-file`,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/miri/CONTRIBUTING.md,431,code analysis,Contribution Guide,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/miri/README.md,678,architecture,Miri,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/miri/doc/genmc.md,158,implementation plan,**(WIP)** Documentation for Miri-GenMC,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/miri/doc/tracing.md,298,debugging,Documentation for the tracing infrastructure in Miri,LOW
+archived-docs/pre202602/prep-v256/rustc-tools/paralegal/.github/pull_request_template.md,27,code analysis,What Changed?,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/paralegal/README.md,59,architecture,Paralegal: A Privacy and Security Bug Finder for Rust Applications.,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/paralegal/crates/paralegal-compiler/README.md,20,architecture,paralegal-compiler,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/polonius/CODE_OF_CONDUCT.md,40,code analysis,The Rust Code of Conduct,OBSOLETE
+archived-docs/pre202602/prep-v256/rustc-tools/polonius/README.md,65,architecture,This is a core library that models the borrow check. It implements the analysis,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/polonius/RELEASES.md,128,release notes,polonius,OBSOLETE
+archived-docs/pre202602/prep-v256/rustc-tools/polonius/book/src/SUMMARY.md,14,code analysis,Summary,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/polonius/book/src/current_status.md,26,implementation plan,Current status,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/polonius/book/src/generate_inputs.md,24,code analysis,How to generate your own inputs,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/polonius/book/src/getting_started.md,27,graph algorithms,Want to run the code?,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/polonius/book/src/rules.md,10,code analysis,Rules,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/polonius/book/src/rules/atoms.md,76,code analysis,Atoms,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/polonius/book/src/rules/initialization.md,3,code analysis,Initialization analysis,OBSOLETE
+archived-docs/pre202602/prep-v256/rustc-tools/polonius/book/src/rules/liveness.md,3,code analysis,Liveness analysis,OBSOLETE
+archived-docs/pre202602/prep-v256/rustc-tools/polonius/book/src/rules/loans.md,243,graph algorithms,Loan analysis,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/polonius/book/src/rules/relations.md,155,code analysis,Input relations,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/polonius/book/src/see_also.md,19,code analysis,See also,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/polonius/book/src/testing.md,16,code analysis,Testing Polonius,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/polonius/book/src/what_is_polonius.md,14,implementation plan,What is polonius?,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/polonius/inputs/clap-rs/README.md,19,architecture,This is generated from the clap-rs test in the [rustc-perf repo]. To,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/polonius/polonius-engine/README.md,6,architecture,This is a core library that models the borrow check. It implements the,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/polonius/polonius-parser/README.md,78,architecture,Polonius Parser,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/.github/pull_request_template.md,1,code analysis,"Please summarize your changes, why they are needed and how you tested them.",OBSOLETE
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/CONTRIBUTING.md,3,code analysis,Contributing,OBSOLETE
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/README.md,83,architecture,Prusti,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/analysis/README.md,10,architecture,Analysis,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/README.md,50,architecture,Documentation,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/dev-guide/src/SUMMARY.md,26,debugging,Summary,LOW
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/dev-guide/src/config/flags.md,501,code analysis,List of Configuration Flags,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/dev-guide/src/config/providing.md,41,code analysis,Providing Flags,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/dev-guide/src/config/summary.md,4,code analysis,Configuration,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/dev-guide/src/development/build.md,31,code analysis,Building,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/dev-guide/src/development/debug.md,55,debugging,Debugging,LOW
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/dev-guide/src/development/ide.md,30,code analysis,IDE integration,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/dev-guide/src/development/setup.md,80,code analysis,Setup,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/dev-guide/src/development/summary.md,7,debugging,Development,LOW
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/dev-guide/src/development/tests.md,36,debugging,Tests,LOW
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/dev-guide/src/encoding/mangling.md,40,code analysis,Name mangling,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/dev-guide/src/encoding/pure.md,36,code analysis,Pure function encoding,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/dev-guide/src/encoding/summary.md,9,code analysis,Viper Encoding,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/dev-guide/src/encoding/types-heap.md,133,code analysis,Heap-based type encoding,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/dev-guide/src/encoding/types-snap.md,332,code analysis,Snapshot-based type encoding,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/dev-guide/src/encoding/types.md,6,code analysis,Types,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/dev-guide/src/intro.md,5,code analysis,Introduction,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/dev-guide/src/layout.md,51,architecture,Repository Layout,OBSOLETE
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/dev-guide/src/macros.md,33,implementation plan,Macros,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/dev-guide/src/pipeline/binary.md,12,code analysis,Binary stage,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/dev-guide/src/pipeline/prusti.md,38,code analysis,Prusti processing stage,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/dev-guide/src/pipeline/report.md,8,code analysis,Reporting stage,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/dev-guide/src/pipeline/rust.md,11,debugging,Rust compilation stage,LOW
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/dev-guide/src/pipeline/summary.md,32,debugging,Verification Pipeline,LOW
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/dev-guide/src/pipeline/viper.md,20,implementation plan,Viper verification stage,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/dummy/README.md,0,architecture,(empty file),OBSOLETE
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/user-guide/src/SUMMARY.md,37,code analysis,Summary,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/user-guide/src/basic.md,180,code analysis,Basic Usage,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/user-guide/src/install.md,22,code analysis,Installation,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/user-guide/src/intro.md,3,research,Introduction,OBSOLETE
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/user-guide/src/syntax.md,221,code analysis,Specification syntax,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/user-guide/src/tour/counterexamples.md,36,code analysis,Counterexamples,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/user-guide/src/tour/final.md,8,implementation plan,Final Code,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/user-guide/src/tour/generics.md,38,code analysis,Making it all Generic,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/user-guide/src/tour/getting-started.md,76,implementation plan,Getting Started,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/user-guide/src/tour/loop_invariants.md,25,code analysis,Loop Invariants,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/user-guide/src/tour/new.md,166,implementation plan,> **Recommended reading:**,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/user-guide/src/tour/option.md,43,code analysis,Options,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/user-guide/src/tour/peek.md,30,implementation plan,Peek,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/user-guide/src/tour/pledges.md,75,implementation plan,Pledges,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/user-guide/src/tour/pop.md,167,code analysis,> **Recommended reading:**,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/user-guide/src/tour/push.md,239,code analysis,Push,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/user-guide/src/tour/setup.md,53,code analysis,Setup,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/user-guide/src/tour/summary.md,51,code analysis,Guided Tour,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/user-guide/src/tour/testing.md,74,code analysis,Testing,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/user-guide/src/verify/assert_refute_assume.md,120,code analysis,"Assertions, Refutations and Assumptions",MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/user-guide/src/verify/closure.md,21,code analysis,Closures,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/user-guide/src/verify/counterexample.md,56,code analysis,Printing Counterexamples,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/user-guide/src/verify/external.md,37,implementation plan,External specifications,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/user-guide/src/verify/impl_block_specs.md,30,spec,Specifications in trait `impl` blocks,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/user-guide/src/verify/loop.md,68,code analysis,Loop body invariants,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/user-guide/src/verify/overflow.md,11,code analysis,Overflow checks,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/user-guide/src/verify/panic.md,38,code analysis,Absence of panics,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/user-guide/src/verify/pledge.md,61,implementation plan,Pledges,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/user-guide/src/verify/predicate.md,25,code analysis,Predicates,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/user-guide/src/verify/prepost.md,15,code analysis,Pre- and postconditions,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/user-guide/src/verify/prusti-feature.md,16,code analysis,Conditional compilation for verification vs normal compilation,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/user-guide/src/verify/pure.md,20,code analysis,Pure functions,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/user-guide/src/verify/spec_ent.md,27,spec,Specification entailments,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/user-guide/src/verify/summary.md,27,code analysis,Verification Features,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/user-guide/src/verify/trusted.md,38,code analysis,Trusted functions,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/user-guide/src/verify/type-models.md,130,code analysis,Type Models,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/docs/user-guide/src/verify/type_cond_spec.md,35,spec,Type-Conditional Spec Refinement,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/jni-gen/README.md,12,architecture,JNI-gen,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/prusti-common/README.md,4,architecture,Prusti-common,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/prusti-contracts/prusti-contracts-proc-macros/README.md,1,architecture,Internal Prusti `proc-macro` crate. Must be a separate crate from `prusti-contracts` due to Rust [limitations](https:...,OBSOLETE
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/prusti-contracts/prusti-contracts/README.md,3,architecture,Provides various macros and types needed for verification of a crate with Prusti. See the Prusti [user guide](https:/...,OBSOLETE
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/prusti-contracts/prusti-specs/README.md,1,architecture,Internal Prusti crate implementing procedural macro processing.,OBSOLETE
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/prusti-contracts/prusti-std/README.md,1,architecture,Provides specifications for `std` functions. By importing this and adding `extern crate prusti_std;` to your root fil...,OBSOLETE
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/prusti-interface/README.md,4,architecture,Prusti-interface,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/prusti-launch/README.md,5,architecture,Prusti-launch,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/prusti-server/README.md,4,architecture,Prusti-server,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/prusti-tests/README.md,14,architecture,Prusti-tests,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/prusti-tests/tests/cargo_verify/test_no_std/README.md,63,architecture,`test_no_std`,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/prusti-tests/tests/verify/fail/user-guide/README.md,0,architecture,(empty file),OBSOLETE
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/prusti-tests/tests/verify/pass/user-guide/README.md,0,architecture,(empty file),OBSOLETE
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/prusti-tests/tests/verify_overflow/fail/nfm22/README.md,5,architecture,NFM 2022 Online Appendix,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/prusti-tests/tests/verify_overflow/pass/nfm22/README.md,5,architecture,NFM 2022 Online Appendix,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/prusti-utils/README.md,7,architecture,Prusti-utils,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/prusti-viper/README.md,5,architecture,Prusti-Viper,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/prusti/README.md,4,architecture,Prusti,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/test-crates/README.md,14,architecture,Test-crates,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/tracing/README.md,5,architecture,Tracing,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/viper-sys/README.md,4,architecture,Viper-sys,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/viper/README.md,4,architecture,Viper,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/prusti-dev/vir/README.md,16,architecture,Definition of the Viper/Verification Intermediate Representation.,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/rust-gpu/.github/ISSUE_TEMPLATE/bug_report.md,49,code analysis,name: Bug Report,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/rust-gpu/.github/ISSUE_TEMPLATE/enhancement.md,19,code analysis,name: Enhancement,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/rust-gpu/CHANGELOG.md,502,debugging,`rust-gpu` Changelog,LOW
+archived-docs/pre202602/prep-v256/rustc-tools/rust-gpu/CODE_OF_CONDUCT.md,131,code analysis,Contributor Covenant Code of Conduct,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/rust-gpu/CONTRIBUTING.md,52,implementation plan,Contributor Guidelines,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/rust-gpu/README.md,153,architecture,<!-- Allow this file to not have a first line heading -->,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/rust-gpu/crates/rustc_codegen_spirv-types/README.md,3,architecture,`rustc_codegen_spirv-types`,OBSOLETE
+archived-docs/pre202602/prep-v256/rustc-tools/rust-gpu/crates/rustc_codegen_spirv/README.md,7,architecture,`rustc_codegen_spirv`,HIGH
+archived-docs/pre202602/prep-v256/rustc-tools/rust-gpu/crates/spirv-builder/README.md,57,architecture,<!-- inline html -->,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/rust-gpu/crates/spirv-std/README.md,48,architecture,`spirv-std`,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/rust-gpu/crates/spirv-std/macros/README.md,3,architecture,`spirv-std-macros`,OBSOLETE
+archived-docs/pre202602/prep-v256/rustc-tools/rust-gpu/crates/spirv-std/shared/README.md,5,architecture,`spirv-std-types`,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/rust-gpu/docs/src/SUMMARY.md,17,debugging,Summary,LOW
+archived-docs/pre202602/prep-v256/rustc-tools/rust-gpu/docs/src/attributes.md,156,code analysis,Attribute syntax,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/rust-gpu/docs/src/building-rust-gpu.md,48,code analysis,Building Rust-GPU,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/rust-gpu/docs/src/codegen-args.md,201,debugging,'Codegen args' (flags/options) supported by the Rust-GPU codegen backend,LOW
+archived-docs/pre202602/prep-v256/rustc-tools/rust-gpu/docs/src/image.md,18,code analysis,Image type syntax,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/rust-gpu/docs/src/inline-asm.md,71,code analysis,Inline Assembly,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/rust-gpu/docs/src/introduction.md,11,code analysis,Introduction,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/rust-gpu/docs/src/migration-to-register-tool.md,45,implementation plan,Migration to `register_tool`,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/rust-gpu/docs/src/platform-support.md,85,code analysis,Platform Support,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/rust-gpu/docs/src/publishing-rust-gpu.md,31,code analysis,Publishing rust-gpu on crates.io,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/rust-gpu/docs/src/rfcs/000-template.md,19,code analysis,Summary,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/rust-gpu/docs/src/rfcs/001-resource-binding-syntax.md,241,code analysis,Summary,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/rust-gpu/docs/src/spirv-minimization.md,55,debugging,Minimizing bugs in SPIR-V,LOW
+archived-docs/pre202602/prep-v256/rustc-tools/rust-gpu/docs/src/testing.md,58,code analysis,Testing Rust-GPU,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/rust-gpu/docs/src/tracing.md,21,debugging,Tracing,LOW
+archived-docs/pre202602/prep-v256/rustc-tools/rust-gpu/docs/src/writing-shader-crates.md,174,code analysis,Writing Shader Crates,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/rust-gpu/examples/README.md,66,architecture,Examples,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/rust-gpu/tests/compiletests/README.md,85,architecture,Compiletests,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/rust-gpu/tests/difftests/README.md,251,architecture,Difftests,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/rustc_codegen_clr/.github/ISSUE_TEMPLATE/feature_request.md,20,code analysis,name: Feature request,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/rustc_codegen_clr/.github/ISSUE_TEMPLATE/miscompilation.md,22,code analysis,name: Miscompilation,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/rustc_codegen_clr/BROKEN_TESTS.md,179,code analysis,How to find the source code of a broken test?,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/rustc_codegen_clr/CODE_OF_CONDUCT.md,128,code analysis,Contributor Covenant Code of Conduct,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/rustc_codegen_clr/QUICKSTART.md,104,debugging,Building the project,LOW
+archived-docs/pre202602/prep-v256/rustc-tools/rustc_codegen_clr/README.md,127,architecture,rustc_codegen_clr,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/rustc_codegen_clr/mycorrhiza/README.md,25,architecture,Mycorrhiza - Rust/.NET interop layer,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/rustc_codegen_clr/target.md,37,code analysis,Hello!,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/rustc_codegen_cranelift/Readme.md,125,architecture,Cranelift codegen backend for rust,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/rustc_codegen_cranelift/docs/dwarf.md,153,code analysis,Line number information,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/rustc_codegen_cranelift/docs/rustc_testing.md,23,implementation plan,Building and testing with changes in rustc code,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/rustc_codegen_cranelift/docs/usage.md,60,code analysis,Usage,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/rustc_codegen_cranelift/scripts/Readme.md,2,architecture,This directory is for scripts that are either never directly invoked or are not used very often.,OBSOLETE
+archived-docs/pre202602/prep-v256/rustc-tools/rustc_codegen_jvm/Readme.md,207,architecture,rustc_codegen_jvm 🚀,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/rustc_plugin/README.md,66,architecture,rustc_plugin,MEDIUM
+archived-docs/pre202602/prep-v256/rustc-tools/rustc_plugin/crates/rustc_plugin/examples/print-all-items/README.md,21,architecture,Example: print-all-items,MEDIUM
+archived-docs/pre202602/prep-v256/strategy/18-competitive-landscape.md,433,graph algorithms,Competitive Landscape Analysis,HIGH
+archived-docs/pre202602/prep-v256/strategy/19-moat-building.md,445,code analysis,Competitive Moat-Building Strategy for Parseltongue,MEDIUM
+archived-docs/pre202602/prep-v256/strategy/20-research-agenda.md,598,research,Research Agenda for Parseltongue,MEDIUM
+archived-docs/pre202602/prep-v256/thesis/2026-03-02-code-understanding-domain-thesis-design.md,236,thesis,Code-Understanding Domain Thesis - Design Document,HIGH
+archived-docs/pre202602/prep-v256/thesis/2026-03-02-code-understanding-domain-thesis.md,766,thesis,Code-Understanding Domain Thesis,MEDIUM
+archived-docs/pre202602/prep-v256/thesis/2026-03-02-exhaustive-research-journal.md,973,research,EXHAUSTIVE Research Journal: Code-Understanding Domain Thesis,MEDIUM
+archived-docs/pre202602/prep-v256/thesis/2026-03-02-research-implementation-plan.md,1186,implementation plan,Code-Understanding Domain Thesis - Implementation Plan,MEDIUM
+archived-docs/pre202602/prep-v256/thesis/2026-03-02-research-journal.md,452,research,Research Journal: Code-Understanding Domain Thesis,MEDIUM
+archived-docs/pre202602/skills/dependency-map-cli-tools/SKILL.md,110,architecture,name: dependency-map-cli-tools,HIGH
+archived-docs/pre202602/skills/dependency-map-cli-tools/references/internet-precedents.md,37,tree-sitter,Internet Precedents: No-DB Codebase Mapping,MEDIUM
+archived-docs/pre202602/v210-Reference/V210-Codemogger-Fuzzy-Candidate-Use-Case.md,52,research,V210-Codemogger-Fuzzy-Candidate-Use-Case,HIGH
+archived-docs/research-glommer/cachebro/README.md,155,research,<p align='center'>,MEDIUM
+archived-docs/research-glommer/codemogger/CLAUDE.md,111,research,"description: Use Bun instead of Node.js, npm, pnpm, or vite.",MEDIUM
+archived-docs/research-glommer/codemogger/README.md,211,research,<p align='center'>,MEDIUM
+archived-docs/research-glommer/iggy-sample/CONTRIBUTING.md,118,research,Contributing to Apache Iggy,MEDIUM
+archived-docs/research-glommer/iggy-sample/DEPENDENCIES.md,1157,research,Dependencies,MEDIUM
+archived-docs/research-glommer/iggy-sample/PULL_REQUEST_TEMPLATE.md,60,research,Which issue does this PR close?,MEDIUM
+archived-docs/research-glommer/iggy-sample/README.md,475,research,Apache Iggy (Incubating),MEDIUM
+archived-docs/research-glommer/iggy-sample/bdd/README.md,103,research,Cross-SDK BDD Testing,MEDIUM
+archived-docs/research-glommer/iggy-sample/core/ai/README.md,5,research,Apache Iggy AI,MEDIUM
+archived-docs/research-glommer/iggy-sample/core/ai/mcp/README.md,89,MCP research,Apache Iggy MCP Server,MEDIUM
+archived-docs/research-glommer/iggy-sample/core/bench/README.md,7,research,Apache Iggy Bench CLI,MEDIUM
+archived-docs/research-glommer/iggy-sample/core/bench/dashboard/README.md,287,research,Apache Iggy Benchmarks Dashboard,MEDIUM
+archived-docs/research-glommer/iggy-sample/core/cli/README.md,11,research,Apache Iggy CLI,MEDIUM
+archived-docs/research-glommer/iggy-sample/core/connectors/README.md,107,research,Apache Iggy Connectors,MEDIUM
+archived-docs/research-glommer/iggy-sample/core/connectors/runtime/README.md,258,research,Apache Iggy Connectors - Runtime,MEDIUM
+archived-docs/research-glommer/iggy-sample/core/connectors/sdk/README.md,197,research,Apache Iggy Connectors - SDK,MEDIUM
+archived-docs/research-glommer/iggy-sample/core/connectors/sinks/README.md,250,research,Apache Iggy Connectors - Sink,MEDIUM
+archived-docs/research-glommer/iggy-sample/core/connectors/sinks/elasticsearch_sink/README.md,21,research,Elasticsearch Sink Connector,MEDIUM
+archived-docs/research-glommer/iggy-sample/core/connectors/sinks/iceberg_sink/README.md,82,research,Iceberg Sink Connector,MEDIUM
+archived-docs/research-glommer/iggy-sample/core/connectors/sinks/mongodb_sink/README.md,146,research,MongoDB Sink Connector,MEDIUM
+archived-docs/research-glommer/iggy-sample/core/connectors/sinks/postgres_sink/README.md,228,research,PostgreSQL Sink Connector,MEDIUM
+archived-docs/research-glommer/iggy-sample/core/connectors/sinks/quickwit_sink/README.md,62,research,Quickwit Sink,MEDIUM
+archived-docs/research-glommer/iggy-sample/core/connectors/sinks/stdout_sink/README.md,12,research,Stdout Sink,MEDIUM
+archived-docs/research-glommer/iggy-sample/core/connectors/sources/README.md,273,research,Apache Iggy Connectors - Source,MEDIUM
+archived-docs/research-glommer/iggy-sample/core/connectors/sources/elasticsearch_source/README.md,275,research,Elasticsearch Source Connector with State Management,HIGH
+archived-docs/research-glommer/iggy-sample/core/connectors/sources/postgres_source/README.md,374,research,PostgreSQL Source Connector,MEDIUM
+archived-docs/research-glommer/iggy-sample/core/connectors/sources/random_source/README.md,18,research,Random Source,MEDIUM
+archived-docs/research-glommer/iggy-sample/core/server/README.md,9,research,Apache Iggy Server,HIGH
+archived-docs/research-glommer/iggy-sample/examples/README.md,5,research,Apache Iggy Examples,MEDIUM
+archived-docs/research-glommer/iggy-sample/examples/csharp/README.md,93,research,Iggy Examples,MEDIUM
+archived-docs/research-glommer/iggy-sample/examples/go/README.md,56,research,Iggy Examples,MEDIUM
+archived-docs/research-glommer/iggy-sample/examples/java/README.md,256,research,Iggy Java Examples,MEDIUM
+archived-docs/research-glommer/iggy-sample/examples/node/README.md,131,research,Iggy Examples,MEDIUM
+archived-docs/research-glommer/iggy-sample/examples/python/README.md,81,research,Iggy Examples,MEDIUM
+archived-docs/research-glommer/iggy-sample/examples/rust/README.md,225,research,Iggy Examples,MEDIUM
+archived-docs/research-glommer/iggy-sample/examples/rust/src/message-headers/message-compression/README.md,282,research,An Example on Message Compression in Transit,MEDIUM
+archived-docs/research-glommer/iggy-sample/foreign/cpp/README.md,10,research,Iggy C++ Client,MEDIUM
+archived-docs/research-glommer/iggy-sample/foreign/csharp/DEPENDENCIES.md,17,research,Dependencies,MEDIUM
+archived-docs/research-glommer/iggy-sample/foreign/csharp/Iggy_SDK.Tests.BDD/README.md,27,research,﻿# csharp bdd test,MEDIUM
+archived-docs/research-glommer/iggy-sample/foreign/csharp/README.md,711,research,C# SDK for [Iggy](https://github.com/apache/iggy) [![Nuget (with prereleases)](https://img.shields.io/nuget/v/Apache....,MEDIUM
+archived-docs/research-glommer/iggy-sample/foreign/go/README.md,13,research,Go SDK for Iggy,MEDIUM
+archived-docs/research-glommer/iggy-sample/foreign/go/samples/README.md,6,research,Samples,MEDIUM
+archived-docs/research-glommer/iggy-sample/foreign/go/samples/consumer/README.md,52,research,Consumer Sample,MEDIUM
+archived-docs/research-glommer/iggy-sample/foreign/go/samples/producer/README.md,51,research,Producer Sample,MEDIUM
+archived-docs/research-glommer/iggy-sample/foreign/java/BUILD_AND_TEST.md,293,research,Apache Iggy Java SDK - Build and Test Guide,MEDIUM
+archived-docs/research-glommer/iggy-sample/foreign/java/README.md,239,research,Java SDK for Apache Iggy,MEDIUM
+archived-docs/research-glommer/iggy-sample/foreign/java/external-processors/iggy-connector-flink/iggy-connector-library/README.md,72,research,Apache Iggy Connector Library,MEDIUM
+archived-docs/research-glommer/iggy-sample/foreign/java/external-processors/iggy-connector-flink/iggy-flink-examples/data-population-explanation.md,279,research,Break Down Iggy HTTP API Message Payload,MEDIUM
+archived-docs/research-glommer/iggy-sample/foreign/java/external-processors/iggy-connector-flink/iggy-flink-examples/deploy-and-run-word-count-job.md,258,research,"Here's a complete step-by-step guide to redeploy, test, and monitor the WordCountJob",MEDIUM
+archived-docs/research-glommer/iggy-sample/foreign/node/CHANGELOG.md,95,research,Changelog,MEDIUM
+archived-docs/research-glommer/iggy-sample/foreign/node/README.md,81,research,Apache Iggy Node.js Client,MEDIUM
+archived-docs/research-glommer/iggy-sample/foreign/node/src/bdd/README.md,24,research,Node.js bdd test,MEDIUM
+archived-docs/research-glommer/iggy-sample/foreign/python/README.md,57,research,apache-iggy,MEDIUM
+archived-docs/research-glommer/iggy-sample/helm/charts/iggy/README.md,194,research,iggy,MEDIUM
+archived-docs/research-glommer/iggy-sample/web/README.md,77,research,Apache Iggy Web UI,MEDIUM
+archived-docs/research-glommer/memelord/README.md,198,research,<p align='center'>,MEDIUM
+archived-docs/spec20260320.md,306,spec,Executable Spec: Complete Parseltongue v300,HIGH
+archived-docs/stable/archive-docs-v2/agents/parseltongue-ultrathink-isg-explorer.md,10,agent config,name: parseltongue-ultrathink-isg-explorer,MEDIUM
+archived-docs/stable/archive-docs-v2/archive-p1/00-overview.md,146,architecture,Parseltongue Architecture Overview,HIGH
+archived-docs/stable/archive-docs-v2/archive-p1/01-crate-structure.md,346,code analysis,Crate Structure Deep Dive,MEDIUM
+archived-docs/stable/archive-docs-v2/archive-p1/02-control-flow.md,402,code analysis,Control Flow Analysis,MEDIUM
+archived-docs/stable/archive-docs-v2/archive-p1/03-data-flow.md,545,code analysis,Data Flow Analysis,MEDIUM
+archived-docs/stable/archive-docs-v2/archive-p1/04-api-guide.md,900,API design,Complete API Guide (ELI5),MEDIUM
+archived-docs/stable/archive-docs-v2/archive-p1/CPP-Comprehensive-Research-2024-12-02.md,364,research,Comprehensive C++ Parsing Research Report,MEDIUM
+archived-docs/stable/archive-docs-v2/archive-p1/CPP-Query-Failure-Research-2024-12-02.md,252,research,CPP Query Extraction Failure Analysis,MEDIUM
+archived-docs/stable/archive-docs-v2/archive-p1/E2E_TESTING_DOCUMENTATION.md,725,code analysis,Parseltongue E2E Testing Documentation,MEDIUM
+archived-docs/stable/archive-docs-v2/archive-p1/ENDPOINT-STATUS-REPORT-2026-01-31.md,566,code analysis,Parseltongue v1.4.2 Endpoint Status Report,MEDIUM
+archived-docs/stable/archive-docs-v2/archive-p1/GIT-HISTORY-ANALYSIS.md,430,workflow,Git History Analysis: What Exists Where,HIGH
+archived-docs/stable/archive-docs-v2/archive-p1/INCREMENTAL_INDEXING_EXECUTABLE_SPECS.md,1578,spec,Incremental Indexing Feature - Executable Specifications,MEDIUM
+archived-docs/stable/archive-docs-v2/archive-p1/PRD-v142-Parseltongue.md,1077,PRD,Product Requirements Document: Parseltongue,HIGH
+archived-docs/stable/archive-docs-v2/archive-p1/PRD-v143-Parseltongue.md,420,PRD,PRD: Parseltongue v1.4.3 - Three Core Requirements,HIGH
+archived-docs/stable/archive-docs-v2/archive-p1/README.md,324,architecture,Parseltongue Documentation,HIGH
+archived-docs/stable/archive-docs-v2/archive-p1/S01-README-MOSTIMP.md,115,architecture,Codebase Wisdom 101,HIGH
+archived-docs/stable/archive-docs-v2/archive-p1/S02-visual-summary-terminal-guide.md,1744,visualization,Post-Ingestion Analytics & Terminal Visualization,HIGH
+archived-docs/stable/archive-docs-v2/archive-p1/S05-tone-style-guide.md,143,style guide,Tone & Style Guide,MEDIUM
+archived-docs/stable/archive-docs-v2/archive-p1/S06-design101-tdd-architecture-principles.md,971,TDD journal,Design101: TDD-First Architecture Principles,HIGH
+archived-docs/stable/archive-docs-v2/archive-p1/S44ReleaseCheckList.md,903,release notes,S44: Release Checklist - Complete Process,MEDIUM
+archived-docs/stable/archive-docs-v2/archive-p1/S77-IdiomaticRustPatterns.md,2326,idiomatic patterns,========================================,MEDIUM
+archived-docs/stable/archive-docs-v2/archive-p1/THESIS-PRD-v143-File-Watching.md,1896,PRD,THESIS: PRD-v143 - Accurate File Watching by Default,OBSOLETE
+archived-docs/stable/archive-docs-v2/archive-p1/V143-ENDPOINT-VERIFICATION.md,66,verification,v1.4.3 Endpoint Verification - Simple WORKS/BROKEN,MEDIUM
+archived-docs/stable/archive-docs-v2/archive-p1/V143-IMPLEMENTATION-JOURNAL.md,578,architecture,v1.4.3 File Watcher Implementation Journal,HIGH
+archived-docs/stable/archive-docs-v2/archive-p1/parseltongue-ultrathink-isg-explorer-archived.md,506,code analysis,name: parseltongue-ultrathink-isg-explorer,MEDIUM
+archived-docs/stable/archive-docs-v2/archive-p2/04_DATA_STRUCTURES.md,732,code analysis,Data Structures: Single Source of Truth,MEDIUM
+archived-docs/stable/archive-docs-v2/archive-p2/07_RUST_INTERFACE_DEFINITIONS.md,855,implementation plan,07: Rust Interface Definitions for Diff Visualization System,MEDIUM
+archived-docs/stable/archive-docs-v2/archive-p2/A01Journal.md,8,architecture,Stable folder synchronized across all branches for PRs Architecture & Design docs,HIGH
+archived-docs/stable/archive-docs-v2/archive-p2/A02ShreyasIdeation20260124.md,162,code analysis,Start,MEDIUM
+archived-docs/stable/archive-docs-v2/archive-p2/A03IdealWorkflows20260124.md,1135,workflow,Overall Workflow for Rust-coding,MEDIUM
+archived-docs/stable/archive-docs-v2/archive-p2/ADR_001_KEY_NORMALIZATION.md,365,decision log,ADR-001: Entity Key Normalization for Diff Stability,MEDIUM
+archived-docs/stable/archive-docs-v2/archive-p2/ARCHITECTURE_API_GROUNDED_20260122233900.md,451,architecture,Parseltongue Diff Visualization: API-Grounded Architecture,HIGH
+archived-docs/stable/archive-docs-v2/archive-p2/D01_UserJourneys.md,440,user journey,Parseltongue User Journeys,HIGH
+archived-docs/stable/archive-docs-v2/archive-p2/D02_MCP_Explained.md,567,MCP research,How MCP Actually Works: An ELI15 Guide for Developers,MEDIUM
+archived-docs/stable/archive-docs-v2/archive-p2/D03_MCP_Industry_Research.md,1644,MCP research,Model Context Protocol (MCP) Industry Research Report,MEDIUM
+archived-docs/stable/archive-docs-v2/archive-p2/D04_Incremental_Indexing_Architecture.md,1307,incremental indexing,Incremental Indexing Architecture,HIGH
+archived-docs/stable/archive-docs-v2/archive-p2/D05_Rust_Product_Manager_Interview.md,2702,interview,Rust Product Manager Interview Questions,MEDIUM
+archived-docs/stable/archive-docs-v2/archive-p2/D06_Entry_Level_Rust_Engineer_Interview.md,3033,interview,Entry Level Rust Engineer Interview Questions,MEDIUM
+archived-docs/stable/archive-docs-v2/archive-p2/D07_Senior_Rust_Engineer_Interview.md,3329,interview,Senior Rust Engineer Interview Questions,MEDIUM
+archived-docs/stable/archive-docs-v2/archive-p2/D08_Principal_Rust_Engineer_Interview.md,3690,interview,D08: Principal Rust Engineer Interview Questions,HIGH
+archived-docs/stable/archive-docs-v2/archive-p2/D09_Parseltongue_Core_Architecture.md,290,architecture,D09: Parseltongue Core Architecture & Storage Interview Questions,HIGH
+archived-docs/stable/archive-docs-v2/archive-p2/D10_Parseltongue_Parsing_Languages.md,298,tree-sitter,D10: Parseltongue Parsing & Language Support Interview Questions,HIGH
+archived-docs/stable/archive-docs-v2/archive-p2/D11_Parseltongue_Algorithms_Analysis.md,321,graph algorithms,D11: Parseltongue Algorithms & Analysis Interview Questions,HIGH
+archived-docs/stable/archive-docs-v2/archive-p2/D12_Parseltongue_API_System_Design.md,342,architecture,D12: Parseltongue API & System Design Interview Questions,HIGH
+archived-docs/stable/archive-docs-v2/archive-p2/Journal2026-01-27-v140-release-verification.md,159,release notes,Parseltongue v1.4.0 Release Verification Journal,MEDIUM
+archived-docs/stable/archive-docs-v2/archive-p2/MCP_EXPLAINED_FOR_DEVELOPERS.md,567,MCP research,How MCP Actually Works: An ELI15 Guide for Developers,MEDIUM
+archived-docs/stable/archive-docs-v2/archive-p2/PHASE-2-ARCHITECTURE.md,833,architecture,Parseltongue Phase 2: Real-Time Diff Visualization Architecture,HIGH
+archived-docs/stable/archive-docs-v2/archive-p2/PRD-2026-01-28-Live-Tracking-Incremental-Indexing.md,239,PRD,PRD: Live Tracking / Incremental Indexing for Parseltongue,HIGH
+archived-docs/stable/archive-docs-v2/archive-p2/PRD-ARCH-UNIFIED.md,246,PRD,Parseltongue Diff Visualization System: Unified PRD & Architecture,HIGH
+archived-docs/stable/archive-docs-v2/archive-p2/RCA-2026-01-28-jq-null-field-error.md,215,RCA,Root Cause Analysis: jq 'null and string cannot have containment checked' Error,HIGH
+archived-docs/stable/archive-docs-v2/archive-p2/README.md,14,architecture,Stable Folder,MEDIUM
+archived-docs/stable/archive-docs-v2/archive-p2/RELEASE_v1.4.1_SUMMARY.md,117,release notes,Parseltongue v1.4.1 Release Summary,MEDIUM
+archived-docs/stable/archive-docs-v2/archive-p2/TDD_PROGRESS_TRACKER.md,293,TDD journal,TDD Progress Tracker: Incremental Reindex Feature,MEDIUM
+archived-docs/stable/archive-docs-v2/archive-p2/TDD_RELEASE_STATE_v1.4.1.md,584,TDD journal,TDD Session State: Parseltongue v1.4.1 Release,MEDIUM
+archived-docs/stable/archive-docs-v2/archive-p2/TDD_SESSION_STATE.md,715,TDD journal,TDD Session State: Live Tracking / Incremental Indexing Feature,MEDIUM
+archived-docs/stable/archive-docs-v2/archive-p2/UserJourneys01.md,440,user journey,Parseltongue User Journeys,HIGH
+archived-docs/stable/archive-docs-v2/experiments/dogfood-experiment-001-20251201.md,478,experiment,Dogfooding Experiment #001 - Parseltongue on Parseltongue,MEDIUM
+archived-docs/stable/archive-docs-v2/experiments/dogfood-research-001-improvements.md,366,experiment,Research Document: Parseltongue Improvement Analysis,MEDIUM
+archived-docs/stable/archive-docs-v2/experiments/dogfooding_experiment_001.md,317,experiment,Dogfooding Experiment #001,MEDIUM
+archived-docs/stable/archive-docs-v2/experiments/real-world-exp01.md,463,experiment,Real-World Experiment 01: Parseltongue Self-Analysis,MEDIUM
+archived-docs/stable/archive-docs-v2/experiments/research_improvements_001.md,362,experiment,Research Document: Parseltongue Improvement Analysis,MEDIUM
+archived-docs/stable/archive-docs-v2/refDocsClaudeCode/RD01_ARCHITECTURE.md,663,architecture,Claude Code: Complete Architectural Deconstruction,HIGH
+archived-docs/stable/archive-docs-v2/refDocsClaudeCode/RD02_DEEP_DIVE_RESEARCH.md,1446,research,Claude Code: Deep-Dive Research Document,MEDIUM
+archived-docs/stable/archive-docs-v2/refDocsClaudeCode/RD03_EXHAUSTIVE_FUNCTION_REFERENCE.md,651,implementation plan,Claude Code CLI.js: Exhaustive Function Reference,MEDIUM
+archived-docs/stable/archive-docs-v2/refDocsClaudeCode/RD04_HOOK_SYSTEM_ANALYSIS.md,720,code analysis,Claude Code Hook System - Deep Analysis,MEDIUM
+archived-docs/stable/archive-docs-v2/refDocsClaudeCode/RD05_API_CLIENT_AND_MESSAGE_HANDLING.md,1071,architecture,DEMINIFIED API CLIENT AND MESSAGE HANDLING ARCHITECTURE,HIGH
+archived-docs/stable/archive-docs-v2/refDocsClaudeCode/RD08_EXPERT_HLD_LLD_ANALYSIS.md,834,architecture,Claude Code: Expert HLD/LLD Analysis with Architectural Diagrams,HIGH
+archived-docs/stable/archive-docs-v2/web-ui/API_CHANGES_2025-01-11.md,132,visualization,API Changes Summary,LOW
+archived-docs/stable/archive-docs-v2/web-ui/ARCHITECTURE.md,625,visualization,Web UI Architecture,LOW
+archived-docs/stable/archive-docs-v2/web-ui/DESIGN_OPTIONS_FOR_PARSELTONGUE_VISUALIZATION.md,568,visualization,Design Options for Parseltongue Visualization,LOW
+archived-docs/stable/archive-docs-v2/web-ui/EIGHT_NEW_USER_JOURNEYS_VERSION_THREE.md,786,user journey,Eight NEW User Journeys for Parseltongue Visualization (Version 3),LOW
+archived-docs/stable/archive-docs-v2/web-ui/EIGHT_NEW_USER_JOURNEYS_VERSION_TWO.md,1131,user journey,Eight NEW User Journeys for Parseltongue Visualization (Version 2),LOW
+archived-docs/stable/archive-docs-v2/web-ui/EIGHT_USER_JOURNEYS_FOR_PARSELTONGUE_VISUALIZATION.md,880,user journey,Eight User Journeys for Parseltongue Visualization,LOW
+archived-docs/stable/archive-docs-v2/web-ui/INTERFACE_SIGNATURE_GRAPH_THESIS.md,471,visualization,Interface Signature Graph Visualization: A Design Thesis,LOW
+archived-docs/stable/archive-docs-v2/web-ui/MULTI_REPOSITORY_PORT_MANAGEMENT.md,389,port management,Multi-Repository Port Management: Research & Solution,LOW
+archived-docs/stable/archive-docs-v2/web-ui/PORT_SELECTION_ARCHITECTURE.md,740,port management,Port Selection Architecture: Smart Multi-Instance Support,LOW
+archived-docs/stable/archive-docs-v2/web-ui/RESEARCH_Visualization_Improvements_20260110.md,397,visualization,Parseltongue Visualization Research Thesis,LOW
+archived-docs/stable/archive-docs-v2/web-ui/RUBBER_DUCK_ANALYSIS.md,455,visualization,Rubber Duck Analysis: Web UI Architecture,LOW
+archived-docs/stable/archive-docs-v2/web-ui/SMART_PORT_SELECTION_TEST_JOURNAL.md,246,port management,Smart Port Selection - Test Journal,LOW
+archived-docs/stable/archive-docs-v2/web-ui/TDD_TEST_PLAN.md,447,TDD journal,Web UI TDD Test Plan,LOW
+archived-docs/stable/archive-docs-v2/web-ui/THREE_JS_BEST_PRACTICES.md,453,visualization,Three.js & CodeCity Visualization Best Practices,LOW
+archived-docs/stable/archive-docs-v2/web-ui/THREE_JS_INNOVATION_RESEARCH.md,238,visualization,Three.js Innovation Research: Visualization Techniques & Inspiration,LOW
+archived-docs/stable/archive-docs-v2/web-ui/VERIFICATION_REPORT.md,269,visualization,Verification Report: Web UI POC,LOW
+archived-docs/stable/archive-docs-v2/web-ui/VISUALIZATION_IMPROVEMENTS.md,101,visualization,3D CodeCity Visualization Improvements,LOW
+archived-docs/stable/archive-docs-v2/web-ui/influential-design-voices-2005-2025.md,1259,visualization,Influential Voices in Design: 2005-2025,LOW
+archived-docs/stable/archive-journal/2026-01-23-repo-cleanup-and-e2e-testing.md,215,design doc,Development Journal: 2026-01-23,MEDIUM
+archived-docs/stable/archive-research/GAP_ANALYSIS_METHODOLOGY_EVOLUTION_20260122.md,636,research,Gap Analysis and Methodology Evolution,MEDIUM
+archived-docs/stable/archive-research/RUBBER_DUCK_DEBUG_REPORT_20260122235000.md,339,research,Rubber Duck Debug Report: API Validation,MEDIUM
+archived-docs/stable/archive-research/UNIFIED_SERVER_DESIGN_RESEARCH_20260122233900.md,579,research,Parseltongue Unified Server: Design Research Document,MEDIUM
+archived-docs/stable/archive-research/VISUALIZATION_RESEARCH_20260122233900.md,271,visualization,Parseltongue 3D Visualization Research,MEDIUM
+archived-docs/stable/archive-root/CLAUDE.md,142,CozoDB queries,CLAUDE.md,MEDIUM
+archived-docs/stable/archive-root/parseltongue-ultrathink-isg-explorer-archived.md,506,code analysis,name: parseltongue-ultrathink-isg-explorer,MEDIUM
+archived-docs/stable/archive-specs/05_EXECUTABLE_SPECS_DIFF_SYSTEM.md,994,spec,Executable Specifications: Diff Visualization System,MEDIUM
+archived-docs/stable/archive-specs/EXECUTABLE_SPECS_diff_command.md,1068,spec,Executable Specifications: Diff Command Execution Module,MEDIUM
+archived-docs/stable/archive-specs/REQ-APP-INTEGRATION.md,1222,code analysis,REQ-APP-INTEGRATION: App.tsx Integration Specification,MEDIUM
+archived-docs/stable/archive-specs/REQ-ENTITY-DETAIL-DIFF-SUMMARY.md,1037,code analysis,Entity Detail Panel and Diff Summary Stats Specification,MEDIUM
+archived-docs/stable/archive-specs/REQ-FILE-WATCHER-SERVICE.md,2503,file watching,File Watcher Service Specification,MEDIUM
+archived-docs/stable/archive-specs/REQ-HTTP-DIFF-ANALYSIS-COMPARE-SNAPSHOTS.md,1426,code analysis,HTTP Endpoint Specification: `/diff-analysis-compare-snapshots`,MEDIUM
+archived-docs/stable/archive-specs/REQ-REACT-FRONTEND-VISUALIZATION.md,2106,visualization,React Frontend Visualization Specification,LOW
+archived-docs/stable/archive-specs/REQ-RUST-EMBED-FRONTEND.md,1162,code analysis,REQ-RUST-EMBED-FRONTEND: Static Frontend Embedding Specification,MEDIUM
+archived-docs/stable/archive-specs/REQ-WEBSOCKET-DIFF-STREAMING.md,2097,code analysis,WebSocket Endpoint Specification: Real-Time Diff Streaming,MEDIUM
+archived-docs/stable/archive-specs/REQ-WORKSPACE-MANAGEMENT-ENDPOINTS.md,1898,code analysis,HTTP Endpoint Specification: Workspace Management Endpoints,MEDIUM
+archived-docs/stable/archive-specs/REQ-WORKSPACE-WATCH-TOGGLE-IMPL.md,759,file watching,Implementation Specification: Workspace Watch Toggle Endpoint,MEDIUM
+archived-docs/stable/archive-tdd/06_TEST_STRATEGY_AND_FIXTURES.md,796,TDD journal,Diff Visualization Test Strategy and Fixtures,MEDIUM
+archived-docs/stable/archive-tdd/PHASE-2.3-2.4-TDD-STATE.md,296,TDD journal,TDD Session State: Phase 2 - CRITICAL BUILD BLOCKER IDENTIFIED,MEDIUM
+archived-docs/stable/archive-tdd/TDD-plan-20260123000800.md,1112,TDD journal,TDD Progress Journal: Diff Visualization System,MEDIUM
+archived-docs/stable/archive-web-ui/API_CHANGES_2025-01-11.md,132,visualization,API Changes Summary,LOW
+archived-docs/stable/archive-web-ui/ARCHITECTURE.md,625,visualization,Web UI Architecture,LOW
+archived-docs/stable/archive-web-ui/DESIGN_OPTIONS_FOR_PARSELTONGUE_VISUALIZATION.md,568,visualization,Design Options for Parseltongue Visualization,LOW
+archived-docs/stable/archive-web-ui/EIGHT_NEW_USER_JOURNEYS_VERSION_THREE.md,786,user journey,Eight NEW User Journeys for Parseltongue Visualization (Version 3),LOW
+archived-docs/stable/archive-web-ui/EIGHT_NEW_USER_JOURNEYS_VERSION_TWO.md,1131,user journey,Eight NEW User Journeys for Parseltongue Visualization (Version 2),LOW
+archived-docs/stable/archive-web-ui/EIGHT_USER_JOURNEYS_FOR_PARSELTONGUE_VISUALIZATION.md,880,user journey,Eight User Journeys for Parseltongue Visualization,LOW
+archived-docs/stable/archive-web-ui/INTERFACE_SIGNATURE_GRAPH_THESIS.md,471,visualization,Interface Signature Graph Visualization: A Design Thesis,LOW
+archived-docs/stable/archive-web-ui/MULTI_REPOSITORY_PORT_MANAGEMENT.md,389,port management,Multi-Repository Port Management: Research & Solution,LOW
+archived-docs/stable/archive-web-ui/PORT_SELECTION_ARCHITECTURE.md,740,port management,Port Selection Architecture: Smart Multi-Instance Support,LOW
+archived-docs/stable/archive-web-ui/RESEARCH_Visualization_Improvements_20260110.md,397,visualization,Parseltongue Visualization Research Thesis,LOW
+archived-docs/stable/archive-web-ui/RUBBER_DUCK_ANALYSIS.md,455,visualization,Rubber Duck Analysis: Web UI Architecture,LOW
+archived-docs/stable/archive-web-ui/SMART_PORT_SELECTION_TEST_JOURNAL.md,246,port management,Smart Port Selection - Test Journal,LOW
+archived-docs/stable/archive-web-ui/TDD_TEST_PLAN.md,447,TDD journal,Web UI TDD Test Plan,LOW
+archived-docs/stable/archive-web-ui/THREE_JS_BEST_PRACTICES.md,453,visualization,Three.js & CodeCity Visualization Best Practices,LOW
+archived-docs/stable/archive-web-ui/THREE_JS_INNOVATION_RESEARCH.md,238,visualization,Three.js Innovation Research: Visualization Techniques & Inspiration,LOW
+archived-docs/stable/archive-web-ui/VERIFICATION_REPORT.md,269,visualization,Verification Report: Web UI POC,LOW
+archived-docs/stable/archive-web-ui/VISUALIZATION_IMPROVEMENTS.md,101,visualization,3D CodeCity Visualization Improvements,LOW
+archived-docs/stable/archive-web-ui/influential-design-voices-2005-2025.md,1259,visualization,Influential Voices in Design: 2005-2025,LOW
+archived-docs/tauri-research/README.md,147,Tauri research,Tauri Research Project,MEDIUM
+archived-docs/tauri-research/RESEARCH_SUMMARY.md,366,Tauri research,🎯 Tauri Research - Complete Summary,MEDIUM
+archived-docs/tauri-research/authentication/README.md,50,Tauri research,Authentication Patterns,MEDIUM
+archived-docs/tauri-research/best-practices/README.md,40,Tauri research,Tauri Best Practices,MEDIUM
+archived-docs/tauri-research/docs/README.md,46,Tauri research,Generated Documentation,MEDIUM
+archived-docs/tauri-research/docs/TAURI_BEST_PRACTICES.md,551,Tauri research,Tauri Best Practices Guide,MEDIUM
+archived-docs/tauri-research/docs/TWEET_SCROLLS_TAURI_PLAN.md,602,Tauri research,Tweet Scrolls MacBook App - Tauri Implementation Plan,MEDIUM
+archived-docs/tauri-research/macbook-optimization/README.md,42,Tauri research,MacBook Optimization for Tauri,MEDIUM
+archived-docs/tauri-research/patterns/README.md,40,Tauri research,Tauri Code Patterns,MEDIUM
+archived-docs/v300/algorithm_endpoint_journey_matrix_202603091430.md,321,user journey,Algorithm → Endpoint → Journey → Phase Matrix,HIGH
+archived-docs/v300/minimal_v200_architecture_decisions_202603091545.md,583,decision log,Minimal V200 Architecture Decisions - Complete Record,HIGH
+archived-docs/v300/rustc_private_stability_rationale_202603091530.md,216,code analysis,Why rustc_private Instability Is a Solved Problem,HIGH

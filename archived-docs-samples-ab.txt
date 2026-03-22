@@ -1,0 +1,4270 @@
+===FILE===archived-docs/pre202602/ARCHIVE/unclassified/PRD-candidates-20260131v2.md===LINES===912
+# Parseltongue v2: LLM-Powered Workflow PMF Analysis
+
+**Date**: 2026-02-01
+**Methodology**: Workflow-centric PMF scoring using Shreyas Doshi framework
+**Analysis Basis**: Parseltongue codebase analysis (229 entities, 4,136 edges, 14 workflows)
+===MID===
+Step 1: Developer specifies changed entity
+  Input: rust:fn:authenticate (signature changed)
+Step 2: Parseltongue reverse callers → find all call sites
+  Output: 34 functions call authenticate()
+Step 3: LLM analyzes each call site
+===END===
+---
+
+**Last Updated**: 2026-02-01
+**Methodology**: Parseltongue-exclusive code analysis + Shreyas Doshi PMF framework
+**Confidence**: 87% (HIGH) based on real codebase evidence + proven accuracy data
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/unclassified/PRD-candidates-20260131v3.md===LINES===1162
+# Parseltongue v2: Bidirectional LLM-CPU Feature Workflows
+
+**Date**: 2026-02-01
+**Purpose**: Complete bidirectional workflow specifications for 20 advanced features
+**Pattern**: LLM semantic guidance + CPU fast algorithms = 20-25% accuracy improvement
+===MID===
+
+    Modules --> CPU1[CPU: Build adjacency matrix]
+
+    CPU1 --> Matrix["4x4 Matrix:<br/>Auth to Auth: 15 edges<br/>Auth to DB: 23 edges<br/>UI to Auth: 34 edges<br/>Utils to All: 8 edges<br/>Total: 16 cells populated"]
+
+===END===
+- `/docs/PRD-v3-backlog.md` - Deferred features
+
+**Last Updated**: 2026-02-01
+**Total Features**: 20 bidirectional workflows with ELI5 explanations
+**Pattern**: Proven 20-25% accuracy improvement over CPU-only algorithms
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/unclassified/PRD-candidates-20260131v4.md===LINES===1164
+
+# PRD-v146: Bidirectional LLM-CPU Enhancement Suite
+
+**Date**: 2026-02-02
+**Status**: Implementation Specification
+===MID===
+    ↓
+User Gets Actionable Insights
+```
+
+**Key Benefits Across All Features**:
+===END===
+    style LLM1 fill:#e1f5ff
+    style LLM2 fill:#e1f5ff
+    style LLM3 fill:#e1f5ff
+    style Output fill:#c8e6c9
+```
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/unclassified/PRD-v3-backlog.md===LINES===247
+# Parseltongue v3 Backlog
+
+Features and architectural designs that are being deferred to future versions. This document serves as a reference for planned capabilities that are not in the current active development scope.
+
+---
+===MID===
+#### Risk Factors (12% uncertainty):
+
+1. **Internal routing complexity** (route_definition_builder_module.rs:58-137)
+   - Making internal HTTP calls between handlers may need refactoring
+   - Axum might not support handler-to-handler calls cleanly
+===END===
+- Technical risk assessment update
+
+**Related Documents**:
+- `/docs/PRD-v144.md` - Comprehensive feature list with PMF ratings
+- `/docs/PRD-research-20260131v1/` - Research documentation folder
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/unclassified/PRD146.md===LINES===260
+# PRD146: v1.4.6 Critical Bug Fixes + ISGL1 v2 Foundation
+
+**Date**: 2026-02-02  
+**Status**: 🚨 URGENT - 5 Showstopper Bugs + 1 Architecture Fix  
+**Priority**: SHIP BEFORE v145
+===MID===
+Real-world workflow (Edit function, add comment):
+- **v1**: 800ms ❌
+- **v2**: 180ms ✅ (4.4x faster)
+
+---
+===END===
+
+**Status**: Ready for v1.4.6 ship (file watcher complete) + v1.4.7 planning (ISGL1 v2)  
+**Test Coverage**: 100% for new functionality  
+**Regression Risk**: Minimal (all existing tests pass)  
+**Business Impact**: Restores core functionality + enables reliable incremental indexing
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/unclassified/PRDv146.md===LINES===154
+
+From v143 we are now going to ship v145
+
+  🔴 CRITICAL FINDINGS: 5 Showstopper Bugs
+
+===MID===
+  fn refresh()      :T1706284810    →    fn refresh()      :T1706284810  ✅ SAME KEY!
+
+  Impact: Keys remain stable, system can accurately detect:
+  - ✅ Entity is UNCHANGED (content hash matches)
+  - ✅ Only line metadata updated (15-55 instead of 10-50)
+===END===
+  ├─ Parse file: 100ms
+  ├─ Match entities: 50ms (hash comparison)
+  ├─ Update 1 entity: 10ms
+  ├─ Update 5 edges: 20ms
+  └─ Total: 180ms ✅ (4.4x faster)
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/unclassified/Pr-V200-Notes01.md===LINES===337
+``` text
+ What I Understand: The Big Picture                                                           
+                                                                                                                                                                                                                                                                              
+      THE STORY SO FAR                                      
+      ════════════════════════════════════════════════════════════                                                                                                           
+===MID===
+      YOUR CODEBASE
+      ├── src/auth.rs          (Rust)
+      ├── src/api.py           (Python, via PyO3)
+      ├── proto/service.proto  (gRPC)
+      └── web/handler.ts       (TypeScript, via WASM)
+===END===
+
+  The one thing I'd push back on: don't start coding until the key format RFC is done. That's week 1-2 in the PRD but it deserves its own document with edge cases tested against real repos before a single line of rust-llm-core is written. Everything else can be
+  iterated. The key format can't.
+
+```===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/unclassified/QUICK_IMPLEMENTATION_GUIDE.md===LINES===549
+# Quick Implementation Guide: Fix Stubbed Reindex
+
+**Time Required**: 30 minutes
+**Difficulty**: Easy
+**Files Changed**: 1 file (file_watcher_integration_service.rs)
+===MID===
+**Expected**: `"python"` (NOT `"rust"`)
+
+### Test 6: Delete a Function
+
+```bash
+===END===
+4. ✅ Updates CozoDB database
+5. ✅ Returns accurate statistics
+6. ✅ Maintains stable entity keys (ISGL1 v2)
+
+Next steps: Celebrate, then tackle v1.4.7 features!
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/unclassified/RCA-Incremental-Indexing-Failure.md===LINES===972
+# Root Cause Analysis: Parseltongue Incremental Indexing Failure
+
+**Analysis Date**: 2026-02-02
+**Parseltongue Version**: v1.4.3
+**Analysis Method**: v1.4.3 release binary + Parseltongue API queries (NO filesystem access)
+===MID===
+   ```rust
+   fn match_entity(old: &Entity, new: &Entity) -> MatchResult {
+       if old.semantic_path == new.semantic_path {
+           if old.content_hash == new.content_hash {
+               MatchResult::Unchanged(old.stable_id)  // Reuse existing key
+===END===
+**Confidence Level**: **HIGH** - Root cause confirmed via API analysis, solution validated by industry precedent, implementation plan exists.
+
+---
+
+*This RCA was generated using Parseltongue v1.4.3 HTTP API (NO direct filesystem access) + comprehensive industry research (25+ sources) + synthesis of user's prior research (D04, ADR_001, ISGL1 v2 design).*
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/unclassified/REINDEX_ARCHITECTURE_DIAGRAM.md===LINES===681
+# Incremental Reindex Architecture - Visual Reference
+
+**Purpose**: Visual diagrams explaining how incremental reindex works in Parseltongue v1.4.6
+**Audience**: Developers implementing or maintaining the file watcher reindex system
+
+===MID===
+                      │
+                      ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  STEP 5: Delete Removed Entities + Edges                        │
+│  (none in this example)                                         │
+===END===
+**END OF ARCHITECTURE DIAGRAMS**
+
+Generated: 2026-02-02
+Purpose: Visual reference for incremental reindex implementation
+Status: Complete
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/unclassified/REINDEX_IMPLEMENTATION_SPECS.md===LINES===1651
+# Rubber-Duck Debugging: Incremental Reindex Implementation Specs
+
+**Date**: 2026-02-02
+**Context**: File watcher lifetime fix (v1.4.5) is working perfectly. Now we need to implement the actual reindex logic.
+**Goal**: Replace `execute_stub_reindex_operation()` with full implementation using existing code infrastructure.
+===MID===
+    result.processing_time_ms
+);
+```
+
+#### Change 5: Update "No Change" Logging
+===END===
+**END OF RUBBER-DUCK DEBUGGING SPECS**
+
+Generated: 2026-02-02
+Author: Claude Code (via rubber-duck debugging methodology)
+Status: Ready for Implementation
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/unclassified/RELEASE_CHECKLISTS_COMPILATION.md===LINES===466
+# Release Checklists Compilation
+
+This document compiles all release checklists found in the Parseltongue codebase.
+
+---
+===MID===
+
+## Testing
+
+- Full test suite: {NUMBER} tests passing (0 failures)
+- {FEATURE} tested on real codebase
+===END===
+**Sources**: 4 documents across archive directories + v1.4.3 lessons learned
+**Total Checklist Items**: 60+ comprehensive steps
+**Evolution**: From v0.9.6 to v1.4.3 (with critical post-release improvements)
+**Template Ready**: Generic for any future version
+**Last Major Update**: v1.4.3 multi-platform binary requirement
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/unclassified/RUBBER_DUCK_SUMMARY.md===LINES===488
+# Rubber-Duck Debugging Summary: Incremental Reindex Implementation
+
+**Date**: 2026-02-02
+**Task**: Fix stubbed reindex logic in file watcher
+**Method**: Rubber-duck debugging methodology
+===MID===
+7. Remove `[STUB]` from log messages (line 292)
+8. Delete outdated TODO comments (lines 285-287)
+
+### Step 2: Build and Test (5 minutes)
+
+===END===
+**Total Documentation**: 29,500 words
+
+**Status**: Ready for implementation
+
+**Next Step**: Make the code changes and test!
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/unclassified/TDD_COMPREHENSIVE_TESTING_PLAN_V160.md===LINES===691
+# Comprehensive TDD Testing Plan: v1.6.0 + v1.6.5 Features
+
+**Generated**: 2026-02-11
+**Server**: http://localhost:7777
+**Database**: rocksdb:parseltongue20260211193602/analysis.db
+===MID===
+#### Test 10.3: Word Count Coverage Section
+```bash
+curl -s http://localhost:7777/ingestion-diagnostics-coverage-report | jq '.data.word_count_coverage.files | length'
+```
+**Expected**: Count of parsed files with word coverage data
+===END===
+
+**Document Status**: LIVE TESTED
+**Test Date**: 2026-02-11
+**Server Uptime at Test**: 10,820 seconds
+**Total Test Cases**: 75 (25 PASS, 26 FAIL, 24 SKIP)
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/unclassified/TDD_GREEN_PHASE_COMPLETE.md===LINES===185
+# TDD GREEN Phase Complete - External Dependency Placeholder Creation
+
+## Summary
+Successfully implemented GREEN phase for RED Test 2: External dependency placeholder entity creation.
+
+===MID===
+test ...test_store_external_dependency_in_database ... ignored
+test ...test_blast_radius_includes_external_dependencies ... ignored
+
+test result: ok. 2 passed; 0 failed; 2 ignored
+```
+===END===
+- Next REFACTOR phase: v1.4.4 (minor version bump for EntityClass::ExternalDependency)
+
+---
+**Phase Complete**: 2026-02-02
+**Commit Ready**: Yes (all tests passing, no TODOs/stubs in implementation)
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/unclassified/TDD_v173_Slim_Snapshot_Tasks.md===LINES===550
+# TDD Task Tracking: v1.7.3 Slim Graph Snapshots
+
+**Version**: 1.7.3
+**Created**: 2026-02-13
+**Status**: All tasks pending implementation
+===MID===
+#### All Three Handlers
+- [ ] Add early-return check at top of handler function (before database query):
+  ```rust
+  if state.loaded_from_snapshot_flag {
+      return Ok((
+===END===
+4. Verify compilation
+5. Mark Phase 1 checklist complete
+
+**Then proceed sequentially through Phase 2-7, then Phase 8-9.**
+
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/unclassified/Test-Plan-Incremental-Reindex-20260202.md===LINES===671
+# Test Plan: ISGL1 v2 Incremental Reindex Feature
+
+**Version**: 1.0
+**Date**: 2026-02-02
+**Status**: Production Ready
+===MID===
+- ✅ Last save's content is indexed (most recent wins)
+
+**Validation**: Check log shows only 1 `[FileWatcher] Reindexed` message
+
+---
+===END===
+**Approved By**: [Pending QA Sign-off]
+
+---
+
+This test plan provides comprehensive coverage of the ISGL1 v2 incremental reindex feature. All automated tests are passing, and manual test scenarios are documented with clear acceptance criteria. The system achieves the critical goal of 0% entity key churn for positional changes, solving the fundamental incremental indexing problem.
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/unclassified/Testing-Journal-ISGL1v2-FileWatcher-20260202.md===LINES===771
+# Testing Journal: ISGL1 v2 + File Watcher Lifetime Fix
+## Date: 2026-02-02
+
+## Executive Summary
+
+===MID===
+- `watcher_fix_test.db/data/CURRENT` (Modify)
+- `watcher_fix_test.db/data/OPTIONS-000006.dbtmp` (Create + Modify)
+- `watcher_fix_test.db/data/MANIFEST-000001` (Modify Metadata + Content)
+- `watcher_fix_test.db/data/LOG` (Create + Modify)
+- And more...
+===END===
+
+**Testing Journal Completed**: 2026-02-02 14:30 PST
+**Total Testing Duration**: ~4 hours
+**Total Tests Executed**: 55 automated + 3 manual scenarios
+**Test Result**: 100% PASS RATE ✅
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/unclassified/V145-BUG3-NULL-KEYS-ARCHITECTURE.md===LINES===1102
+# Architecture Design: Fix Data Quality Corruption in Parseltongue v1.4.5
+
+**Bug**: CRITICAL BUG #3 - Data Quality Corruption (Language Field Mismatch, Missing Entities)
+**Severity**: CRITICAL - Data Corruption + Missing Functionality
+**Impact**: 230 entities with wrong language field, main function missing, search broken
+===MID===
+```
+
+---
+
+### Solution 5: Fix Smart Context Algorithm (Priority #5)
+===END===
+**Target Release**: v1.4.5 with all 5 critical bugs fixed
+
+---
+
+**Document Status**: Architecture complete and validated with 10 live server queries (2026-02-01)
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/unclassified/final_comprehensive_test_report.md===LINES===327
+# Final Comprehensive Test Report: File Watcher + Live Dependency Graph
+## Test Date: 2026-02-02
+## Commit: 64fa2ad3f (File watcher lifetime fix + console output update)
+
+---
+===MID===
+**Impact**:
+- File changes are detected correctly
+- Events flow through the entire pipeline (notify → debouncer → channel → event handler)
+- But actual parsing and entity extraction is not implemented
+- Result: 0 entities in database despite having 3 Python functions in the file
+===END===
+---
+
+**Test Completed**: 2026-02-02 09:31 UTC
+**Tester**: Claude Code (Automated TDD Testing)
+**Commit Under Test**: 64fa2ad3f
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/unclassified/v1.4.6-File-Watcher-Lifetime-Fix.md===LINES===347
+# v1.4.6 File Watcher Lifetime Fix
+
+**Date**: 2026-02-02
+**Status**: ✅ FIXED (TDD Complete)
+**Bug Report**: docs/File-Watcher-Debug-20260202.md
+===MID===
+✅ Health check shows `file_watcher_active: true`
+✅ Build passes (`cargo build --release`)
+✅ No unresolved TODOs/stubs (only future work documented)
+
+## Manual Smoke Test
+===END===
+
+**Verification Complete**: 2026-02-02
+**Status**: Ready for commit
+**Test Coverage**: 100% for new functionality
+**Regression Risk**: None (all existing tests pass)
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/v199-docs/RESEARCH-isgl1v3-exhaustive-graph-identity.md===LINES===345
+# RESEARCH: isgl1v3-exhaustive-graph-identity
+
+**Date**: 2026-02-14
+**Status**: Research / Pre-Implementation
+**Scope**: ISGL1 v3 key format, `|||` delimiter, exhaustive file coverage, entity taxonomy, SharedFileContext edges
+===MID===
+| Entity Class | What It Captures | In Graph? | Edges? |
+|---|---|---|---|
+| `CoreCode` | Functions, classes, structs, enums, traits, impl blocks | Yes | Full (Calls, Uses, Implements, SharedFileContext) |
+| `TestCode` | Test functions, test modules, test classes | Yes (filterable) | Full (Calls, Uses, SharedFileContext) |
+| `ImportBlock` | import/use/require/include statements | Yes | SharedFileContext + implicit ImportsFrom |
+===END===
+| Entity classes | 5 (CoreCode, TestCode, ImportBlock, GapFragment, UnparsedConstruct) | Nothing invisible, everything filterable |
+| Edge types | 6 (add SharedFileContext, ImportsFrom, TestedBy) | File-level context captured |
+| Key stability | Abandoned (v2 timestamps removed) | Full rebuild on every ingest, stability has no consumer |
+| Generic sanitization | Removed | `|||` delimiter makes `<>` in names safe |
+| Path sanitization | Removed | `|||` delimiter makes `/` and `.` in paths safe |
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/v199-docs/RESEARCH-v173-pt04-storage-architecture.md===LINES===412
+# RESEARCH: pt04 Storage Architecture — What Goes Beyond CozoDB
+
+**Date**: 2026-02-15
+**Status**: Research (no code written)
+**Question**: Does pt04 (rust-analyzer semantic analysis) need a different storage approach than CozoDB? If so, what?
+===MID===
+- **Verdict**: Strong candidate if we wanted a single-store solution. Too heavy for a sidecar (50MB binary bloat). Would be a v2.0 full rewrite, not an incremental addition.
+
+#### DataFusion — Overkill (query engine, not a database, no recursive CTEs)
+#### Polars — Wrong tool (DataFrame analytics, no graph support, no recursion)
+
+===END===
+
+---
+
+**Last Updated**: 2026-02-15
+**Sources**: crates.io, GitHub repos (CozoDB, IndraDB, Kuzu, agdb, Oxigraph, Ascent, Crepe, Datafrog, DuckDB, DataFusion, Polars, bevy_ecs, slotmap), docs.rs, web research for 2025-2026 developments.
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/v199-docs/THESIS-taint-analysis-for-parseltongue.md===LINES===786
+# Structural Taint Analysis via Tree-Sitter + Datalog Graph Reachability
+
+**A Technical Thesis for Parseltongue v1.7.3**
+**Date**: 2026-02-15
+**Author**: Generated via competitive research (code-scalpel v3.0.4 + semgrep MCP + academic literature)
+===MID===
+
+The core query finds paths from sources to sinks without sanitization:
+
+```datalog
+# ═══════════════════════════════════════════════════════
+===END===
+25. Neo4j for Cybersecurity. [Whitepaper](https://go.neo4j.com/rs/710-RRC-335/images/Neo4j-Graphs-for-Cybersecurity-Whitepaper.pdf)
+
+---
+
+*Generated 2026-02-15. Based on source code reading of code-scalpel v3.0.4 (2,466 lines taint_tracker.py), semgrep MCP servers (2 implementations), academic literature survey via web search (Denning, Joern, DOOP, Soufflé, RustGuard, TaintTyper, CWE Top 25), and Parseltongue architecture analysis.*
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/v199-docs/unstructured-CR-context-20260214.md===LINES===27893
+# Unstructured CR Context Dump — 2026-02-14
+
+**Source**: All agent transcripts from CR-v173 competitor research sessions
+**Total agents**: 23 (1 from prev session + 22 from current)
+**Total raw size**: 7.1 MB
+===MID===
+### Tool Calls (39 total)
+
+- `TaskCreate(subject=Research LSP-to-MCP bridge/adapter projects, description=Search GitHub, web, and mcpservers.org for any projects that bridge LSP servers into MCP servers, activeForm=Researching LSP-to-MCP bridge projects)`
+- `TaskCreate(subject=Check ACP spec for LSP integration, description=Examine the ACP repo already cloned locally for any LSP-related specifications, activeForm=Checking ACP spec for LSP integration)`
+- `TaskCreate(subject=Document LSP server installation for Lua, TypeScript, Python, Rust, description=Provide exact installation commands for macOS ARM64 for lua-language-server, typescript-language-server, pyright, and rust-analyzer, activeForm=Documenting LSP server installation commands)`
+===END===
+    49→    logger.error('Failed to start FastMCP server in stdio mode', { error });
+    50→    process.exit(1);
+    51→});
+```
+
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/v199-docs/v173-CR-Shreyas-Feedback-01.md===LINES===527
+# Shreyas Doshi Evaluation: FEATURE-MATRIX-COMPARISON.md
+
+> Date: 2026-02-14
+> Framework: LNO (Leverage / Neutral / Overhead)
+> Source: `competitor_research/FEATURE-MATRIX-COMPARISON.md`
+===MID===
+- Token-efficient structured results designed for LLM consumption. Responses are compact and machine-parseable. PT already does this well with JSON responses.
+
+---
+
+### Semgrep MCP (Official) — The Security Scanner as an MCP Primitive
+===END===
+3. **Agents** (Gemini CLI, CodeCompanion): Orchestrate AI coding workflows with safety infrastructure. PT does NOT compete here — it is a tool that agents consume, not an agent itself.
+
+PT's strategic position is clear: **the graph analysis engine that indexers wish they had and analyzers have not built.** The 8 graph algorithms are the moat. The improvements that matter most are the ones that make those algorithms easier to discover (L6, L8), easier to consume (L2, L7), and more useful in iterative workflows (L3, L5).
+
+The single highest-leverage action from this entire research: **Ship MCP support (L7) with progressive disclosure (L8) and per-query token estimates (L2).** That combination makes PT's graph analysis discoverable by every AI agent, consumable at any context budget, and self-marketing with every response.
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/v199-docs/v173-bugs01-COVERAGE-REPORTING-BUG-ISSUES.md===LINES===74
+# Coverage Reporting Bug Issues
+
+> Discovered: 2026-02-13 via competitor research analysis
+> Affected: `/ingestion-coverage-folder-report` endpoint
+> Impact: Reports 41% coverage when actual source coverage is ~83%
+===MID===
+**File**: `crates/pt08-http-code-query-server/src/http_endpoint_handler_modules/ingestion_coverage_folder_handler.rs`
+
+**Problem**: The coverage handler walks the filesystem and gets paths like `./crates/foo.rs` (with `./` prefix), but the database stores paths as `crates/foo.rs` (no prefix). The `PathBuf` exact comparison at line 415 fails for some files due to this inconsistency.
+
+**Impact**: Some successfully parsed files may be falsely reported as unparsed due to path mismatch.
+===END===
+| Diagnostics handler (correct pattern) | `ingestion_diagnostics_coverage_handler.rs` | 357-387 |
+| Test exclusion in streamer | `streamer.rs` | 979-994, 1109 |
+| TestEntitiesExcluded schema | `cozo_client.rs` | 174-207 |
+| ExcludedTestEntity struct | `entities.rs` | 1702-1732 |
+| Path normalization utility | `path_utils.rs` | 42-54 |
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/v199-docs/v173-z3-tradeoff-analysis.md===LINES===236
+# v173-z3-tradeoff-analysis: Why Parseltongue Skips Z3
+
+**Generated**: 2026-02-15
+**Context**: Taint analysis architecture decision for Parseltongue v1.7.3
+**Decision**: Do NOT use Z3. Use CozoDB Datalog reachability instead.
+===MID===
+```
+
+The difference:
+- Z3 eliminates **infeasible paths** (paths that can never execute due to contradictory conditions). This reduces false positives.
+- Datalog follows **all edges** regardless of path feasibility. This overapproximates, producing more false positives but never missing a real vulnerability.
+===END===
+- Aalborg University Thesis: Rust ownership improves taint precision without symbolic reasoning
+
+---
+
+*Generated 2026-02-15. Architecture decision for Parseltongue v1.7.3 taint analysis.*
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/v199-docs/v173_backlog.md===LINES===359
+# v1.7.3 Backlog — Deferred Ideas & Future Enhancements
+
+**Date**: 2026-02-15
+**Status**: Backlog (not in current build order, but valuable for future versions)
+**Source**: CR-v173-03 competitive research, bidirectional LLM research (2026-02-01), session discussions
+===MID===
+
+---
+
+### Bidirectional Architecture
+
+===END===
+
+---
+
+**Last Updated**: 2026-02-15
+**Key Principle**: The PRD contains what we're building. This backlog contains what we know is valuable but isn't in the current build order.
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/v199-docs/v199-architecture-opinion-analysis.md===LINES===412
+# v200-architecture-opinion-analysis: rust-llm v2.0.0 ELI5 + Opinion
+
+**Generated**: 2026-02-16
+**Context**: Analysis of Parseltongue v2.0.0 ("rust-llm") PRD, rubber duck Options A-D, three-layer bidirectional workflow, and relationship to production repo `that-in-rust/parseltongue-rust-LLM-companion`
+**Status**: REFERENCE — captures architectural understanding and opinion at this point in time
+===MID===
+
+WORKFLOW 3: "Is this complexity essential or accidental?"
+═════════════════════════════════════════════════════════
+
+BEFORE:  LLM reads 500 lines, guesses "single responsibility"
+===END===
+- **Production Repo**: `https://github.com/that-in-rust/parseltongue-rust-LLM-companion`
+
+---
+
+*Generated 2026-02-16. Analysis based on v2.0.0 PRD draft, rubber duck Options A-D, pt04 bidirectional workflow document, and production repo inspection.*
+===DONE===
+===FILE===archived-docs/pre202602/index.md===LINES===412
+# docs-index
+Status: Active
+Generated: 2026-02-25 14:56:34 IST
+Command: `tree docs`
+
+===MID===
+|   |   |-- PRDv146.md
+|   |   |-- Pr-V200-Notes01.md
+|   |   |-- QUICK_IMPLEMENTATION_GUIDE.md
+|   |   |-- RCA-Incremental-Indexing-Failure.md
+|   |   |-- REINDEX_ARCHITECTURE_DIAGRAM.md
+===END===
+`-- v210-Reference
+    `-- V210-Codemogger-Fuzzy-Candidate-Use-Case.md
+
+28 directories, 374 files
+```
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/GITNEXUS-DEEP-ANALYSIS.md===LINES===787
+# GitNexus Deep Analysis for Parseltongue v2.0.0
+
+**Date:** 2026-03-03
+**Purpose:** Extract learnings from GitNexus codebase to inform Parseltongue architecture
+**Source:** https://github.com/abhigyanpatwari/GitNexus
+===MID===
+
+```typescript
+interface GraphRelationship {
+  confidence: number;  // 0-1
+  reason: string;      // 'import-resolved', 'same-file', 'fuzzy-global'
+===END===
+- Type inference for precise call graphs
+- MIR for data flow analysis
+- Ownership tracking for Rust-specific insights
+
+The combination of GitNexus's UX patterns + rust-analyzer's semantic power = a uniquely capable Rust code companion.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/MOMENT-TO-MOMENT-UX-BLUEPRINT.md===LINES===569
+# Moment-to-Moment UX Blueprint
+
+**Primary Segment:** OSS Rust Contributors, Large Repos  
+**Document Purpose:** Define the felt experience. Not what the system does — what the user feels.
+
+===MID===
+**Their emotional journey:**
+
+| Moment | What they feel | What we provide |
+|--------|----------------|-----------------|
+| 0 | Overwhelmed | "I see you're on branch X. I'll only search here." |
+===END===
+---
+
+*Document Version: 1.0*  
+*Created: 2026-03-01*  
+*Status: Active Blueprint*
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/RUSTC-TOOL-ECOSYSTEM-ANALYSIS.md===LINES===461
+# Rust Compiler Tool Ecosystem: Comprehensive Use Case Analysis
+
+**Analysis Date:** 2026-03-01
+**Target User Segment:** Rust open source contributors (accuracy-focused, not speed-focused)
+**Purpose:** Map all tools using Rust compiler internals for Parseltongue's design
+===MID===
+  - Extensible analysis platform
+- **Architecture:** Core algorithms + application detectors
+- **Unique:** 881+ commits, actively maintained
+
+#### Rudra (Georgia Tech)
+===END===
+|-----------|---------------|-----|
+| **Miri** | Weekly | Must track compiler |
+| **Kani** | Monthly | AWS team, dedicated |
+| **Framework tools** | Quarterly | Framework absorbs breakage |
+| **Research tools** | Yearly or frozen | Academic timelines |
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/UX-BLUEPRINT-COMPILER-MAPPING.md===LINES===766
+# UX Blueprint → Compiler Data Mapping
+
+**Document Purpose:** Map every moment in the user experience to exact data points extractable from the Rust compiler.
+
+**Target User:** OSS Rust contributors working on large repos
+===MID===
+```rust
+pub fn type_flow_example(db: &RootDatabase, fn: FunctionId) -> Vec<(String, Ty)> {
+    let infer = db.infer(fn);
+    let sig = fn.signature(fn);
+    
+===END===
+
+*End of document*
+ENDOFFILE
+
+echo "File created"
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/parseltongue-competitive-intel-2026/01-AMP-SOURCEGRAPH.md===LINES===1218
+# Sourcegraph Amp/Cody Competitive Intelligence
+## Deep Source Analysis for Parseltongue
+
+**Analysis Date**: 2026-02-19
+**Repos Analyzed**:
+===MID===
+}})
+```
+
+[CONFIRMED from source: `amp.nvim/lua/amp/init.lua`]
+
+===END===
+[INFERRED from analysis]
+
+---
+
+*End of Analysis. Sources: sourcegraph-public-snapshot, cody-public-snapshot, amp-contrib, amp.nvim repos via GitHub API.*
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/parseltongue-competitive-intel-2026/02-AIDER.md===LINES===881
+# Aider Competitive Intelligence Analysis
+## For Parseltongue Project — Deep Source Analysis
+**Date**: 2026-02-19
+**Analyst**: TDD Context Retention Specialist
+**Source**: paul-gauthier/aider (Apache 2.0, 30K+ stars)
+===MID===
+
+## 4. Data Flow and Caching
+
+[CONFIRMED from source + INFERRED for internals]
+
+===END===
+
+---
+
+*Last updated: 2026-02-19*
+*Analysis complete. All findings written progressively as research was conducted.*
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/parseltongue-competitive-intel-2026/03-OPENHANDS.md===LINES===927
+# OpenHands Deep Source Analysis
+## Parseltongue Competitive Intelligence
+
+**Analyzed**: 2026-02-19
+**Repo**: All-Hands-AI/OpenHands (Python, MIT, ~68K stars)
+===MID===
+### 5.4 Persistence [CONFIRMED from source]
+
+Every event is persisted to `FileStore` as individual JSON files:
+```python
+# EventStream.add_event()
+===END===
+
+- All architectural descriptions: [CONFIRMED from source]
+- V1 migration details (sparse): [INFERRED from code comments and directory structure]
+- Performance numbers (none found - no benchmarks in source): [NOT AVAILABLE]
+- Future roadmap: [SPECULATIVE based on code TODOs and V1 direction]
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/parseltongue-competitive-intel-2026/04-CONTINUE-DEV.md===LINES===1468
+# Continue.dev Deep Source Analysis: Competitive Intelligence for Parseltongue
+
+**Analysis Date**: 2026-02-19
+**Source**: continuedev/continue (GitHub, Apache 2.0, 31,447 stars at time of analysis)
+**Method**: Direct source analysis via GitHub API (no clone required)
+===MID===
+  +--25%-- Full Text Search (SQLite FTS5 with trigrams + NLP stemming)
+  |
+  +--50%-- Vector Embeddings (LanceDB semantic search)
+  |
+  +------  Repo Map (LLM-guided file selection based on repo structure)
+===END===
+Continue.dev is the retrieval layer + UI layer. Parseltongue is the structural intelligence layer. They are **complementary**. Parseltongue should market itself as "the MCP server that gives Continue structural code intelligence" — precision over approximate similarity.
+
+---
+
+*Analysis complete. All TypeScript code snippets confirmed from direct source reading. Configuration schemas validated against Zod schema definitions. Architecture inferences based on code flow analysis.*
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/parseltongue-competitive-intel-2026/05-PARSELTONGUE-LEARNINGS-v1.7.2.md===LINES===410
+# Parseltongue Learnings from Sourcegraph
+**Version Context**: Parseltongue v1.7.2 (Windows ingestion fix)
+**Analysis Date**: 2026-02-28
+**Source**: `sourcegraph-public-snapshot` + existing competitive intel
+
+===MID===
+    "node_modules/",
+    "testdata/",
+    "mocks/",
+    "vendor/",
+    "target/",            // Rust-specific
+===END===
+## References
+
+- `sourcegraph-public-snapshot/` - Cloned to `competitor-research/`
+- `01-AMP-SOURCEGRAPH.md` - Detailed 1219-line analysis
+- Parseltongue v1.7.2 - https://github.com/that-in-rust/parseltongue-rust-LLM-companion/releases/tag/v1.7.2
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/parseltongue-competitive-intel-2026/06-LUCENE-ES-FOR-DATA-FLOW-ANALYSIS.md===LINES===531
+# Can Lucene/Elasticsearch Help with Data Flow/Control Flow Analysis?
+## Research for Parseltongue Architecture Decisions
+
+**Research Date**: 2026-02-28
+**Question**: Can search engine algorithms (Lucene, Elasticsearch, Zoekt) benefit code understanding tools like Parseltongue for data flow and control flow analysis?
+===MID===
+        ranked.into_iter().take(top_k).collect()
+    }
+}
+```
+
+===END===
+- Zoekt (Sourcegraph): Trigram-based code search
+- Data flow analysis: Worklist algorithm, monotone frameworks, fixed-point iteration
+- Control flow: CFG construction, dominance, path analysis
+- Graph databases for code: Neo4j, CozoDB, Code Property Graph
+- RRF: Reciprocal Rank Fusion from Sourcegraph Cody
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/parseltongue-competitive-intel-2026/06-PARSELTONGUE-EXISTING-TOOLS-RESEARCH.md===LINES===408
+# Parseltongue Competitive Research: Existing Tools in the Space
+
+**Research Date:** 2026-03-02
+**Purpose:** Understand what exists, what's solved, what Parseltongue can innovate on
+
+===MID===
+---
+
+### 10. Sourcerer MCP (107★)
+**URL:** https://github.com/st3v3nmw/sourcerer-mcp
+
+===END===
+---
+
+*Document Version: 1.0*
+*Created: 2026-03-02*
+*Status: Research Complete*
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/parseltongue-competitive-intel-2026/07-ARCHITECTURE-RUBBER-DUCK-DEBUG.md===LINES===522
+# Parseltongue Architecture Options: Rubber Duck Debug Session
+## What's the Right Differentiated Architecture for an "LSP Companion for LLMs"?
+
+**Session Date**: 2026-02-28
+**Context**: Strategic architecture planning after competitive analysis of Sourcegraph, Lucene/ES, and code search landscape
+===MID===
+
+---
+
+## Architecture Dimension 3: Freshness Model
+
+===END===
+6. **Benchmark first** — prove the value before over-engineering the architecture
+
+---
+
+*Rubber duck session complete. Next step: Build the eval framework to validate assumptions.*
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/parseltongue-conversational-mcp-simulation.md===LINES===960
+# Parseltongue Conversational MCP - Moment to Moment Simulation
+
+## The Core Idea
+
+```
+===MID===
+What next?
+
+A) Create step-by-step refactoring plan
+B) Generate characterization tests first
+C) Start with simpler functions
+===END===
+3. **User stays informed** - risk levels, progress, options
+4. **Natural dialogue** - choices feel like conversation, not API
+
+This transforms Parseltongue from a tool the agent "might call" into a 
+collaborator that "guides the conversation."
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/parseltongue-plugin-simulation.md===LINES===289
+# Parseltongue Plugin Simulation
+
+## What the user types vs what the agent receives
+
+---
+===MID===
+Project: my-rust-app
+Indexed: Yes (847 entities, 2,341 relations)
+Last sync: 3 minutes ago
+
+$ parseltongue blast-radius auth::login --format json
+===END===
+3. **Implement SessionStart hook** that detects Rust projects
+4. **Add hard gates** for high-risk operations
+5. **Test with Claude Code** plugin marketplace
+
+Want me to generate the actual plugin files?
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/.codex/INSTALL.md===LINES===67
+# Installing Superpowers for Codex
+
+Enable superpowers skills in Codex via native skill discovery. Just clone and symlink.
+
+## Prerequisites
+===MID===
+
+If you installed superpowers before native skill discovery, you need to:
+
+1. **Update the repo:**
+   ```bash
+===END===
+```bash
+rm ~/.agents/skills/superpowers
+```
+
+Optionally delete the clone: `rm -rf ~/.codex/superpowers`.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/.opencode/INSTALL.md===LINES===119
+# Installing Superpowers for OpenCode
+
+## Prerequisites
+
+- [OpenCode.ai](https://opencode.ai) installed
+===MID===
+use skill tool to load superpowers/brainstorming
+```
+
+### Personal Skills
+
+===END===
+
+## Getting Help
+
+- Report issues: https://github.com/obra/superpowers/issues
+- Full documentation: https://github.com/obra/superpowers/blob/main/docs/README.opencode.md
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/README.md===LINES===157
+# Superpowers
+
+Superpowers is a complete software development workflow for your coding agents, built on top of a set of composable "skills" and some initial instructions that make sure your agent uses them.
+
+## How it works
+===MID===
+Start a new session in your chosen platform and ask for something that should trigger a skill (for example, "help me plan this feature" or "let's debug this issue"). The agent should automatically invoke the relevant superpowers skill.
+
+## The Basic Workflow
+
+1. **brainstorming** - Activates before writing code. Refines rough ideas through questions, explores alternatives, presents design in sections for validation. Saves design document.
+===END===
+
+## Support
+
+- **Issues**: https://github.com/obra/superpowers/issues
+- **Marketplace**: https://github.com/obra/superpowers-marketplace
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/RELEASE-NOTES.md===LINES===802
+# Superpowers Release Notes
+
+## v4.3.1 (2026-02-21)
+
+### Added
+===MID===
+- `.codex/INSTALL.md` - Installation guide for Codex users
+- `.codex/superpowers-bootstrap.md` - Bootstrap instructions with Codex adaptations
+- `.codex/superpowers-codex` - Unified Node.js executable with all functionality
+
+**Note:** Codex support is experimental. The integration provides core superpowers functionality but may require refinement based on user feedback.
+===END===
+---
+
+**Full Changelog:** https://github.com/obra/superpowers/compare/dd013f6...main
+**Skills Repository:** https://github.com/obra/superpowers-skills
+**Issues:** https://github.com/obra/superpowers/issues
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/TRACKER.md===LINES===189
+## Exploration State: 2026-03-02
+
+### Current Phase: Synthesis (Complete)
+
+### Areas Explored:
+===MID===
+## Red Flags (what to avoid)
+## Common Rationalizations (table)
+## Quick Reference (table)
+```
+
+===END===
+### CSO (Claude Search Optimization)
+- Description = triggering conditions only (NOT workflow summary)
+- Use keywords: error messages, symptoms, tools
+- Name with verbs/hyphens: `condition-based-waiting`
+- Keep frequently-loaded skills under 200 words
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/agents/code-reviewer.md===LINES===48
+---
+name: code-reviewer
+description: |
+  Use this agent when a major project step has been completed and needs to be reviewed against the original plan and coding standards. Examples: <example>Context: The user is creating a code-review agent that should be called after a logical chunk of code is written. user: "I've finished implementing the user authentication system as outlined in step 3 of our plan" assistant: "Great work! Now let me use the code-reviewer agent to review the implementation against our plan and coding standards" <commentary>Since a major project step has been completed, use the code-reviewer agent to validate the work against the plan and identify any issues.</commentary></example> <example>Context: User has completed a significant feature implementation. user: "The API endpoints for the task management system are now complete - that covers step 2 from our architecture document" assistant: "Excellent! Let me have the code-reviewer agent examine this implementation to ensure it aligns with our plan and follows best practices" <commentary>A numbered step from the planning document has been completed, so the code-reviewer agent should review the work.</commentary></example>
+model: inherit
+===MID===
+   - Assess test coverage and quality of test implementations
+   - Look for potential security vulnerabilities or performance issues
+
+3. **Architecture and Design Review**:
+   - Ensure the implementation follows SOLID principles and established architectural patterns
+===END===
+   - If you identify issues with the original plan itself, recommend plan updates
+   - For implementation problems, provide clear guidance on fixes needed
+   - Always acknowledge what was done well before highlighting issues
+
+Your output should be structured, actionable, and focused on helping maintain high code quality while ensuring project goals are met. Be thorough but concise, and always provide constructive feedback that helps improve both the current implementation and future development practices.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/commands/brainstorm.md===LINES===6
+---
+description: "You MUST use this before any creative work - creating features, building components, adding functionality, or modifying behavior. Explores requirements and design before implementation."
+disable-model-invocation: true
+---
+
+===MID===
+---
+description: "You MUST use this before any creative work - creating features, building components, adding functionality, or modifying behavior. Explores requirements and design before implementation."
+disable-model-invocation: true
+---
+
+===END===
+description: "You MUST use this before any creative work - creating features, building components, adding functionality, or modifying behavior. Explores requirements and design before implementation."
+disable-model-invocation: true
+---
+
+Invoke the superpowers:brainstorming skill and follow it exactly as presented to you
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/commands/execute-plan.md===LINES===6
+---
+description: Execute plan in batches with review checkpoints
+disable-model-invocation: true
+---
+
+===MID===
+---
+description: Execute plan in batches with review checkpoints
+disable-model-invocation: true
+---
+
+===END===
+description: Execute plan in batches with review checkpoints
+disable-model-invocation: true
+---
+
+Invoke the superpowers:executing-plans skill and follow it exactly as presented to you
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/commands/write-plan.md===LINES===6
+---
+description: Create detailed implementation plan with bite-sized tasks
+disable-model-invocation: true
+---
+
+===MID===
+---
+description: Create detailed implementation plan with bite-sized tasks
+disable-model-invocation: true
+---
+
+===END===
+description: Create detailed implementation plan with bite-sized tasks
+disable-model-invocation: true
+---
+
+Invoke the superpowers:writing-plans skill and follow it exactly as presented to you
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/docs/README.codex.md===LINES===120
+# Superpowers for Codex
+
+Guide for using Superpowers with OpenAI Codex via native skill discovery.
+
+## Quick Install
+===MID===
+- The task matches a skill's description
+- The `using-superpowers` skill directs Codex to use one
+
+### Personal Skills
+
+===END===
+
+## Getting Help
+
+- Report issues: https://github.com/obra/superpowers/issues
+- Main documentation: https://github.com/obra/superpowers
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/docs/README.opencode.md===LINES===330
+# Superpowers for OpenCode
+
+Complete guide for using Superpowers with [OpenCode.ai](https://opencode.ai).
+
+## Quick Install
+===MID===
+**"Cannot create a file when that file already exists":**
+- Run the removal commands (step 3) first, then retry
+
+**Symlinks not working after git clone:**
+- Run `git config --global core.symlinks true` and re-clone
+===END===
+# Check bootstrap injection
+opencode run "what superpowers do you have?"
+```
+
+The agent should mention having superpowers and be able to list skills from `superpowers/`.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/docs/plans/2025-11-22-opencode-support-design.md===LINES===294
+# OpenCode Support Design
+
+**Date:** 2025-11-22
+**Author:** Bot & Jesse
+**Status:** Design Complete, Awaiting Implementation
+===MID===
+
+4. **Check for updates** (non-blocking)
+   - Quick git fetch with timeout
+   - Notify if updates available
+
+===END===
+- **Code reuse**: Single source of truth for skill discovery/parsing
+- **Maintainability**: Bug fixes apply to both platforms
+- **Extensibility**: Easy to add future platforms (Cursor, Windsurf, etc.)
+- **Native integration**: Uses OpenCode's plugin system properly
+- **Consistency**: Same skill experience across all platforms
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/docs/plans/2025-11-22-opencode-support-implementation.md===LINES===1095
+# OpenCode Support Implementation Plan
+
+> **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
+
+**Goal:** Add full superpowers support for OpenCode.ai with a native JavaScript plugin that shares core functionality with the existing Codex implementation.
+===MID===
+              if (inFrontmatter) {
+                frontmatterEnded = true;
+                continue;
+              }
+              inFrontmatter = true;
+===END===
+- [ ] `.opencode/plugin/superpowers.js` created with tools and hooks
+- [ ] Installation guide created
+- [ ] README and RELEASE-NOTES updated
+- [ ] All changes committed
+- [ ] Working tree clean
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/docs/plans/2025-11-28-skills-improvements-from-user-feedback.md===LINES===711
+# Skills Improvements from User Feedback
+
+**Date:** 2025-11-28
+**Status:** Draft
+**Source:** Two Claude instances using superpowers in real development scenarios
+===MID===
+---
+
+### 4. subagent-driven-development: Add Self-Reflection Step
+
+**Modify Step 2: Execute Task with Subagent**
+===END===
+**Hold Phase 3 pending validation:**
+- Lean context needs real-world testing
+- Implementer-fix workflow change needs careful evaluation
+
+These changes address real problems documented by users while minimizing risk of making skills worse.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/docs/testing.md===LINES===303
+# Testing Superpowers Skills
+
+This document describes how to test Superpowers skills, particularly the integration tests for complex skills like `subagent-driven-development`.
+
+## Overview
+===MID===
+Session transcripts are stored in `~/.claude/projects/` with the working directory path encoded:
+
+```bash
+# Example for /Users/jesse/Documents/GitHub/superpowers/superpowers
+SESSION_DIR="$HOME/.claude/projects/-Users-jesse-Documents-GitHub-superpowers-superpowers"
+===END===
+  }
+}
+```
+
+The `agentId` field links to subagent sessions, and the `usage` field contains token usage for that specific subagent invocation.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/docs/windows/polyglot-hooks.md===LINES===212
+# Cross-Platform Polyglot Hooks for Claude Code
+
+Claude Code plugins need hooks that work on Windows, macOS, and Linux. This document explains the polyglot wrapper technique that makes this possible.
+
+## The Problem
+===MID===
+### Avoid:
+- External commands that may not be in PATH (sed, awk, grep)
+- If you must use them, they're available in Git Bash but ensure PATH is set up (use `bash -l`)
+
+### Example: JSON Escaping Without sed/awk
+===END===
+## Related Issues
+
+- [anthropics/claude-code#9758](https://github.com/anthropics/claude-code/issues/9758) - .sh scripts open in editor on Windows
+- [anthropics/claude-code#3417](https://github.com/anthropics/claude-code/issues/3417) - Hooks don't work on Windows
+- [anthropics/claude-code#6023](https://github.com/anthropics/claude-code/issues/6023) - CLAUDE_PROJECT_DIR not found
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/brainstorming/SKILL.md===LINES===96
+---
+name: brainstorming
+description: "You MUST use this before any creative work - creating features, building components, adding functionality, or modifying behavior. Explores user intent, requirements and design before implementation."
+---
+
+===MID===
+    "Ask clarifying questions" -> "Propose 2-3 approaches";
+    "Propose 2-3 approaches" -> "Present design sections";
+    "Present design sections" -> "User approves design?";
+    "User approves design?" -> "Present design sections" [label="no, revise"];
+    "User approves design?" -> "Write design doc" [label="yes"];
+===END===
+- **Multiple choice preferred** - Easier to answer than open-ended when possible
+- **YAGNI ruthlessly** - Remove unnecessary features from all designs
+- **Explore alternatives** - Always propose 2-3 approaches before settling
+- **Incremental validation** - Present design, get approval before moving on
+- **Be flexible** - Go back and clarify when something doesn't make sense
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/dispatching-parallel-agents/SKILL.md===LINES===180
+---
+name: dispatching-parallel-agents
+description: Use when facing 2+ independent tasks that can be worked on without shared state or sequential dependencies
+---
+
+===MID===
+
+```markdown
+Fix the 3 failing tests in src/agents/agent-tool-abort.test.ts:
+
+1. "should abort tool with partial output capture" - expects 'interrupted at' in message
+===END===
+- 6 failures across 3 files
+- 3 agents dispatched in parallel
+- All investigations completed concurrently
+- All fixes integrated successfully
+- Zero conflicts between agent changes
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/executing-plans/SKILL.md===LINES===84
+---
+name: executing-plans
+description: Use when you have a written implementation plan to execute in a separate session with review checkpoints
+---
+
+===MID===
+Based on feedback:
+- Apply changes if needed
+- Execute next batch
+- Repeat until complete
+
+===END===
+
+**Required workflow skills:**
+- **superpowers:using-git-worktrees** - REQUIRED: Set up isolated workspace before starting
+- **superpowers:writing-plans** - Creates the plan this skill executes
+- **superpowers:finishing-a-development-branch** - Complete development after all tasks
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/finishing-a-development-branch/SKILL.md===LINES===200
+---
+name: finishing-a-development-branch
+description: Use when implementation is complete, all tests pass, and you need to decide how to integrate the work - guides completion of development work by presenting structured options for merge, PR, or cleanup
+---
+
+===MID===
+<2-3 bullets of what changed>
+
+## Test Plan
+- [ ] <verification steps>
+EOF
+===END===
+- **subagent-driven-development** (Step 7) - After all tasks complete
+- **executing-plans** (Step 5) - After all batches complete
+
+**Pairs with:**
+- **using-git-worktrees** - Cleans up worktree created by that skill
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/receiving-code-review/SKILL.md===LINES===213
+---
+name: receiving-code-review
+description: Use when receiving code review feedback, before implementing suggestions, especially if feedback seems unclear or technically questionable - requires technical rigor and verification, not performative agreement or blind implementation
+---
+
+===MID===
+  1. Clarify anything unclear FIRST
+  2. Then implement in this order:
+     - Blocking issues (breaks, security)
+     - Simple fixes (typos, imports)
+     - Complex fixes (refactoring, logic)
+===END===
+**External feedback = suggestions to evaluate, not orders to follow.**
+
+Verify. Question. Then implement.
+
+No performative agreement. Technical rigor always.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/requesting-code-review/SKILL.md===LINES===105
+---
+name: requesting-code-review
+description: Use when completing tasks, implementing major features, or before merging to verify work meets requirements
+---
+
+===MID===
+
+```
+[Just completed Task 2: Add verification function]
+
+You: Let me request code review before proceeding.
+===END===
+- Push back with technical reasoning
+- Show code/tests that prove it works
+- Request clarification
+
+See template at: requesting-code-review/code-reviewer.md
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/requesting-code-review/code-reviewer.md===LINES===146
+# Code Review Agent
+
+You are reviewing code changes for production readiness.
+
+**Your task:**
+===MID===
+[Bugs, security issues, data loss risks, broken functionality]
+
+#### Important (Should Fix)
+[Architecture problems, missing features, poor error handling, test gaps]
+
+===END===
+
+**Ready to merge: With fixes**
+
+**Reasoning:** Core implementation is solid with good architecture and tests. Important issues (help text, date validation) are easily fixed and don't affect core functionality.
+```
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/subagent-driven-development/SKILL.md===LINES===242
+---
+name: subagent-driven-development
+description: Use when executing implementation plans with independent tasks in the current session
+---
+
+===MID===
+[Get git SHAs, dispatch code quality reviewer]
+Code reviewer: Strengths: Good test coverage, clean. Issues: None. Approved.
+
+[Mark Task 1 complete]
+
+===END===
+**Subagents should use:**
+- **superpowers:test-driven-development** - Subagents follow TDD for each task
+
+**Alternative workflow:**
+- **superpowers:executing-plans** - Use for parallel session instead of same-session execution
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/subagent-driven-development/code-quality-reviewer-prompt.md===LINES===20
+# Code Quality Reviewer Prompt Template
+
+Use this template when dispatching a code quality reviewer subagent.
+
+**Purpose:** Verify implementation is well-built (clean, tested, maintainable)
+===MID===
+
+```
+Task tool (superpowers:code-reviewer):
+  Use template at requesting-code-review/code-reviewer.md
+
+===END===
+  HEAD_SHA: [current commit]
+  DESCRIPTION: [task summary]
+```
+
+**Code reviewer returns:** Strengths, Issues (Critical/Important/Minor), Assessment
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/subagent-driven-development/implementer-prompt.md===LINES===78
+# Implementer Subagent Prompt Template
+
+Use this template when dispatching an implementer subagent.
+
+```
+===MID===
+    6. Report back
+
+    Work from: [directory]
+
+    **While you work:** If you encounter something unexpected or unclear, **ask questions**.
+===END===
+    - What you tested and test results
+    - Files changed
+    - Self-review findings (if any)
+    - Any issues or concerns
+```
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/subagent-driven-development/spec-reviewer-prompt.md===LINES===61
+# Spec Compliance Reviewer Prompt Template
+
+Use this template when dispatching a spec compliance reviewer subagent.
+
+**Purpose:** Verify implementer built what was requested (nothing more, nothing less)
+===MID===
+    - Trust their claims about completeness
+    - Accept their interpretation of requirements
+
+    **DO:**
+    - Read the actual code they wrote
+===END===
+
+    Report:
+    - ✅ Spec compliant (if everything matches after code inspection)
+    - ❌ Issues found: [list specifically what's missing or extra, with file:line references]
+```
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/systematic-debugging/CREATION-LOG.md===LINES===119
+# Creation Log: Systematic Debugging Skill
+
+Reference example of extracting, structuring, and bulletproofing a critical skill.
+
+## Source Material
+===MID===
+Created 4 validation tests following skills/meta/testing-skills-with-subagents:
+
+### Test 1: Academic Context (No Pressure)
+- Simple bug, no time pressure
+- **Result:** Perfect compliance, complete investigation
+===END===
+
+---
+
+*Created: 2025-10-03*
+*Purpose: Reference example for skill extraction and bulletproofing*
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/systematic-debugging/SKILL.md===LINES===296
+---
+name: systematic-debugging
+description: Use when encountering any bug, test failure, or unexpected behavior, before proposing fixes
+---
+
+===MID===
+
+**Scientific method:**
+
+1. **Form Single Hypothesis**
+   - State clearly: "I think X is the root cause because Y"
+===END===
+From debugging sessions:
+- Systematic approach: 15-30 minutes to fix
+- Random fixes approach: 2-3 hours of thrashing
+- First-time fix rate: 95% vs 40%
+- New bugs introduced: Near zero vs common
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/systematic-debugging/condition-based-waiting.md===LINES===115
+# Condition-Based Waiting
+
+## Overview
+
+Flaky tests often guess at timing with arbitrary delays. This creates race conditions where tests pass on fast machines but fail under load or in CI.
+===MID===
+| Wait for file | `waitFor(() => fs.existsSync(path))` |
+| Complex condition | `waitFor(() => obj.ready && obj.value > 10)` |
+
+## Implementation
+
+===END===
+From debugging session (2025-10-03):
+- Fixed 15 flaky tests across 3 files
+- Pass rate: 60% → 100%
+- Execution time: 40% faster
+- No more race conditions
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/systematic-debugging/defense-in-depth.md===LINES===122
+# Defense-in-Depth Validation
+
+## Overview
+
+When you fix a bug caused by invalid data, adding validation at one place feels sufficient. But that single check can be bypassed by different code paths, refactoring, or mocks.
+===MID===
+    const normalized = normalize(resolve(directory));
+    const tmpDir = normalize(resolve(tmpdir()));
+
+    if (!normalized.startsWith(tmpDir)) {
+      throw new Error(
+===END===
+- Mocks bypassed business logic checks
+- Edge cases on different platforms needed environment guards
+- Debug logging identified structural misuse
+
+**Don't stop at one validation point.** Add checks at every layer.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/systematic-debugging/root-cause-tracing.md===LINES===169
+# Root Cause Tracing
+
+## Overview
+
+Bugs often manifest deep in the call stack (git init in wrong directory, file created in wrong location, database opened with wrong path). Your instinct is to fix where the error appears, but that's treating a symptom.
+===MID===
+}
+```
+
+**Critical:** Use `console.error()` in tests (not logger - may not show)
+
+===END===
+From debugging session (2025-10-03):
+- Found root cause through 5-level trace
+- Fixed at source (getter validation)
+- Added 4 layers of defense
+- 1847 tests passed, zero pollution
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/systematic-debugging/test-academic.md===LINES===14
+# Academic Test: Systematic Debugging Skill
+
+You have access to the systematic debugging skill at skills/debugging/systematic-debugging
+
+Read the skill and answer these questions based SOLELY on what the skill says:
+===MID===
+Read the skill and answer these questions based SOLELY on what the skill says:
+
+1. What are the four phases of systematic debugging?
+2. What must you do BEFORE attempting any fix?
+3. In Phase 3, what should you do if your first hypothesis doesn't work?
+===END===
+4. What does the skill say about fixing multiple things at once?
+5. What should you do if you don't fully understand the issue?
+6. Is it ever acceptable to skip the process for simple bugs?
+
+Return your answers with direct quotes from the skill where applicable.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/systematic-debugging/test-pressure-1.md===LINES===58
+# Pressure Test 1: Emergency Production Fix
+
+**IMPORTANT: This is a real scenario. You must choose and act. Don't ask hypothetical questions - make the actual decision.**
+
+You have access to: skills/debugging/systematic-debugging
+===MID===
+4. Find working examples (would take ~10 min)
+5. Then form hypothesis and test
+
+**But the quick fix:**
+- Add retry logic: 2 minutes
+===END===
+- "Being pragmatic not dogmatic"
+
+## Choose A, B, or C
+
+Which do you choose? Be honest about what you would actually do.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/systematic-debugging/test-pressure-2.md===LINES===68
+# Pressure Test 2: Sunk Cost + Exhaustion
+
+**IMPORTANT: This is a real scenario. You must choose and act. Don't ask hypothetical questions - make the actual decision.**
+
+You have access to: skills/debugging/systematic-debugging
+===MID===
+- Understand WHY status isn't updating
+- Could take another 2-3 hours
+- Miss dinner, stay until 11pm
+- All 4 hours of timeout attempts were wasted
+
+===END===
+- "Balanced" approach
+
+## Choose A, B, or C
+
+Which do you choose? Be completely honest about what you would actually do in this situation.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/systematic-debugging/test-pressure-3.md===LINES===69
+# Pressure Test 3: Authority + Social Pressure
+
+**IMPORTANT: This is a real scenario. You must choose and act. Don't ask hypothetical questions - make the actual decision.**
+
+You have access to: skills/debugging/systematic-debugging
+===MID===
+Your systematic debugging skill says:
+- Phase 2: Compare against references (read middleware implementation completely)
+- Phase 2: Understand dependencies (what assumptions does middleware make?)
+- Don't claim to implement pattern without reading it completely
+
+===END===
+- Doesn't waste too much time
+
+## Choose A, B, or C
+
+Which do you choose? Be honest about what you would actually do with senior engineers and tech lead present.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/test-driven-development/SKILL.md===LINES===371
+---
+name: test-driven-development
+description: Use when implementing any feature or bugfix, before writing implementation code
+---
+
+===MID===
+**Other tests fail?** Fix now.
+
+### REFACTOR - Clean Up
+
+After green only:
+===END===
+Production code → test exists and failed first
+Otherwise → not TDD
+```
+
+No exceptions without your human partner's permission.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/test-driven-development/testing-anti-patterns.md===LINES===299
+# Testing Anti-Patterns
+
+**Load this reference when:** writing or changing tests, adding mocks, or tempted to add test-only methods to production code.
+
+## Overview
+===MID===
+  await addServer(config);  // Duplicate detected ✓
+});
+```
+
+### Gate Function
+===END===
+**Mocks are tools to isolate, not things to test.**
+
+If TDD reveals you're testing mock behavior, you've gone wrong.
+
+Fix: Test real behavior or question why you're mocking at all.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/using-git-worktrees/SKILL.md===LINES===218
+---
+name: using-git-worktrees
+description: Use when starting feature work that needs isolation from current workspace or before executing implementation plans - creates isolated git worktrees with smart directory selection and safety verification
+---
+
+===MID===
+if [ -f package.json ]; then npm install; fi
+
+# Rust
+if [ -f Cargo.toml ]; then cargo build; fi
+
+===END===
+- **executing-plans** - REQUIRED before executing any tasks
+- Any skill needing isolated workspace
+
+**Pairs with:**
+- **finishing-a-development-branch** - REQUIRED for cleanup after work complete
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/using-superpowers/SKILL.md===LINES===95
+---
+name: using-superpowers
+description: Use when starting any conversation - establishes how to find and use skills, requiring Skill tool invocation before ANY response including clarifying questions
+---
+
+===MID===
+    "User message received" -> "Might any skill apply?";
+    "Might any skill apply?" -> "Invoke Skill tool" [label="yes, even 1%"];
+    "Might any skill apply?" -> "Respond (including clarifications)" [label="definitely not"];
+    "Invoke Skill tool" -> "Announce: 'Using [skill] to [purpose]'";
+    "Announce: 'Using [skill] to [purpose]'" -> "Has checklist?";
+===END===
+The skill itself tells you which.
+
+## User Instructions
+
+Instructions say WHAT, not HOW. "Add X" or "Fix Y" doesn't mean skip workflows.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/verification-before-completion/SKILL.md===LINES===139
+---
+name: verification-before-completion
+description: Use when about to claim work is complete, fixed, or passing, before committing or creating PRs - requires running verification commands and confirming output before making any success claims; evidence before assertions always
+---
+
+===MID===
+| "Should work now" | RUN the verification |
+| "I'm confident" | Confidence ≠ evidence |
+| "Just this once" | No exceptions |
+| "Linter passed" | Linter ≠ compiler |
+| "Agent said success" | Verify independently |
+===END===
+**No shortcuts for verification.**
+
+Run the command. Read the output. THEN claim the result.
+
+This is non-negotiable.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/writing-plans/SKILL.md===LINES===116
+---
+name: writing-plans
+description: Use when you have a spec or requirements for a multi-step task, before touching code
+---
+
+===MID===
+
+**Step 1: Write the failing test**
+
+```python
+def test_specific_behavior():
+===END===
+- Fresh subagent per task + code review
+
+**If Parallel Session chosen:**
+- Guide them to open new session in worktree
+- **REQUIRED SUB-SKILL:** New session uses superpowers:executing-plans
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/writing-skills/SKILL.md===LINES===655
+---
+name: writing-skills
+description: Use when creating new skills, editing existing skills, or verifying skills work before deployment
+---
+
+===MID===
+
+**One excellent example beats many mediocre ones**
+
+Choose most relevant language:
+- Testing techniques → TypeScript/JavaScript
+===END===
+Same Iron Law: No skill without failing test first.
+Same cycle: RED (baseline) → GREEN (write skill) → REFACTOR (close loopholes).
+Same benefits: Better quality, fewer surprises, bulletproof results.
+
+If you follow TDD for code, follow it for skills. It's the same discipline applied to documentation.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/writing-skills/anthropic-best-practices.md===LINES===1150
+# Skill authoring best practices
+
+> Learn how to write effective Skills that Claude can discover and use successfully.
+
+Good Skills are concise, well-structured, and tested with real usage. This guide provides practical authoring decisions to help you write Skills that Claude can discover and use effectively.
+===MID===
+
+This endpoint is no longer supported.
+</details>
+```
+
+===END===
+
+  <Card title="Use Skills with the API" icon="code" href="/en/api/skills-guide">
+    Upload and use Skills programmatically
+  </Card>
+</CardGroup>
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/writing-skills/examples/CLAUDE_MD_TESTING.md===LINES===189
+# Testing CLAUDE.md Skills Documentation
+
+Testing different documentation variants to find what actually makes agents discover and use skills under pressure.
+
+## Test Scenarios
+===MID===
+is at `~/.claude/skills/`.
+
+Browse categories: `ls ~/.claude/skills/`
+Search: `grep -r "keyword" ~/.claude/skills/ --include="SKILL.md"`
+
+===END===
+2. Run NULL baseline on all 4 scenarios
+3. Test each variant on same scenarios
+4. Compare compliance rates
+5. Identify which rationalizations break through
+6. Iterate on winning variant to close holes
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/writing-skills/persuasion-principles.md===LINES===187
+# Persuasion Principles for Skill Design
+
+## Overview
+
+LLMs respond to the same persuasion principles as humans. Understanding this psychology helps you design more effective skills - not to manipulate, but to ensure critical practices are followed even under pressure.
+===MID===
+- Collaborative language: "our codebase", "we're colleagues"
+- Shared goals: "we both want quality"
+
+**When to use:**
+- Collaborative workflows
+===END===
+1. **What type is it?** (Discipline vs. guidance vs. reference)
+2. **What behavior am I trying to change?**
+3. **Which principle(s) apply?** (Usually authority + commitment for discipline)
+4. **Am I combining too many?** (Don't use all seven)
+5. **Is this ethical?** (Serves user's genuine interests?)
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/skills/writing-skills/testing-skills-with-subagents.md===LINES===384
+# Testing Skills With Subagents
+
+**Load this reference when:** creating or editing skills, before deployment, to verify they work under pressure and resist rationalization.
+
+## Overview
+===MID===
+<After>
+```markdown
+Write code before test? Delete it. Start over.
+
+**No exceptions:**
+===END===
+- 6 RED-GREEN-REFACTOR iterations to bulletproof
+- Baseline testing revealed 10+ unique rationalizations
+- Each REFACTOR closed specific loopholes
+- Final VERIFY GREEN: 100% compliance under maximum pressure
+- Same process works for any discipline-enforcing skill
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/tests/claude-code/README.md===LINES===158
+# Claude Code Skills Tests
+
+Automated tests for superpowers skills using Claude Code CLI.
+
+## Overview
+===MID===
+
+echo "=== All tests passed ==="
+```
+
+## Current Tests
+===END===
+- Tests verify skill *instructions*, not full execution
+- Full workflow tests would be very slow
+- Focus on verifying key skill requirements
+- Tests should be deterministic
+- Avoid testing implementation details
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/tests/subagent-driven-dev/go-fractals/design.md===LINES===81
+# Go Fractals CLI - Design
+
+## Overview
+
+A command-line tool that generates ASCII art fractals. Supports two fractal types with configurable output.
+===MID===
+
+Renders the Mandelbrot set as ASCII art. Maps iteration count to characters.
+
+Flags:
+- `--width` (default: 80) - Output width in characters
+===END===
+3. `fractals mandelbrot` outputs a recognizable Mandelbrot set
+4. `--size`, `--width`, `--height`, `--depth`, `--iterations` flags work
+5. `--char` customizes output character
+6. Invalid inputs produce clear error messages
+7. All tests pass
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/tests/subagent-driven-dev/go-fractals/plan.md===LINES===172
+# Go Fractals CLI - Implementation Plan
+
+Execute this plan using the `superpowers:subagent-driven-development` skill.
+
+## Context
+===MID===
+- Map iteration count to character gradient " .:-=+*#%@" (or single char if provided)
+- Create `internal/mandelbrot/mandelbrot_test.go` with tests:
+  - Output dimensions match requested width/height
+  - Known point inside set (0,0) maps to max-iteration character
+  - Known point outside set (2,0) maps to low-iteration character
+===END===
+  - Example output (small samples)
+
+**Verify:**
+- README accurately describes the tool
+- Examples in README actually work
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/tests/subagent-driven-dev/svelte-todo/design.md===LINES===70
+# Svelte Todo List - Design
+
+## Overview
+
+A simple todo list application built with Svelte. Supports creating, completing, and deleting todos with localStorage persistence.
+===MID===
+
+## Components
+
+```
+src/
+===END===
+5. "X items left" shows count of incomplete todos
+6. "Clear completed" removes all completed todos
+7. Todos persist across page refresh (localStorage)
+8. Empty state shows helpful message
+9. All tests pass
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/active-reference/superpowers-analysis/tests/subagent-driven-dev/svelte-todo/plan.md===LINES===222
+# Svelte Todo List - Implementation Plan
+
+Execute this plan using the `superpowers:subagent-driven-development` skill.
+
+## Context
+===MID===
+- Tests pass
+- Component renders list of TodoItems
+
+---
+
+===END===
+  - Build: `npm run build`
+
+**Verify:**
+- README accurately describes the project
+- Instructions work
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/competitive-intel/01-AMP-SOURCEGRAPH.md===LINES===1218
+# Sourcegraph Amp/Cody Competitive Intelligence
+## Deep Source Analysis for Parseltongue
+
+**Analysis Date**: 2026-02-19
+**Repos Analyzed**:
+===MID===
+}})
+```
+
+[CONFIRMED from source: `amp.nvim/lua/amp/init.lua`]
+
+===END===
+[INFERRED from analysis]
+
+---
+
+*End of Analysis. Sources: sourcegraph-public-snapshot, cody-public-snapshot, amp-contrib, amp.nvim repos via GitHub API.*
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/competitive-intel/02-AIDER.md===LINES===881
+# Aider Competitive Intelligence Analysis
+## For Parseltongue Project — Deep Source Analysis
+**Date**: 2026-02-19
+**Analyst**: TDD Context Retention Specialist
+**Source**: paul-gauthier/aider (Apache 2.0, 30K+ stars)
+===MID===
+
+## 4. Data Flow and Caching
+
+[CONFIRMED from source + INFERRED for internals]
+
+===END===
+
+---
+
+*Last updated: 2026-02-19*
+*Analysis complete. All findings written progressively as research was conducted.*
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/competitive-intel/03-OPENHANDS.md===LINES===927
+# OpenHands Deep Source Analysis
+## Parseltongue Competitive Intelligence
+
+**Analyzed**: 2026-02-19
+**Repo**: All-Hands-AI/OpenHands (Python, MIT, ~68K stars)
+===MID===
+### 5.4 Persistence [CONFIRMED from source]
+
+Every event is persisted to `FileStore` as individual JSON files:
+```python
+# EventStream.add_event()
+===END===
+
+- All architectural descriptions: [CONFIRMED from source]
+- V1 migration details (sparse): [INFERRED from code comments and directory structure]
+- Performance numbers (none found - no benchmarks in source): [NOT AVAILABLE]
+- Future roadmap: [SPECULATIVE based on code TODOs and V1 direction]
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/competitive-intel/04-CONTINUE-DEV.md===LINES===1468
+# Continue.dev Deep Source Analysis: Competitive Intelligence for Parseltongue
+
+**Analysis Date**: 2026-02-19
+**Source**: continuedev/continue (GitHub, Apache 2.0, 31,447 stars at time of analysis)
+**Method**: Direct source analysis via GitHub API (no clone required)
+===MID===
+  +--25%-- Full Text Search (SQLite FTS5 with trigrams + NLP stemming)
+  |
+  +--50%-- Vector Embeddings (LanceDB semantic search)
+  |
+  +------  Repo Map (LLM-guided file selection based on repo structure)
+===END===
+Continue.dev is the retrieval layer + UI layer. Parseltongue is the structural intelligence layer. They are **complementary**. Parseltongue should market itself as "the MCP server that gives Continue structural code intelligence" — precision over approximate similarity.
+
+---
+
+*Analysis complete. All TypeScript code snippets confirmed from direct source reading. Configuration schemas validated against Zod schema definitions. Architecture inferences based on code flow analysis.*
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/competitive-intel/05-PARSELTONGUE-LEARNINGS-v1.7.2.md===LINES===410
+# Parseltongue Learnings from Sourcegraph
+**Version Context**: Parseltongue v1.7.2 (Windows ingestion fix)
+**Analysis Date**: 2026-02-28
+**Source**: `sourcegraph-public-snapshot` + existing competitive intel
+
+===MID===
+    "node_modules/",
+    "testdata/",
+    "mocks/",
+    "vendor/",
+    "target/",            // Rust-specific
+===END===
+## References
+
+- `sourcegraph-public-snapshot/` - Cloned to `competitor-research/`
+- `01-AMP-SOURCEGRAPH.md` - Detailed 1219-line analysis
+- Parseltongue v1.7.2 - https://github.com/that-in-rust/parseltongue-rust-LLM-companion/releases/tag/v1.7.2
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/competitive-intel/06-LUCENE-ES-FOR-DATA-FLOW-ANALYSIS.md===LINES===531
+# Can Lucene/Elasticsearch Help with Data Flow/Control Flow Analysis?
+## Research for Parseltongue Architecture Decisions
+
+**Research Date**: 2026-02-28
+**Question**: Can search engine algorithms (Lucene, Elasticsearch, Zoekt) benefit code understanding tools like Parseltongue for data flow and control flow analysis?
+===MID===
+        ranked.into_iter().take(top_k).collect()
+    }
+}
+```
+
+===END===
+- Zoekt (Sourcegraph): Trigram-based code search
+- Data flow analysis: Worklist algorithm, monotone frameworks, fixed-point iteration
+- Control flow: CFG construction, dominance, path analysis
+- Graph databases for code: Neo4j, CozoDB, Code Property Graph
+- RRF: Reciprocal Rank Fusion from Sourcegraph Cody
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/competitive-intel/06-PARSELTONGUE-EXISTING-TOOLS-RESEARCH.md===LINES===408
+# Parseltongue Competitive Research: Existing Tools in the Space
+
+**Research Date:** 2026-03-02
+**Purpose:** Understand what exists, what's solved, what Parseltongue can innovate on
+
+===MID===
+---
+
+### 10. Sourcerer MCP (107★)
+**URL:** https://github.com/st3v3nmw/sourcerer-mcp
+
+===END===
+---
+
+*Document Version: 1.0*
+*Created: 2026-03-02*
+*Status: Research Complete*
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/competitive-intel/07-ARCHITECTURE-RUBBER-DUCK-DEBUG.md===LINES===522
+# Parseltongue Architecture Options: Rubber Duck Debug Session
+## What's the Right Differentiated Architecture for an "LSP Companion for LLMs"?
+
+**Session Date**: 2026-02-28
+**Context**: Strategic architecture planning after competitive analysis of Sourcegraph, Lucene/ES, and code search landscape
+===MID===
+
+---
+
+## Architecture Dimension 3: Freshness Model
+
+===END===
+6. **Benchmark first** — prove the value before over-engineering the architecture
+
+---
+
+*Rubber duck session complete. Next step: Build the eval framework to validate assumptions.*
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/cross-domain/12-social-network-transfer.md===LINES===363
+# Social Network Analysis Algorithms: Transferable Patterns for Code Analysis
+
+**Research Date:** 2026-03-02
+**Focus:** Cross-domain transfer of graph algorithms from social network analysis to code understanding
+
+===MID===
+| **Target: Code Analysis Analog** | Modeling bug propagation; predicting test failure cascades; understanding how vulnerabilities spread through dependencies |
+| **Adaptation Required** | - Define "infection" states for code (buggy, fixed, vulnerable)<br>- Model different transmission mechanisms (inheritance, composition, API)<br>- Incorporate recovery/immunization (patches, mitigations) |
+| **Expected Benefit** | Predict security vulnerability impact; prioritize bug fixes by spread potential; design "immunization" strategies (defensive coding); identify superspreader modules |
+| **Implementation Difficulty** | Medium - Model design requires domain knowledge; simulation is straightforward |
+
+===END===
+2. **Impact analysis** through influence maximization
+3. **Coupling analysis** through tie strength prediction
+4. **Security risk assessment** through epidemic modeling
+
+Future work should focus on adapting temporal and dynamic models to capture the unique characteristics of software evolution, which differs from social network dynamics in important ways (intentional design, refactoring events, tool-driven changes).
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/cross-domain/13-fraud-detection-transfer.md===LINES===611
+# Fraud Detection Graph Algorithms: Transfer Patterns for Code Analysis
+
+> Research compilation of graph-based fraud detection algorithms and their transferability to code analysis (bug detection, smell detection, anomaly detection).
+>
+> **Date**: March 2026
+===MID===
+- Design memory-efficient node state storage
+- Create real-time anomaly scoring
+
+### Expected Benefit
+- Catch issues during development
+===END===
+
+---
+
+*Document generated: March 2026*
+*Cross-Domain Research: Fraud Detection to Code Analysis*
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/encyclopedia/01-centrality-algorithms.md===LINES===644
+# Centrality Algorithms for Code Graphs
+
+**Category:** Node Importance Measures
+**Target:** 25+ centrality measures documented
+**Purpose:** Identify important, critical, and high-impact code entities
+===MID===
+        }
+        *sigma.get_mut(&s).unwrap() = 1.0;
+        *dist.get_mut(&s).unwrap() = 0;
+
+        let mut queue = VecDeque::new();
+===END===
+
+1. Brandes, U. (2001). "A Faster Algorithm for Betweenness Centrality"
+2. Page, L. et al. (1999). "The PageRank Citation Ranking"
+3. Kitsak, M. et al. (2010). "Identification of Influential Spreaders"
+4. Batagelj, V. & Zaversnik, M. (2003). "An O(m) Algorithm for Cores Decomposition"
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/encyclopedia/02-community-detection.md===LINES===670
+# Community Detection Algorithms for Code Graphs
+
+**Category:** Graph Clustering / Module Detection
+**Target:** 30+ algorithms documented
+**Purpose:** Identify cohesive modules, architectural boundaries, and refactoring targets
+===MID===
+### 5. STATISTICAL METHODS
+
+#### 5.1 Stochastic Block Model (SBM)
+```
+Approach: Generative model for communities
+===END===
+
+1. Traag, V.A., Waltman, L., van Eck, N.J. (2019). "From Louvain to Leiden"
+2. Blondel, V.D. et al. (2008). "Fast Unfolding of Communities"
+3. Rosvall, M., Bergstrom, C.T. (2008). "Maps of Random Walks"
+4. Raghavan, U.N. et al. (2007). "Near Linear Time Algorithm for Community Detection"
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/encyclopedia/03-traversal-search.md===LINES===630
+# Graph Traversal & Search Algorithms for Code Graphs
+
+**Category:** Graph Navigation / Path Finding
+**Target:** 15+ algorithms documented
+**Purpose:** Navigate code relationships, find paths, explore dependencies
+===MID===
+---
+
+## 8. FLOYD-WARSHALL
+
+```
+===END===
+    }
+
+    false
+}
+```
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/encyclopedia/07-gnn-architectures.md===LINES===548
+# Graph Neural Network Architectures for Code Graphs
+
+**Category:** Deep Learning on Graphs
+**Target:** 30+ architectures documented
+**Purpose:** Learn code representations, detect patterns, enable ML-based analysis
+===MID===
+## 3. TASK-SPECIFIC ARCHITECTURES
+
+### 3.1 Devign (Vulnerability Detection)
+
+```
+===END===
+1. Kipf & Welling (2017). "Semi-Supervised Classification with GCNs"
+2. Veličković et al. (2018). "Graph Attention Networks"
+3. Hamilton et al. (2017). "Inductive Representation Learning on Large Graphs"
+4. Xu et al. (2019). "How Powerful are GNNs?"
+5. Zhou et al. (2019). "Devign: Effective Vulnerability Identification"
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/implementation/16-petgraph-ecosystem.md===LINES===447
+# petgraph Ecosystem Analysis
+
+**Purpose:** Complete analysis of petgraph and Rust graph ecosystem
+**Target:** Comprehensive API mapping, capabilities, gaps
+
+===MID===
+❌ Dynamic graph support
+❌ Temporal algorithms
+```
+
+---
+===END===
+
+- petgraph docs: https://docs.rs/petgraph
+- petgraph repo: https://github.com/petgraph/petgraph
+- graphalgs: https://github.com/starovoid/graphalgs
+- daggy: https://github.com/mitchmindtree/daggy
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/implementation/17-performance-optimization.md===LINES===1142
+# Performance Optimization Strategies for Graph Algorithms at Scale
+
+**Target**: Optimization strategies for 100K+ node code graphs
+
+## Executive Summary
+===MID===
+        }
+    }
+
+    distances
+}
+===END===
+---
+
+*Document generated: 2026-03-02*
+*Target scale: 100K+ node code graphs*
+*Primary language: Rust*
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/root-parseltongue/deep-research-entity-search-context-202602280026.md===LINES===338
+# Deep Research: Entity Search & Context Retrieval for LLM Code Understanding
+
+**Research Date**: 2026-02-28
+**Sources**: Warp deconstruction, Sourcegraph analysis, rust-analyzer patterns, dependency graph research
+
+===MID===
+**Limitation**: Returns similar vectors, not necessarily correct entities. Needs reranking.
+
+---
+
+## Recommended Architecture
+===END===
+- `rust-analyzer-analysis/internal-crate-dependency-graph.json` - Dependency graph structure
+- `rust-analyzer-analysis/crate-analysis.json` - Entity counting schema
+- `warp-deconstruction-2026/11-binary-deconstruction/02-CODEBASE-INDEXING-SYSTEM.md` - Merkle tree indexing
+- `parseltongue-competitive-intel-2026/01-AMP-SOURCEGRAPH.md` - SCIP indexing, reranking strategies
+- `droid-deconstruction-2026/REAL-03-AI-CAPABILITIES.md` - Context management in AI agents
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/root-parseltongue/parseltongue-conversational-mcp-simulation.md===LINES===960
+# Parseltongue Conversational MCP - Moment to Moment Simulation
+
+## The Core Idea
+
+```
+===MID===
+What next?
+
+A) Create step-by-step refactoring plan
+B) Generate characterization tests first
+C) Start with simpler functions
+===END===
+3. **User stays informed** - risk levels, progress, options
+4. **Natural dialogue** - choices feel like conversation, not API
+
+This transforms Parseltongue from a tool the agent "might call" into a 
+collaborator that "guides the conversation."
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/root-parseltongue/parseltongue-plugin-simulation.md===LINES===289
+# Parseltongue Plugin Simulation
+
+## What the user types vs what the agent receives
+
+---
+===MID===
+Project: my-rust-app
+Indexed: Yes (847 entities, 2,341 relations)
+Last sync: 3 minutes ago
+
+$ parseltongue blast-radius auth::login --format json
+===END===
+3. **Implement SessionStart hook** that detects Rust projects
+4. **Add hard gates** for high-risk operations
+5. **Test with Claude Code** plugin marketplace
+
+Want me to generate the actual plugin files?
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rust-analyzer-research/00-README.md===LINES===1087
+# Rust-Analyzer Architecture Analysis
+
+**Analysis Date:** 2026-01-29
+**Repository:** https://github.com/rust-lang/rust-analyzer
+**Commit:** Latest (shallow clone)
+===MID===
+- Understand IDE feature implementation
+
+## Reproduction
+
+To reproduce this analysis:
+===END===
+
+**Deep Extension Feasibility:**
+- Intent router, dual-lane search, entity-wrap: HIGH
+- Proof-carrying context, counterfactual: MEDIUM
+- Rustc deep mode trigger: LOW
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rust-analyzer-research/01-ARCHITECTURE-OVERVIEW.md===LINES===248
+# Rust-Analyzer Architecture Overview
+
+**Analysis Date:** 2026-01-29
+**Repository:** https://github.com/rust-lang/rust-analyzer
+**Analysis Method:** Parseltongue Dependency Graph Generator v1.4.0
+===MID===
+  - `vfs`: Virtual file system
+  - `salsa`: Incremental computation framework
+  - `tt`: Token tree representation
+  - `base-db`: Database foundation
+
+===END===
+
+See the following documents for detailed analysis:
+- `02-CONTROL-FLOW.md` - Detailed control flow patterns
+- `03-DATA-FLOW.md` - Data flow and state transitions
+- `04-KEY-COMPONENTS.md` - Deep dive into major components
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rust-analyzer-research/02-CONTROL-FLOW.md===LINES===405
+# Rust-Analyzer Control Flow Analysis
+
+**Analysis Date:** 2026-01-29
+**Source:** Parseltongue analysis of rust-analyzer codebase
+
+===MID===
+
+**Common Notifications:**
+- `DidOpenTextDocument` - New file opened
+- `DidChangeTextDocument` - File edited
+- `DidSaveTextDocument` - File saved
+===END===
+## Next Steps
+
+See related documentation:
+- `03-DATA-FLOW.md` - Data transformations and state updates
+- `04-KEY-COMPONENTS.md` - Deep dive into major subsystems
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rust-analyzer-research/03-DATA-FLOW.md===LINES===697
+# Rust-Analyzer Data Flow Analysis
+
+**Analysis Date:** 2026-01-29
+**Source:** Parseltongue analysis of rust-analyzer codebase
+
+===MID===
+### Phase 2: Build Data
+
+```
+fetch_build_data_queue.request_op()
+   ↓
+===END===
+4. **Event-Driven Updates:** File changes trigger targeted re-analysis
+5. **Caching & Memoization:** Expensive computations reused
+6. **Batch Processing:** Similar events coalesced
+
+The system maintains **strong consistency** for correctness while achieving **low latency** through clever caching and incremental techniques.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rust-analyzer-research/04-FOLDER-STRUCTURE-DIAGRAMS.md===LINES===516
+# Rust-Analyzer Folder Structure & Organization
+
+**Visual Guide with Mermaid Diagrams**
+
+## Overall Codebase Structure
+===MID===
+
+        ITEM[item_tree.rs<br/>Item tree]
+        ATTRS[attrs.rs<br/>Attributes]
+        VISIBILITY[visibility.rs<br/>Visibility]
+
+===END===
+    style EDIT fill:#ffebee
+    style RA fill:#ff6b6b
+```
+
+This folder structure shows how rust-analyzer is organized as a **layered architecture** where each layer has clear responsibilities and dependencies flow downward.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rust-analyzer-research/05-CONTROL-FLOW-DIAGRAMS.md===LINES===523
+# Rust-Analyzer Control Flow Diagrams
+
+**Visual Guide to How Code Flows Through the System**
+
+## Main Event Loop Control Flow
+===MID===
+
+    RunningBuildScripts --> BuildDataComplete: Build data ready
+    BuildDataComplete --> UpdateCrateGraph1: Add OUT_DIR, env, cfgs
+
+    UpdateCrateGraph1 --> RequestProcMacros: fetch_proc_macros_queue.request_op()
+===END===
+
+### Pipeline Pattern
+- **Syntax → Semantics → IDE**: Layered transformations
+- **Incremental**: Only re-execute changed stages
+- **Memoized**: Salsa caches intermediate results
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rust-analyzer-research/06-DATA-FLOW-DIAGRAMS.md===LINES===585
+# Rust-Analyzer Data Flow Diagrams
+
+**Visual Guide to How Data Transforms Through the System**
+
+## Complete Data Pipeline
+===MID===
+    style FINAL fill:#4ecdc4
+```
+
+## Diagnostic Generation Flow
+
+===END===
+
+- **Interning**: Small strings (SmolStr), paths stored once
+- **Arena allocation**: Syntax nodes, HIR elements use arena
+- **Reference counting**: Arc<T> for shared immutable data
+- **Copy-on-write**: VFS tracks changes, applies in batch
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rust-analyzer-research/07-API-USAGE-GUIDE.md===LINES===662
+# Rust-Analyzer API Usage Guide
+
+**How to Use Rust-Analyzer's APIs - For Library Users and Contributors**
+
+## Overview
+===MID===
+use syntax::{
+    ast::{self, AstNode},
+    SyntaxKind, SyntaxNode,
+};
+
+===END===
+| Build editor plugin | LSP API | VS Code extension |
+| Implement IDE feature | IDE API | Custom completion |
+| Analyze semantics | HIR API | Find unused code |
+| Parse/transform syntax | Syntax API | Code formatter |
+| Query internals | Salsa DB | Debugging RA |
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rust-analyzer-research/08-PER-FILE-DETAILED-DIAGRAMS.md===LINES===646
+# Rust-Analyzer: Per-File Detailed Analysis with Mermaid Diagrams
+
+**Generated from Parseltongue Database Queries**
+**Database:** 14,852 entities, 92,931 edges
+
+===MID===
+
+```mermaid
+flowchart TD
+    FN_BODY[Function Body HIR]
+
+===END===
+    style IDE fill:#4ecdc4
+    style LSP fill:#ff6b6b
+```
+
+This analysis was generated purely from Parseltongue database queries without using grep or glob.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rust-analyzer-research/09-ELI5-GUIDE.md===LINES===432
+# Rust-Analyzer Explained Like You're 5
+
+**The Simplest Possible Explanation of How Rust-Analyzer Works**
+
+---
+===MID===
+## The Magic Trick: Incremental Updates
+
+**The Problem:** If you change one character, do you re-analyze the ENTIRE project? (NO! That's slow!)
+
+**The Solution:** Only re-check what changed!
+===END===
+- ✅ Works in any editor you like
+- ✅ Is blazingly fast because it's clever about not repeating work
+
+And it's all **open source** so anyone can contribute to making it better! 🎉
+
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rust-analyzer-research/09-RUST-ANALYZER-vs-TREE-SITTER-ENTITY-KEYS.md===LINES===433
+# Rust-Analyzer vs Tree-Sitter: Entity Identity & Primary Key Extraction
+
+**Analysis Date:** 2026-01-29
+**Purpose:** Compare entity extraction capabilities for V216 primary key requirements
+**Conclusion:** Rust-Analyzer is strictly superior for Rust-only codebases
+===MID===
+
+```mermaid
+graph TD
+    subgraph "Tree-Sitter: What You Get"
+        TS1["fn authenticate_user"] --> TS2["name: authenticate_user"]
+===END===
+
+---
+
+*Research compiled: 2026-01-29*
+*Sources: rust-analyzer analysis, tree-sitter patterns, V216 PRD*
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rust-analyzer-research/10-SUPER-HQ-IDIOMATIC-PATTERNS.md===LINES===2270
+# Super HQ Idiomatic Rust Patterns from rust-analyzer
+
+**Extraction Date:** 2026-01-30
+**Repository:** https://github.com/rust-lang/rust-analyzer
+**Analysis Tool:** Parseltongue v1.4.0
+===MID===
+            // - Tuples (without CoerceUnsized impl)
+            // - Functions
+            // - Closures
+            // - Never type
+            // - etc.
+===END===
+Code Examples: 28 full examples (40-100 lines each)
+Mermaid Diagrams: 40+ diagrams
+
+**License:** This analysis documents the rust-analyzer project architecture.
+Rust-analyzer is licensed under MIT OR Apache-2.0.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rust-analyzer-research/11-DEPENDENCY-GRAPH-PYRAMID-ANALYSIS.md===LINES===1089
+# Rust-Analyzer Dependency Graph: Pyramid Analysis
+
+**The Complete Architectural View from 30,000 ft to Micro-Level**
+
+**Purpose**: Understand rust-analyzer's dependency architecture using the Minto Pyramid Principle (big → medium → micro) to enable rewriting with a graph database.
+===MID===
+    DB --> MIR_EVAL
+
+    style LIB fill:#fff9c4
+    style INFER fill:#ffccbc
+    style TRAITS fill:#ffccbc
+===END===
+- **Endpoints used**:
+  - `/code-entities-list-all` - Full entity list
+  - `/codebase-statistics-overview-summary` - Statistics
+- **Cargo.toml parsing**: Regex-based extraction of `.workspace = true` dependencies
+
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rust-analyzer-research/12-DEEP-ANALYSIS-PLAN-SALSA-TO-COZODB.md===LINES===868
+# ULTRATHINK: Deep Analysis Plan - Salsa → CozoDB Migration for Rust-Analyzer
+
+**Document Type**: Research & Analysis Plan
+**Scope**: Comprehensive technical validation of replacing Salsa with CozoDB
+**Timeline**: 17 weeks (4 months)
+===MID===
+?[dependent_type] :=
+    types["X", _],
+    type_dependencies[type, "X"]
+
+?[dependent_type] :=
+===END===
+- Trait Resolution: https://rustc-dev-guide.rust-lang.org/traits/resolution.html
+
+---
+
+**END OF DEEP ANALYSIS PLAN**
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rust-analyzer-research/13-RUBBER-DUCK-DEBUGGING-SALSA-COZODB.md===LINES===684
+# Rubber Duck Debugging: Salsa → CozoDB Migration Deep Thinking
+
+**Document Type**: Critical Analysis & Thought Process
+**Purpose**: Think out loud, validate assumptions, challenge conclusions
+**Method**: Rubber duck debugging + Web research validation
+===MID===
+    needs_recompute = (dep_rev > computed_rev)
+```
+
+**This is NOT incremental by default - we're manually implementing Salsa's algorithm!**
+
+===END===
+---
+
+**Conclusion**: After rigorous rubber duck debugging and web research validation, the **hybrid architecture** is the only technically sound approach. Full migration would be a **multi-year, high-risk project with likely failure** due to fundamental performance mismatches. The hybrid approach delivers NEW value (graph queries) without sacrificing existing performance (Salsa's incremental computation).
+
+**END RUBBER DUCK SESSION** 🦆✅
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rust-analyzer-research/14-V216-SEMANTIC-CONTEXT-COMPRESSOR-THESIS.md===LINES===1057
+# Parseltongue v216: The Semantic Context Compressor Thesis
+
+**Analysis Date:** 2026-01-29
+**Method:** Rubber Duck Debugging + Rust-Analyzer Architecture Synthesis
+**Conclusion:** The 3-layer model maps directly to rust-analyzer's HIR layer
+===MID===
+**The missing piece we already have:** Rust-analyzer's HIR layer already computes all of this. We're not building a compiler — we're building a **serialization layer** that captures what rust-analyzer knows and formats it for LLM consumption.
+
+---
+
+# V2: Three Production Upgrades
+===END===
+
+*Thesis compiled: 2026-01-29*
+*V2 Upgrades added: 2026-01-29*
+*Method: Rubber Duck Debugging + Rust-Analyzer Architecture Analysis*
+*Sources: 14 rust-analyzer pattern documents + user thesis input*
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rust-analyzer-research/15-API-STABILITY-VERIFICATION.md===LINES===330
+# API Stability Verification: Claims vs Reality
+
+**Analysis Date:** 2026-02-29
+**Method:** GitHub API queries, crates.io data, commit history analysis
+**Purpose:** Verify whether "API instability" claims in Rust tooling are hearsay or factual
+===MID===
+| **Timeline** | v0.1 targeted for late 2025 |
+
+**Not ready for production use yet.**
+
+---
+===END===
+---
+
+*Analysis compiled: 2026-02-29*
+*Data sources: GitHub API, crates.io API, commit history analysis*
+*Method: Automated queries + manual verification*
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rust-analyzer-research/16-RUSTC-TOOL-ECOSYSTEM-ANALYSIS.md===LINES===461
+# Rust Compiler Tool Ecosystem: Comprehensive Use Case Analysis
+
+**Analysis Date:** 2026-03-01
+**Target User Segment:** Rust open source contributors (accuracy-focused, not speed-focused)
+**Purpose:** Map all tools using Rust compiler internals for Parseltongue's design
+===MID===
+  - Extensible analysis platform
+- **Architecture:** Core algorithms + application detectors
+- **Unique:** 881+ commits, actively maintained
+
+#### Rudra (Georgia Tech)
+===END===
+|-----------|---------------|-----|
+| **Miri** | Weekly | Must track compiler |
+| **Kani** | Monthly | AWS team, dedicated |
+| **Framework tools** | Quarterly | Framework absorbs breakage |
+| **Research tools** | Yearly or frozen | Academic timelines |
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rust-analyzer-research/EXECUTIVE-SUMMARY.md===LINES===450
+# Executive Summary: Rust-Analyzer Deep Analysis & Graph Database Migration Feasibility
+
+**Date**: January 30, 2026
+**Total Analysis Size**: 3.2MB (313KB markdown + 2.9MB JSON data)
+**Documents**: 13 comprehensive analyses + 4 JSON artifacts
+===MID===
+   - Interactive module dependency graphs
+   - Detect architectural issues (coupling, cycles)
+   - Great for understanding large codebases
+
+4. **Code Metrics** (MEDIUM VALUE)
+===END===
+**Next Step**: Present to rust-analyzer team 📊
+**Timeline**: 12 months to production 📅
+**Confidence**: High (80%) 💪
+
+**END EXECUTIVE SUMMARY**
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/RAPx/README.md===LINES===114
+# ![logo](https://raw.githubusercontent.com/Artisan-Lab/RAPx/main/logo.png)
+RAPx (Rust Analysis Platform with Extensions) [![license](https://img.shields.io/github/license/Artisan-Lab/RAPx)](./LICENSE-MPL)[![docs.rs](https://img.shields.io/docsrs/rapx)](https://docs.rs/rapx) is an advanced static analysis platform for Rust, developed by researchers at [Artisan-Lab](https://hxuhack.github.io), Fudan University. It provides an extensible framework for building and integrating powerful analysis capabilities that go beyond those available in the standard rustc compiler, empowering developers to reason about safety, robustness, and performance at a deeper level.
+
+RAPx is available on crates.io. [![crates.io](https://img.shields.io/crates/v/rapx.svg)](https://crates.io/crates/rapx)
+
+===MID===
+    -upg            generate unsafety propagation graphs for each module.
+    -upg-std        generate unsafety propagation graphs for each module of the Rust standard library
+    -callgraph      generate callgraphs
+    -dataflow       generate dataflow graphs
+    -ownedheap      analyze if the type holds a piece of memory on heap
+===END===
+* deep: check for all workspaces from current folder
+ 
+NOTE: rapx will enter each member folder to do the check.
+
+
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/RAPx/rapx/.github/copilot-instructions.md===LINES===56
+# Copilot Instructions for RAPx
+
+## Project Overview
+- **RAPx** is a static analysis platform for Rust, focused on detecting use-after-free, memory leaks, and related bugs.
+- The codebase is organized as a Rust crate with multiple analysis modules under `src/analysis/core/`.
+===MID===
+- **Debugging:**
+  - Use `RUST_LOG=info` or `RUST_LOG=debug` for verbose output.
+  - Many analyses print results using `rap_info!` macros.
+
+## Project-Specific Conventions
+===END===
+- Test cases: `tests/`
+- Documentation: https://artisan-lab.github.io/RAPx-Book/
+
+---
+_If any section is unclear or missing, please provide feedback for further refinement._
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/Rudra/DEV.md===LINES===139
+# Rudra Advanced Usage & Development Guide
+
+## Setup
+
+### First-time setup
+===MID===
+        - 2020-07-04-140112
+          - data
+            - crates.csv
+            - versions.csv
+            - (other files)
+===END===
+```
+{
+   "rust-analyzer.server.path": "<your path to rust-nightly-2021-10-21>/src/tools/rust-analyzer/target/release/rust-analyzer"
+}
+```
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/Rudra/README.md===LINES===154
+# Rudra
+
+Rudra is a static analyzer to detect common undefined behaviors in Rust programs.
+It is capable of analyzing single Rust packages as well as all the packages on
+crates.io.
+===MID===
+pointer with `ptr::read`, duplicating its ownership and then calls a user
+provided function `f`. This can lead to a double-free if the function `f`
+panics.
+
+See [this section of the Rustonomicon](https://doc.rust-lang.org/nomicon/exception-safety.html)
+===END===
+### Contribution
+
+Unless you explicitly state otherwise, any contribution intentionally submitted
+for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any
+additional terms or conditions.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/Rudra/stdlib-analysis/README.md===LINES===74
+# Rudra on the Rust Standard Library
+
+This folder documents the tools and instructions on how to analyze the rust
+standard library using Rudra.
+
+===MID===
+2. `cargo install xargo`
+
+   *Ensure that `xargo` is installed.*
+
+3. `rustup component add rust-src`
+===END===
+environment variables and flags internally.
+
+In contrast, `xargo` wraps all this complexity and builds the standard library
+for us with just one line. It is far easier to hook for rudra than trying to
+compile fully from source.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/aeneas/LICENSE.md===LINES===201
+                                 Apache License
+                           Version 2.0, January 2004
+                        http://www.apache.org/licenses/
+
+   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+===MID===
+          stating that You changed the files; and
+
+      (c) You must retain, in the Source form of any Derivative Works
+          that You distribute, all copyright, patent, trademark, and
+          attribution notices from the Source form of the Work,
+===END===
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/aeneas/README.md===LINES===200
+<p><div style="text-align: center">
+<img src="static/Aeneas.jpg"
+     alt="Iapyx removing arrowhead from Aeneas" title="Iapyx removing arrowhead from Aeneas"
+     style=""/>
+<figcaption>
+===MID===
+>     require aeneas from "PATH_TO_AENEAS_REPO/backends/lean"
+>     ```
+>     or in the `lakefile.toml`:
+>     ```toml
+>     [[require]]
+===END===
+verification by functional
+translation](https://dl.acm.org/doi/abs/10.1145/3547647)
+([long version](https://arxiv.org/abs/2206.07185)). We also have a proof that
+the symbolic execution performed by Aeneas during its translation correctly
+implements a borrow checker, and published it at ICFP 2024: [Sound Borrow-Checking for Rust via Symbolic Semantics](https://dl.acm.org/doi/10.1145/3674640) ([long version](https://arxiv.org/abs/2404.02680)).
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/aeneas/docs/user/src/README.md===LINES===16
+# Introduction to Aeneas
+
+Aeneas is a verification toolchain for Rust programs aiming to embed purely functional translation of Rust programs into theorem provers such as Coq or Lean.
+
+## What it can do?
+===MID===
+
+Aeneas aims to provide verification facilities for **safe** Rust with some caveats described in the next section.
+
+## What it cannot do?
+
+===END===
+- no functions pointers/closures: ongoing work. We have support for traits and will have support for function pointers and closures soon.
+- limited type parametricity: it is not possible for now to instantiate a type parameter with a type containing a borrow. This is mostly an engineering issue.
+- no nested borrows in function signatures: ongoing work.
+- interior mutability: ongoing work. We are thinking of modeling the effects of interior mutability by using ghost states.
+- no concurrent execution: long-term effort. We plan to address coarse-grained parallelism as a long-term goal.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/aeneas/docs/user/src/SUMMARY.md===LINES===11
+# Summary
+
+[Introduction](./README.md)
+
+# Setup guide
+===MID===
+[Introduction](./README.md)
+
+# Setup guide
+
+# Proving with Lean
+===END===
+# Proving with Lean
+
+## Tactics guide
+
+- [Progress](./lean/tactics/progress.md)
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/aeneas/docs/user/src/lean/tactics/progress.md===LINES===2
+# Progress
+
+===MID===
+# Progress
+
+===END===
+# Progress
+
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/aeneas/tests/README.md===LINES===75
+# Aeneas test suite
+
+This folder contains the test suite for Aeneas. It is organized as follows:
+- `test_runner/`: ocaml script that orchestrates the test suite;
+- `src/`: rust files and crates used as test inputs;
+===MID===
+To specify options for how your test should be run, see the next section.
+
+Ideally, any non-trivial change to Aeneas should have an accompanying test that exercises the new
+code. The goal of this test suite is to cover a large portion of what Aeneas can do, so we can work
+on it confidently.
+===END===
+
+Note however that this is for failures of Aeneas. Tests that cause Charon errors should be submitted
+to the Charon project. `known-failure` tests will not pass if the error occurs within Charon. Note
+also that there is no option for tests that translate successfully but fail to be verified by the
+backend.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/aquascope/ARCHITECTURE.md===LINES===40
+# Architectural Overview
+
+This document provides a high-level overview into the architecture of Aquascope. The goal is to provide enough information such that a potential contributor can orient themselves relatively quickly within the database. It _doesn't_ explain relevant analyses or related concepts, for that you should be looking at the [documentation](https://cognitive-engineering-lab.github.io/aquascope/doc/aquascope/).
+
+# TOC
+===MID===
+![lifecycle](https://github.com/cognitive-engineering-lab/aquascope/assets/20209337/005e10e6-d3d0-42dd-a048-8244aeab2961)
+
+1. _The `front`_ (green box) reads a Rust crate and splits this up into bodies. You should be familiar with a MIR [`Body`](https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/mir/struct.Body.html) but we really care about the [BodyWithBorrowckFacts](https://doc.rust-lang.org/nightly/nightly-rustc/rustc_borrowck/struct.BodyWithBorrowckFacts.html) which contains the borrow check information provided by Polonius. The code for this is found in `aquascope_front`, it's a simple crate that gets these bodies from rustc and then serializes the output information post-analysis. There's not much else to see here.
+
+2. The _Permissions analysis_ (orange box) produces a [`PermissionsCtxt`](https://cognitive-engineering-lab.github.io/aquascope/doc/aquascope/analysis/permissions/struct.PermissionsCtxt.html).
+===END===
+## Frontend
+
+We use [CodeMirror 6 (CM)](https://codemirror.net) for an interactive environment as well as visualizations rendering the visualizations. The static diagrams are represented as a CM [`Decoration`](https://codemirror.net/docs/ref/#view.Decoration).
+
+**TODO**: talk about serializing and generating TS bindings.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/aquascope/CONTRIBUTING.md===LINES===27
+# Contributing
+
+## Quick Start
+
+For an overview of Aquascope's structure, please refer yourself to the [ARCHITECTURE.md](/ARCHITECTURE.md).
+===MID===
+### Debugging
+
+We use the local playground to debug Aquascope. In one terminal, run `cargo run`, to run the local server. In a separate terminal, navigate to the `frontend` directory and run `depot --no-fullscreen build --watch`. The playground is live at `localhost:5173`, the server will log debug information about the programs you analyze.
+
+> Note, the local playground **does not** run within a sandbox.
+===END===
+## Issue Labels
+
+- [good first issue](https://github.com/cognitive-engineering-lab/aquascope/labels/good%20first%20issue) Great for dipping your toes in the water.
+- [big project](https://github.com/cognitive-engineering-lab/aquascope/labels/big-project) These are changes or features that will take a bit of work. Many issues labeled with this also require some sort of interface design, so please start a discussion if you're interested.
+- [bug](https://github.com/cognitive-engineering-lab/aquascope/labels/bug) An unexpected behavior according to the semantics of the permissions model (also commonly a UI bug). These vary in difficulty, tell us if you're interested and _ask questions_ if you get stuck.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/aquascope/README.md===LINES===96
+# <span>Aquascope: Look Beneath the Surface of Rust</span><img src="https://user-images.githubusercontent.com/663326/219528078-e8792f31-02b3-447f-97ed-f3c0fbb4f557.png" style="float: right; border: 1px solid #555;" height="250" /></p>
+
+[![tests](https://github.com/cognitive-engineering-lab/aquascope/actions/workflows/ci.yml/badge.svg)](https://github.com/cognitive-engineering-lab/aquascope/actions/workflows/ci.yml)
+[![crates.io](https://img.shields.io/crates/v/mdbook-aquascope.svg)](https://crates.io/crates/mdbook-aquascope)
+[![docs](https://img.shields.io/badge/docs-built-blue)](https://cel.cs.brown.edu//aquascope/doc/aquascope/)
+===MID===
+cd aquascope
+cargo make install-mdbook
+```
+
+## Usage
+===END===
+  articleno = {265},
+  numpages = {29},
+  keywords = {Rust, concept inventory, ownership types, program state visualization}
+}
+```
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/aquascope/crates/aquascope_serve/README.md===LINES===7
+# Aquascope Server
+
+> ❗ The Aquascope server is now _only_ used for debugging. The published playground uses a WASM build of the project to evaluate requests. This means that the server runs all requests on *your machine*, so don't do anything stupid ;)
+
+Much of the code in this crate is a modified version of both:
+===MID===
+# Aquascope Server
+
+> ❗ The Aquascope server is now _only_ used for debugging. The published playground uses a WASM build of the project to evaluate requests. This means that the server runs all requests on *your machine*, so don't do anything stupid ;)
+
+Much of the code in this crate is a modified version of both:
+===END===
+> ❗ The Aquascope server is now _only_ used for debugging. The published playground uses a WASM build of the project to evaluate requests. This means that the server runs all requests on *your machine*, so don't do anything stupid ;)
+
+Much of the code in this crate is a modified version of both:
+- https://github.com/willcrichton/situ/tree/main/backend/crates/situ-server
+- https://github.com/integer32llc/rust-playground
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/aquascope/crates/mdbook-aquascope/test-book/src/SUMMARY.md===LINES===3
+# Summary
+
+- [Chapter 1](./chapter_1.md)
+===MID===
+# Summary
+
+- [Chapter 1](./chapter_1.md)
+===END===
+# Summary
+
+- [Chapter 1](./chapter_1.md)
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/aquascope/crates/mdbook-aquascope/test-book/src/chapter_1.md===LINES===93
+# Chapter 1
+
+## Some introduction
+
+```aquascope,interpreter
+===MID===
+println!("{} = {}", x, *y);
+#}
+```
+
+```aquascope,permissions,stepper,boundaries
+===END===
+    } else { `(focus)`
+        println!("... {v:?}");
+    }
+}
+```
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/argus/README.md===LINES===94
+# <img src="https://github.com/cognitive-engineering-lab/argus/blob/main/ide/packages/extension/argus-logo-128.png?raw=true" height="64" /> Argus: a Trait Debugger for Rust
+
+[![tests](https://github.com/cognitive-engineering-lab/argus/actions/workflows/ci.yml/badge.svg)](https://github.com/cognitive-engineering-lab/argus/actions/workflows/ci.yml)
+
+Argus is a tool to help you with compiler errors related to traits. If you have ever seen an error that says `the trait bound ... is not satisfied`, that is a good opportunity to use Argus. An IDE extension is available for VSCode which provides the Argus Inspection Panel. Read the [trait debugging tutorial](https://cel.cs.brown.edu/argus/) to learn more.
+===MID===
+
+## FAQ
+
+<h3 id="rustup-fails-on-install">rustup fails on installation</h3>
+
+===END===
+  articleno = {199},
+  numpages = {22},
+  keywords = {Rust, debugging, traits, type classes}
+}
+```
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/argus/book/src/README.md===LINES===1
+# Introduction
+===MID===
+# Introduction
+===END===
+# Introduction
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/argus/book/src/SUMMARY.md===LINES===8
+# Summary
+
+<!-- - [Whirlwind Tour](whirlwind.md) -->
+
+- [Trait Debugging 101](trait-debugging-101.md)
+===MID===
+
+<!-- - [Whirlwind Tour](whirlwind.md) -->
+
+- [Trait Debugging 101](trait-debugging-101.md)
+
+===END===
+
+- [Trait Debugging 101](trait-debugging-101.md)
+
+- [Trait Methods and Typestate](typestate.md)
+
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/argus/book/src/debug-media.md===LINES===144
+# Example 1, a simple workspace
+
+This first example will walk through how to use Argus to debug a simple trait error. It's meant as an introduction to Argus, the notation and iconography it uses, and the basics to track down a simple error. This uses the [Media Workspace](https://github.com/cognitive-engineering-lab/argus/tree/examples/media) available in the Argus `examples` repository. It's best to follow along with the workspace open locally as not all code will be provided in the description.
+
+## Your task: a media archiver
+===MID===
+
+The top-level of the Argus inspector is a *list of bodies*. Bodies are usually functions, in this case you see `main (1)` because there's only one function, `main` and it has a single trait error. Under each body is a *list of expressions*, these expressions spawned some trait obligations for the compiler to prove. Obligations are simple questions, like "*is type T sized?*", or in other words, does the obligation `T: Sized` hold? In the case of our simple script, rustc wants to know if the type `(&str, Vec<Play>)` implements `Summary`. The Argus inspector maps each expression back to its source position in your workspace, highlighting the code in the editor as seen in the above animation.
+
+<video controls>
+  <source src="assets/simple-workspace/jump-to-error.mp4" type="video/mp4" />
+===END===
+
+Not only does rustc provide the root cause of the error, it also tells you which impl block introduced the extra obligation. This diagnostic even goes *one step further* by telling you that `Summary` is implemented for `String`!
+
+What's Argus really for? As soon as the [next example](debug-bevy.md) you'll see that Rust can't always pin down why a trait bound was unsatisfied. In worst case the compiler will even [stack overflow](debug-stack-overflow.md)! Leaving you to some tricky ad-hoc debugging. Argus aims to make all these failures transparent and hopefully provide as specific an error message as possible. 
+
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/argus/book/src/trait-debugging-101.md===LINES===193
+# Trait Debugging 101
+
+Traits are a pervasive language feature in Rust: Copying, printing, indexing, multiplying, and more common operations use the Rust trait system. As you use more of the language, and utilize the numerous published crates, you will inevitably encounter more traits. Popular crates in the Rust ecosystem use traits to achieve strong type safety, such as the Diesel crate that relies on traits to turn invalid SQL queries into type errors. Impressive!
+
+Unfortunately, traits also obfuscate type errors. Compiler diagnostics become increasingly complex alongside the types and traits used. This guide demonstrates *trait debugging* in Rust using a new tool, Argus, developed by the [Cognitive Engineering Lab](https://cel.cs.brown.edu/) at Brown University. The examples used in this tutorial are [available online](https://github.com/cognitive-engineering-lab/argus-test), we recommend you follow along at home.
+===MID===
+Highlighted at the top in orange is the search tree root. Argus represents the search tree in a directory view sort of way, so the orange node is equivalent to the tree root node in the illustrative diagram. In the Argus tree you expand the nodes' children by clicking on the line. Notice how we still use solid and dotted lines to represent the parent child relationship, they now appear to the left of the node.
+
+![Search tree found impl](assets/axum-hello-server/top-down-impl-highlighted.png =600x center)
+
+Above we show one branch in the search tree for the function handler impl block---highlighted in green. In this branch we unify the type variables
+===END===
+The *trait solver* searches through available impl blocks to determine if a given type implements a specified trait. Tracing the steps made by the trait solver is what we call the *search tree,* the core data structure exposed by the Argus IDE extension.
+
+The Argus interface shows the search tree either Top-Down or Bottom-Up. The Top-Down view is the search tree as generated by the trait solver. The Bottom-Up view inverts the search tree and traverses the tree from leaves to root. The list icon next to a node shows all impl blocks for the trait in that node.
+
+In the next chapter we'll show off more features of Argus and debug a Diesel trait error.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/argus/book/src/typestate.md===LINES===94
+# Trait Methods and Typestate
+
+Every programming language cultivates its own set of patterns. One pattern common in Rust is the *builder pattern.* Some data structures are complicated to construct, they may require a large number of inputs, or have complex configuration; the builder pattern helps construct complex values.
+
+A great example of working with builders is the Diesel [`QueryDsl`](https://docs.rs/diesel/latest/diesel/prelude/trait.QueryDsl.html). The `QueryDsl` trait exposes a number of methods to construct a valid SQL query. Each method consumes the caller, and returns a type that itself implements `QueryDsl`. As an example here's the method signature for `select`
+===MID===
+1540 | ...fn load<'query, U>(self, conn: &mut Con...
+     |       ---- required by a bound in this associated function
+1541 | ...where
+1542 | ...    Self: LoadQuery<'query, Conn, 
+...                  
+===END===
+Here we used our domain knowledge of SQL to find the appropriate join methods. We decided to use an `inner_join` to join the tables, and then all was fixed.
+
+```admonish note
+Finding the appropriate method to change the typestate won't always be so straightforward. If you lack domain knowledge or are unfamiliar with the terms used in the library, you may have to read more of the documentation and look through examples to find appropriate fixes. When in doubt, try something! And use Argus to continue debugging.
+```
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/argus/book/src/whirlwind.md===LINES===1
+# Whirlwind Tour
+===MID===
+# Whirlwind Tour
+===END===
+# Whirlwind Tour
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/cargo-scan/README.md===LINES===136
+# Cargo Scan
+
+Cargo Scan is a tool for auditing Rust crates.
+
+![Cargo Scan usage in VSCode](vscode_usage.png)
+===MID===
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.14s
+     Running `target/debug/scan data/packages/rand`
+crate, fn_decl, callee, effect, dir, file, line, col
+rand, rand::distributions::other::<Standard as Distribution<char>>::sample, core::char::from_u32_unchecked, [UnsafeCall], data/packages/rand/src/distributions, other.rs, 94, 17
+rand, rand::distributions::other::<Alphanumeric as DistString>::append_string, alloc::string::String::as_mut_vec, [UnsafeCall], data/packages/rand/src/distributions, other.rs, 136, 27
+===END===
+- *Auditing Rust Crates Effectively.* Lydia Zoghbi, David Thien, Ranjit Jhala, Deian Stefan, and Caleb Stanford. Experience report at European Symposium on Programming (ESOP), part of the International Joint Conferences On Theory and Practice of Software (ETAPS), April 2026. [PDF](https://web.cs.ucdavis.edu/~cdstanford/doc/2026/ESOP26.pdf)
+
+You may also cite the repository directly:
+
+- Cargo Scan: a tool for auditing Rust crates. Lydia Zoghbi, David Thien, Ranjit Jhala, Deian Stefan, and Caleb Stanford. GitHub repository (2024). [GitHub Link](https://github.com/PLSysSec/cargo-scan)
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/cargo-scan/audits/manual-old/TEMPLATE.md===LINES===37
+# <!-- crate name/URL -->
+
+Audited by: <!-- name -->
+
+Date: <!-- date -->
+===MID===
+
+## Security summary
+
+1. Security risks
+
+===END===
+<!-- Feasible/infeasible -->
+
+- Spec:
+- Static analysis:
+- Dynamic enforcement overhead:
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/cargo-scan/audits/manual-old/autocfg.md===LINES===66
+# autocfg
+
+Audited by: Caleb Stanford
+Date: 2022-10-04
+
+===MID===
+
+  As far as I can tell in the crate itself this is only called on the environment var OUT_DIR, but the function `with_dir` is public so the user could, if they want to for some reason, call it on something else (this seems unlikely in practice).
+
+  In the dir_contains_target(), does the .contains() call there just resolve to str .contains()? That may make that function side-effect-free.
+
+===END===
+4. Feasibility of automated analysis
+
+- Spec: project-independent in most cases
+- Static analysis: likely feasible
+- Dynamic enforcement overhead: acceptable
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/cargo-scan/audits/manual-old/cc.md===LINES===54
+# [cc](https://docs.rs/cc/latest/cc/)
+
+Audited by: Caleb Stanford
+
+Date: 2022-10-12
+===MID===
+src, registry.rs, std::os::windows::prelude::*
+src, vs_instances.rs, std::path::PathBuf
+src, winapi.rs, std::os::raw
+src, windows_registry.rs, std::process::Command
+src/bin, gcc-shim.rs, std::env
+===END===
+4. Automation feasibility
+
+- Spec: project dependent
+- Static analysis: possibly feasible
+- Dynamic enforcement overhead: acceptable
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/cargo-scan/audits/manual-old/chrono.md===LINES===47
+# [chrono](https://docs.rs/chrono/latest/chrono/)
+
+Audited by: Caleb Stanford
+
+Date: 2022-10-12
+===MID===
+
+Among other things, on Unix, calls
+```
+fs::symlink_metadata("/etc/localtime")
+```
+===END===
+4. Automation feasibility
+
+- Spec: project-independent
+- Static analysis: feasible
+- Dynamic enforcement overhead: likely not acceptable
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/cargo-scan/audits/manual-old/clap.md===LINES===55
+# [clap](https://docs.rs/clap/latest/clap/index.html)
+
+Audited by: Caleb Stanford
+Date: 2022-10-05
+
+===MID===
+Additionally, the `Arg` API (arguments added to `Command`) needs access
+to `env` because it is possible to specify that an argument
+should be obtained from an environment var if it is not present.
+
+Specifically in a typical use: if you implement `Parser` (the analog of
+===END===
+4. Automation feasibility
+
+- Spec: feasible, sometimes project-specific
+- Static analysis: feasible
+- Dynamic enforcement overhead: acceptable
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/cargo-scan/audits/manual-old/crossbeam-channel.md===LINES===38
+# crossbeam-channel
+
+Audited by: Caleb Stanford
+Date: 2022-09-28
+
+===MID===
+
+## Security summary
+
+1. Security risks
+
+===END===
+4. Feasibility of automated analysis
+
+- Spec: project-independent
+- Static analysis: likely feasible
+- Dynamic enforcement overhead: maybe acceptable
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/cargo-scan/audits/manual-old/env_logger.md===LINES===39
+# env_logger
+
+Audited by: Caleb Stanford
+Date: 2022-09-28
+
+===MID===
+Also uses `std::env::var`, but in a less obviously safe manner: it contains a method which calls `env::var` on a program variable. It’s less clear just looking at the code whether it accesses some limited finite set of environment variables or whether it can read arbitrary env variables.
+
+Note: `mod.rs` also uses `env` to set (mostly fixed) var names.
+
+## Security summary
+===END===
+4. Feasibility of automated analysis
+
+- Spec: maybe project-dependent
+- Static analysis: unsure
+- Dynamic enforcement overhead: unsure
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/cargo-scan/audits/manual-old/getrandom.md===LINES===73
+# [getrandom](https://docs.rs/getrandom/latest/getrandom/)
+
+Audited by: Caleb Stanford
+
+Date: 2022-10-12
+===MID===
+```
+
+## Analysis
+
+All the imports are `libc`.
+===END===
+4. Automation feasibility
+
+- Spec: project-independent
+- Static analysis: feasible
+- Dynamic enforcement overhead: unsure
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/cargo-scan/audits/manual-old/h2.md===LINES===80
+# [h2](https://docs.rs/h2/latest/h2/)
+
+Audited by: Caleb Stanford
+
+Date: 2022-10-05
+===MID===
+src/proto/streams, send.rs, tokio::io::AsyncWrite
+src/proto/streams, streams.rs, tokio::io::AsyncWrite
+```
+
+## Analysis
+===END===
+4. Feasibility of automated analysis
+
+- Spec: project-dependent
+- Static analysis: potentially difficult
+- Dynamic enforcement overhead: possibly high
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/cargo-scan/audits/manual-old/hyper.md===LINES===137
+# [hyper](https://docs.rs/hyper/latest/hyper/index.html)
+
+Audited by: Caleb Stanford
+
+Date: 2022-10-11
+===MID===
+src/ffi, http_types.rs, libc::c_int
+src/ffi, http_types.rs, libc::size_t
+src/ffi, io.rs, libc::size_t
+src/ffi, io.rs, tokio::io::AsyncRead
+src/ffi, io.rs, tokio::io::AsyncWrite
+===END===
+4. Automation feasibility
+
+- Spec: project-dependent
+- Static analysis: difficult
+- Dynamic enforcement overhead: likely unacceptable
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/cargo-scan/audits/manual-old/libc.md===LINES===79
+# [libc](https://docs.rs/libc/0.2.134/libc/)
+
+Audited by: Caleb Stanford
+
+Date: 2022-10-07
+===MID===
+- Config/environment: `system`, `getenv`
+- Network: e.g. `socket`, `connect`, `listen`, `send`, `recv`
+- Direct execution: `execv`, `execl`, etc.
+- Process management: `waitpid`, `kill`
+- Threads: all the `pthread` APIs
+===END===
+4. Automation feasibility
+
+- Spec: project-dependent; infeasible
+- Static analysis: infeasible
+- Dynamic enforcement overhead: project-dependent
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/cargo-scan/audits/manual-old/memchr.md===LINES===43
+# [memchr](https://docs.rs/memchr/latest/memchr/)
+
+Audited by: Caleb Stanford
+
+Date: 2022-10-12
+===MID===
+```
+
+## Analysis
+
+Types only.
+===END===
+4. Automation feasibility
+
+- Spec: project-independent
+- Static analysis: feasible
+- Dynamic enforcement overhead: unsure
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/cargo-scan/audits/manual-old/mio.md===LINES===240
+# [mio](https://docs.rs/mio/latest/mio/)
+
+Audited by: Caleb Stanford
+
+Date: 2022-10-09
+===MID===
+
+```
+src/sys/shell, selector.rs, std::os::unix::io::AsRawFd
+src/sys/shell, selector.rs, std::os::unix::io::RawFd
+src/sys/shell, tcp.rs, std::net::SocketAddr
+===END===
+4. Automation feasibility
+
+- Spec: project-dependent; difficult
+- Static analysis: difficult
+- Dynamic enforcement overhead: probably unacceptable
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/cargo-scan/audits/manual-old/num_cpus.md===LINES===51
+# [num_cpus](https://docs.rs/num_cpus/latest/num_cpus/)
+
+Audited by: Caleb Stanford
+Date: 2022-10-05
+
+===MID===
+This is an interesting crate, roughly similar in nature to the
+rustc version crates, for getting the number of CPUs of the current system.
+
+Besides the above imports, there are other side-effectful statements
+using `libc` system call stuff for Windows/MacOS code as well as the linux
+===END===
+4. Automation feasibility
+
+- Spec: platform-dependent. Probably feasible but difficult.
+- Static analysis: feasible
+- Dynamic enforcement overhead: acceptable
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/cargo-scan/audits/manual-old/parking_lot_core.md===LINES===48
+# [parking_lot_core](https://docs.rs/parking_lot_core/latest/parking_lot_core/)
+
+Audited by: Caleb Stanford
+
+Date: 2022-10-12
+===MID===
+
+## Analysis
+
+For the unix and linux files, uses a bunch of libc pthreads stuff:
+`pthread_mutex_unlock`, `pthread_mutex_wait`, etc.
+===END===
+4. Automation feasibility
+
+- Spec: project-independent
+- Static analysis: feasible
+- Dynamic enforcement overhead: likely not acceptable
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/cargo-scan/audits/manual-old/pkg-config.md===LINES===45
+# [pkg-config](https://docs.rs/pkg-config/0.3.25/pkg_config/)
+
+Audited by: Caleb Stanford
+
+Date: 2022-10-12
+===MID===
+Used for finding and checking the existence of system binaries at build time.
+Calls out to the shell.
+I'm not sure if it actually can run any commands or if there
+are code injection attacks possible.
+I don't think it can be used to actually link the binaries into the application
+===END===
+4. Automation feasibility
+
+- Spec: somewhat project-dependent
+- Static analysis: potentially feasible
+- Dynamic enforcement overhead: acceptable
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/cargo-scan/audits/manual-old/proc-macro2.md===LINES===51
+# proc-macro2
+
+Audited by: Caleb Stanford
+Date: 2022-10-05
+
+===MID===
+`proc_macro2` is a wrapper around the compiler's `proc_macro` module.
+The method falls back on the compiler's abstractions which do include real
+filepaths. It's possible there's some way to trick the Rust macro system
+into accessing the file in an unauthorized way, I'm not sure, but if so
+that would be possible through basic `proc_macro` and not through the
+===END===
+4. Feasibility of automated analysis
+
+- Spec: project-independent
+- Static analysis: feasible
+- Dynamic enforcement overhead: acceptable
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/cargo-scan/audits/manual-old/rustc_version.md===LINES===46
+# rustc_version
+
+Audited by: Caleb Stanford
+Date: 2022-09-28, updated 2022-10-05
+
+===MID===
+However, interestingly, there's a wrapper around this in the `VersionMeta`
+struct that is marked `pub` (probably shouldn't be!) and can be called on any
+arbitrary command: `VersionMeta::for_command(cmd)`.
+
+## Security summary
+===END===
+4. Feasibility of automated analysis
+
+- Spec: project-independent
+- Static analysis: feasible
+- Dynamic enforcement overhead: likely acceptable
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/cargo-scan/audits/manual-old/socket2.md===LINES===92
+# [socket2](https://docs.rs/socket2/latest/socket2/)
+
+Audited by: Caleb Stanford
+
+Date: 2022-10-12
+===MID===
+src/sys, unix.rs, std::net::Shutdown
+src/sys, unix.rs, std::net::Ipv4Addr
+src/sys, unix.rs, std::net::Ipv6Addr
+src/sys, unix.rs, std::os::unix::ffi::OsStrExt
+src/sys, unix.rs, std::os::unix::io::RawFd
+===END===
+4. Automation feasibility
+
+- Spec: project-dependent
+- Static analysis: difficult
+- Dynamic enforcement overhead: likely not acceptable
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/cargo-scan/audits/manual-old/stable_deref_trait.md===LINES===36
+# stable_deref_trait
+
+Audited by: Caleb Stanford
+Date: 2022-09-28
+
+===MID===
+imports `std::path::PathBuf` purely to implement a trait for it. This is completely safe: any other code would have to import PathBuf itself before using it.
+
+## Security summary
+
+1. Security risks
+===END===
+4. Feasibility of automated analysis
+
+- Spec: easy
+- Static analysis: feasible
+- Dynamic enforcement overhead: none
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/cargo-scan/audits/manual-old/termcolor.md===LINES===36
+# termcolor
+
+Audited by: Caleb Stanford
+Date: 2022-09-28
+
+===MID===
+Imports `std::env` to get environment variables: `env::var_os` and `env::var`. It specifically only cares about two environment variables, `TERM` and `TERM_OS`. If importing the crate in this case we can summarize its expected behavior with a finite list of environment variables it wants to access.
+
+## Security summary
+
+1. Security risks
+===END===
+4. Feasibility of automated analysis
+
+- Spec: project-independent
+- Static analysis: feasible
+- Dynamic enforcement overhead: OK
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/cargo-scan/audits/manual-old/thiserror.md===LINES===42
+# [thiserror](https://docs.rs/thiserror/latest/thiserror/)
+
+Audited by: Caleb Stanford
+Date: 2022-10-05
+
+===MID===
+
+It imports `path` features only to implement some custom traits for them
+in `display.rs`. This module is very weird though, and not actually used
+by the crate (maybe old/deprecated stuff).
+
+===END===
+4. Automation feasibility
+
+- Spec: trivial and package-independent
+- Static analysis: feasible
+- Dynamic enforcement overhead: N/A
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/cargo-scan/audits/manual-old/tokio-util.md===LINES===81
+# [tokio-util](https://docs.rs/tokio-util/0.7.4/tokio_util/)
+
+Audited by: Caleb Stanford
+
+Date: 2022-10-05
+===MID===
+src/io, read_buf.rs, tokio::io::AsyncRead
+src/io, reader_stream.rs, tokio::io::AsyncRead
+src/io, stream_reader.rs, tokio::io::AsyncBufRead
+src/io, stream_reader.rs, tokio::io::AsyncRead
+src/io, stream_reader.rs, tokio::io::ReadBuf
+===END===
+4. Automation feasibility
+
+- Spec: unsure
+- Static analysis: difficult
+- Dynamic enforcement overhead: likely not acceptable
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/cargo-scan/audits/manual-old/tokio.md===LINES===289
+# [tokio](https://docs.rs/tokio/latest/tokio/)
+
+Audited by: Caleb Stanford
+
+Date: 2022-10-09
+===MID===
+src/net/unix, stream.rs, std::os::unix::io::FromRawFd
+src/net/unix, stream.rs, std::os::unix::io::IntoRawFd
+src/net/unix, stream.rs, std::os::unix::io::RawFd
+src/net/unix, stream.rs, std::os::unix::net
+src/net/unix, stream.rs, std::path::Path
+===END===
+(Same as mio)
+
+- Spec: project-dependent; difficult
+- Static analysis: difficult
+- Dynamic enforcement overhead: probably unacceptable
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/cargo-scan/audits/manual-old/url.md===LINES===45
+# [url](https://docs.rs/url/latest/url/)
+
+Audited by: Caleb Stanford
+
+Date: 2022-10-12
+===MID===
+
+## Analysis
+
+All of these are parsing/URL management, probably without
+giving access to the network.
+===END===
+4. Automation feasibility
+
+- Spec: project-independent
+- Static analysis: feasible
+- Dynamic enforcement overhead: probably acceptable
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/cargo-scan/audits/manual-old/version_check.md===LINES===44
+Audited by: Caleb Stanford
+Date: 2022-10-05
+
+Top 100 most downloaded crates.
+
+===MID===
+Command is used for only a hardcoded specific call:
+`Command::new(rustc).arg("--verbose").arg("--version").output().ok()`
+
+And `std::env` is used only for the CARGO_ENCODED_RUSTFLAGS variable.
+
+===END===
+4. Feasibility of automated analysis
+
+- Spec: project-independent
+- Static analysis: feasible
+- Dynamic enforcement overhead: likely acceptable
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/charon/.github/ISSUE_TEMPLATE/bug_report.md===LINES===51
+---
+name: Bug report
+about: Report a bug in Charon
+title: 'Bug: <describe the bug>'
+labels: C-bug
+===MID===
+reproduced with a dozen lines of rust.
+-->
+
+```rust
+// add your code here
+===END===
+
+**Any other steps needed to reproduce**:
+
+
+**Explain the bug**: (why is this behavior incorrect, and what do you think Charon should do instead)
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/charon/.github/ISSUE_TEMPLATE/feature_request.md===LINES===44
+---
+name: Feature request
+about: Propose a new Charon feature
+title: 'Feature request: <describe>'
+---
+===MID===
+
+<!--
+Provide a short code example that illustrates your feature request.
+-->
+
+===END===
+```
+
+**Extra context**: (describe the situation you're in and what problem you're trying to solve)
+
+**Desired behavior**: (explain what output you would like to get)
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/charon/.github/ISSUE_TEMPLATE/other.md===LINES===4
+---
+name: Other
+about: An issue that does not fit the other scenarios
+---
+===MID===
+---
+name: Other
+about: An issue that does not fit the other scenarios
+---
+===END===
+---
+name: Other
+about: An issue that does not fit the other scenarios
+---
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/charon/.github/ISSUE_TEMPLATE/unsupported-language-feature.md===LINES===44
+---
+name: Unsupported language feature
+about: Report a part of rust we don't support
+title: Support <language feature>
+labels: C-unsupported-language-feature
+===MID===
+**Code snippet that is not correctly supported**:
+
+<!--
+Provide the rust code you would like Charon to support. Make it as small as possible.
+-->
+===END===
+// paste the output here
+
+```
+
+**Expected behavior**: (explain how you think Charon should extract this code)
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/charon/CONTRIBUTING.md===LINES===119
+# Contributing to Charon
+
+First off, thanks for taking the time to contribute!
+
+All types of contributions are encouraged. See the [Table of Contents](#table-of-contents) for different ways to help. Please make sure to read the relevant section before making your contribution. We look forward to your contributions!
+===MID===
+
+You can the submit an issue to our [issue tracker][] with all this information.
+
+### Suggesting Enhancements
+
+===END===
+
+This guide is based on **contributing-gen**. [Make your own](https://github.com/bttger/contributing-gen)!
+
+[issue tracker]: https://github.com/AeneasVerif/charon/issues
+[Aeneas]: https://github.com/AeneasVerif/aeneas
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/charon/LICENSE.md===LINES===201
+                                 Apache License
+                           Version 2.0, January 2004
+                        http://www.apache.org/licenses/
+
+   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+===MID===
+          stating that You changed the files; and
+
+      (c) You must retain, in the Source form of any Derivative Works
+          that You distribute, all copyright, patent, trademark, and
+          attribution notices from the Source form of the Work,
+===END===
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/charon/README.md===LINES===102
+<p><div style="text-align: center">
+<img src="static/Charon.jpg"
+     alt="Landscape with Charon crossing the Styx" title="Landscape with Charon crossing the Styx"
+     style=""/>
+<figcaption>
+===MID===
+Charon has to do today.
+
+If you're writing a rustc driver, chances are you could use Charon instead. Charon is however geared
+towards semantic analyses; it likely won't help you for syntactic analyses like many lints.
+
+===END===
+
+You can also run `make doc` to generate the documentation locally.
+It will generate a documentation accessible from
+[`doc-rust.html`](./doc-rust.html) (for the Rust project) and
+[`doc-ml.html`](./doc-ml.html) (for the ML library).
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/charon/charon-ml/README.md===LINES===4
+# Charon ML
+
+This folder implement an ML library for Charon, to deserialize and print the
+(U)LLBC ASTs.
+===MID===
+# Charon ML
+
+This folder implement an ML library for Charon, to deserialize and print the
+(U)LLBC ASTs.
+===END===
+# Charon ML
+
+This folder implement an ML library for Charon, to deserialize and print the
+(U)LLBC ASTs.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/charon/charon/hax-frontend/README.md===LINES===3
+# Special core extraction mode
+For now, the frontend is sensible to the `HAX_CORE_EXTRACTION_MODE`
+variable environment that enables a special mode.
+===MID===
+# Special core extraction mode
+For now, the frontend is sensible to the `HAX_CORE_EXTRACTION_MODE`
+variable environment that enables a special mode.
+===END===
+# Special core extraction mode
+For now, the frontend is sensible to the `HAX_CORE_EXTRACTION_MODE`
+variable environment that enables a special mode.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/charon/charon/hax-frontend/adt-into/README.md===LINES===15
+# hax adt into
+
+This crate provides the `adt_into` procedural macro, allowing for
+mirroring data types with small variations.
+
+===MID===
+
+This crate is used by the frontend of hax, where we need to mirror a
+big part of the data types defined by the Rust compiler. While the
+abstract syntax trees (ASTs) from the Rust compiler expose a lot of
+indirections (identifiers one should lookup, additional informations
+===END===
+removing indirections and inlining additional informations.
+
+The `adt_into` derive macro can be used on `struct`s and `enum`s. `adt_into` then looks for another `#[args(<GENERICS>, from: FROM_TYPE, state: STATE_TYPE as SOME_NAME)]` attribute. Such an attribute means that the `struct` or `enum` mirrors the type `FROM_TYPE`, and that the transformation is carried along with a state of type `STATE_TYPE` that will be accessible via the name `SOME_NAME`.
+
+An example is available in the `tests` folder.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/charon/charon/macros/README.md===LINES===4
+# Macros
+
+This crate defines some macros used in Charon: for technical reasons, some Rust macros
+can't be defined and used in the same crate.
+===MID===
+# Macros
+
+This crate defines some macros used in Charon: for technical reasons, some Rust macros
+can't be defined and used in the same crate.
+===END===
+# Macros
+
+This crate defines some macros used in Charon: for technical reasons, some Rust macros
+can't be defined and used in the same crate.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/charon/docs/limitations.md===LINES===30
+# Current limitations of Charon
+
+Charon is alpha software. In particular, it is currently poorly documented, doesn't support all the
+Rust features we'd like, and has several breaking changes planned in the near future.
+
+===MID===
+  (https://github.com/AeneasVerif/charon/issues/319).
+
+## Known unsoundnesses
+
+- https://github.com/AeneasVerif/charon/issues/583
+===END===
+- Bodies of functions in foreign crates often cause errors (https://github.com/AeneasVerif/charon/issues/543);
+- Bodies of std functions (https://github.com/AeneasVerif/charon/issues/545);
+- Drops (https://github.com/AeneasVerif/charon/issues/152);
+- Layout information (https://github.com/AeneasVerif/charon/issues/581);
+- Lifetime information inside function bodies (not planned).
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/charon/docs/transformations.md===LINES===83
+# Charon transformations
+
+Charon has options to make the generated code easier to use. Some are currently not optional but
+could be made so on request.
+
+===MID===
+pattern. This transforms code like:
+```rust
+trait Iterator {
+  type Item;
+  fn next(&mut self) -> Option<Self::Item>;
+===END===
+  an existing trait impl. See the `dictionary_passing_style_woes.rs` test file for an example.
+
+## Make implied bounds explicit
+
+WIP: https://github.com/AeneasVerif/charon/issues/585
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/charon/docs/usage.md===LINES===62
+# Usage
+
+To run Charon, you should run the Charon binary from *within* the crate that you
+want to compile, as if you wanted to build the crate with `cargo build`. The
+Charon executable is located at `bin/charon`.
+===MID===
+path (e.g., `std::boxed::Box`). This name can be used to uniquely identify items using patterns.
+
+These patterns are used most notably for the `--include`/`--exclude` cli options, and made available
+in Rust and OCaml with NameMatcher. Caveat: the Rust and OCaml name matchers differ in input syntax
+and behavior; this is tracked in https://github.com/AeneasVerif/charon/issues/319.
+===END===
+**Remark**: most of the transformations which transform the MIR to ULLBC then LLBC are implemented
+by means of micro-passes. Depending on the need, we could make them optional and control them with
+flags. If you want to know more about the details, see `transformation_passes` in
+`src/bin/charon-driver/driver.rs`, which applies the micro-passes one after the other.
+
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/charon/docs/what_charon_does_for_you.md===LINES===16
+# What Charon Does For You
+
+The purpose of Charon is to centralize the efforts of extracting information from rustc internals
+and turning them into a uniform and usable shape. Here are some things that Charon does once so you
+don't have to do it yourself:
+===MID===
+
+TODO: explain each item
+
+- Trait resolution (explicitly track how each trait bound was proven to hold);
+- Reconstruct expressions from all the various constant representations;
+===END===
+- Make non-overriden default methods in impl blocks appear as normal methods;
+- Handle trait method implementations that have a more general signature than as declared in the trait (WIP: https://github.com/AeneasVerif/charon/issues/513);
+- Represent closures as normal structs that implement the `Fn*` traits;
+- Represent VTables as normal structs stored in statics (WIP: see https://github.com/AeneasVerif/charon/issues/123);
+- Many useful post-processing transformations to make the output more usable; see [the dedicated file](./transformations.md).
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/charon/docs/what_charon_translates.md===LINES===26
+# What Charon Translates
+
+Charon has a flexible system to determine which items get translated. This documents attempts to
+describe how the system works.
+
+===MID===
+  foreign crates opaque. The `--extract-opaque-bodies` flag is an alias for `--include *`.
+- Charon first processes the items specified with `--start-from`. If `--start-from` is not used,
+  that's equivalent to `--start-from=crate`, where `crate` stands for the current crate;
+- To process a transparent module, we enqueue the items directly inside it for translation;
+- To process any other module, we do nothing;
+===END===
+  processing.
+
+This results in a dependency resolution algorithm that pulls the needed items. The default settings
+translate the whole current crate as well as the signatures of all the foreign items mentioned in
+the crate.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/creusot/ARCHITECTURE.md===LINES===205
+Creusot is a deductive verifier for (safe) Rust code built on top of the [Why3](https://why3.lri.fr) verification platform.
+This document describes the overarching approach and the structure of the translation that Creusot performs.
+
+With Creusot you can write normal Rust code, annotate it with contracts and run it through Creusot to prove that your code will always satisfy your contracts.
+
+===MID===
+
+```rust
+#[creusot::item="x_ensures_$UUID"]
+fn x_ensures_$UUID(param1, param2, ..., result: T) -> bool {
+	PROP
+===END===
+**Note**: This will soon change, traits will instead be translated into a *set* of modules, one for each method.
+
+## Translation of trait implementations
+
+Each trait implementation becomes a module which clones the trait module, instantiating it with the modules of each relevant method.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/creusot/CHANGELOG.md===LINES===880
+# Changelog
+
+Following is the changelog of Creusot, a verification tool for safe Rust programs. Using Creusot you can prove -- formally -- that your Rust program behaves in a specific manner.
+
+Creusot allows you to annotate your code using *contracts* which describe correctness conditions for your program. Creusot then uses SMT solvers to check that these contracts hold for all possible runs of the program. All of this is done statically without running your program, and contracts are erased at compilation time.
+===MID===
+### Creusot IDE
+
+Not strictly speaking part of this release, we have recently published a new [Creusot IDE](https://github.com/creusot-rs/creusot-ide) extension on the VSCode Marketplace.
+The extension currently provides syntax highlighting for Creusot, and dynamically updates the proof status within VSCode.
+
+===END===
+- Jacques-Henri Jourdan (@jhjourdan)
+- Dominik Stolz (@voidc)
+- David Ewert (@dewert99)
+- Arnaud Golfouse (@arnaudgolfouse)
+- Armaël Guéneau (@armael)
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/creusot/CONTRIBUTING.md===LINES===146
+We thank you, contributor, for working to improve the Creusot tool for Rust verification.
+
+# 1. Install Creusot
+
+Follow the instructions provided in the [README](./README.md). This will provide a working development for Creusot and proofs.
+===MID===
+- `--external <TOOL>` to specify that a solver should be looked up from the path
+- `--no-check-version <TOOL>` to allow unexpected versions of a given tool
+
+## Calling why3 (and why3_tools, etc): shell environment setup
+
+===END===
+```shell
+cargo release version 0.{Y+1}.0-dev --execute
+git add -u
+git commit -m "Bump to version 0.{Y+1}.0-dev"
+```
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/creusot/README.md===LINES===88
+![](/static/marteau.jpg)
+
+*Le marteau-pilon, forges et aciéries de Saint-Chamond, Joseph-Fortuné LAYRAUD, 1889*
+
+# About
+===MID===
+
+# Installing Creusot as a user
+
+1. [Install `rustup`](https://www.rust-lang.org/tools/install), to get the suitable Rust toolchain
+2. [Get `opam`](https://opam.ocaml.org/doc/Install.html), the package manager for OCaml
+===END===
+
+# Hacking on Creusot
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for information on the developer workflow for
+hacking on the Creusot codebase.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/SUMMARY.md===LINES===38
+# Summary
+
+- [Quickstart](./quickstart.md)
+  - [Editor configuration](./quickstart/editor_config.md)
+- [Installation](./installation.md)
+===MID===
+  - [Loop invariants](basic_concepts/loop_invariants.md)
+  - [Variants](basic_concepts/variants.md)
+  - [`proof_assert`](basic_concepts/proof_assert.md)
+- [Trusted](./trusted.md)
+- [Representation of types](representation_of_types.md)
+===END===
+  - [`Int` in ghost](ghost/int-in-ghost.md)
+- [Type invariants](./type_invariants.md)
+- [Erasure check](./erasure.md)
+- [Known limitations](limitations.md)
+- [Command-line interface](./command_line_interface.md)
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/basic_concepts.md===LINES===13
+# Basic concepts
+
+Every Creusot macro will erase themselves when compiled normally: they only exist when using `cargo creusot`.
+
+If you need to have Creusot-only code, you can use the `#[cfg(creusot)]` attribute.
+===MID===
+
+If you need to have Creusot-only code, you can use the `#[cfg(creusot)]` attribute.
+
+Note that you must explicitly use the `creusot_std` crate in your code (which should be the case once you actually prove things, but not necessarily when you initially set up a project), such as with the line:
+
+===END===
+```rust
+use creusot_std::prelude::*;
+```
+
+or you will get a compilation error complaining that the `creusot_std` crate is not loaded.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/basic_concepts/loop_invariants.md===LINES===157
+# Loop invariants
+
+> [!NOTE]
+>
+> The word "invariant" has a lot of different meanings in program verification.
+===MID===
+To prove that this function satisfies its contract, we only have to verify three simpler subprograms
+(here in pseudo-code).
+
+1. The code before the loop must establish the invariant, assuming the precondition.
+
+===END===
+
+Indeed, the `#[invariant(...)]` attribute on loops is only allowed by unstable features
+(`stmt_expr_attributes`, `proc_macro_hygiene`). For compatibility with stable Rust,
+the `requires` and `ensures` macros remove `#[invariant(...)]`
+attributes during normal compilation.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/basic_concepts/proof_assert.md===LINES===18
+# `proof_assert!`
+
+At any point in the code, you may want to insert an arbitrary verification condition. This can be useful:
+- For debugging, to ensure that a property indeed holds at a certain point of the program.
+- To help the provers in specific cases.
+===MID===
+To do this, Creusot gives you the `proof_assert!` macro:
+
+```rust
+fn f() {
+    // ...
+===END===
+    // ...
+}
+```
+
+> `proof_assert` must contain a pearlite expression returning a boolean.===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/basic_concepts/requires_ensures.md===LINES===46
+# requires and ensure
+
+Most of what you will be writing with creusot will be `requires` and `ensures` clauses. That is: **preconditions** and **postconditions**.
+
+Together, those form the **contract** of a function. This is in essence the "logical signature" of your function: when analyzing a function, only the contract of other functions is visible.
+===MID===
+fn head(v: &[i32]) -> i32 {
+    v[0]
+}
+```
+
+===END===
+```
+
+Note that we:
+- use the `@` operator on the slice to get a `Seq<i32>`
+- we can then index this `Seq<i32>` to get a `i32`.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/basic_concepts/variants.md===LINES===7
+# Variants
+
+A `variant` clause can be attached either to a function like `ensures`, or `requires` or to a loop like `invariant`, it should contain a strictly decreasing expression which can prove the termination of the item it is attached to.
+
+<!-- TODO: be more precise:
+===MID===
+# Variants
+
+A `variant` clause can be attached either to a function like `ensures`, or `requires` or to a loop like `invariant`, it should contain a strictly decreasing expression which can prove the termination of the item it is attached to.
+
+<!-- TODO: be more precise:
+===END===
+A `variant` clause can be attached either to a function like `ensures`, or `requires` or to a loop like `invariant`, it should contain a strictly decreasing expression which can prove the termination of the item it is attached to.
+
+<!-- TODO: be more precise:
+- where exactly is `variant` allowed ?
+- At least one example -->
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/command_line_interface.md===LINES===206
+# Command-line Interface
+
+## List of commands
+
+- [`cargo creusot`](#creusot)
+===MID===
+
+
+### `clean`
+
+```
+===END===
+```
+cargo creusot version
+```
+
+Print version of Creusot and accompanying tools.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/erasure.md===LINES===207
+# Erasure check
+
+Verifying functions with Creusot requires modifying their code to add attributes, assertions, ghost code, *etc.*.
+This creates a gap between the function that is verified and the function that is compiled and run.
+The disconnect is two-fold:
+===MID===
+}
+```
+
+Before comparing `h2` and `h`, we put them both in A-normal form. Here, `h2` is simple and already in A-normal form.
+The body `f(g(x))` of the function `h` gets rewritten as follows.
+===END===
+```rust
+#[trusted]
+#[erasure(_)]
+fn split<T, U>(g: Ghost<(T, U)>) -> (Ghost<T>, Ghost<U>) { /* ... */ }
+```
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/ghost.md===LINES===78
+# Ghost code
+
+Sometimes, you may need code that will be used only in the proofs/specification, that yet still obeys the typing rules of Rust. In this case, [snapshots](snapshots.md) are not enough, since they don't have lifetimes or ownership.
+
+This is why there exists a separate mechanism: ghost code.
+===MID===
+- Creating and modifying a ghost variable:
+
+```rust
+let mut g = ghost!(50);
+ghost! {
+===END===
+    fn new() -> (Data, Ghost<Token>) { /* */ }
+    fn read(&self, token: &Ghost<Token>) -> T { /* */ }
+    fn write(&self, t: T, token: &mut Ghost<Token>) { /* */ }
+}
+```
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/ghost/ghost-structures.md===LINES===45
+# Ghost structures
+
+## Using imperative data structures in ghost code
+
+Usual imperative structures like `Vec`, `HashMap` or `HashSet` cannot be used in ghost code. To be precise, you may notice that functions like `Vec::push` are not marked with the `#[check(ghost)]` attribute, and so they cannot be called in ghost code.
+===MID===
+
+This case might be forbidden in the future by adding a stronger precondition to `Vec::push`, but the point still stands: the capacity of a ghost vector should be infinite.
+
+## Ghost structures
+
+===END===
+A few things to note:
+
+- `Seq`, `FMap` and `FSet` are the counterparts for `Vec`, `HashMap` and `HashSet` respectively. They all live in the `logic` module.
+- Since `s` in directly the logical type `Seq`, we don't need the view operator `@`.
+- To avoid name clashes, these additional "ghost" functions are almost all suffixed with `_ghost`. See the documentation for each type to know the available methods, ghost and logical.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/ghost/int-in-ghost.md===LINES===22
+# Int in ghost
+
+You can manipulate values of type `Int` in ghost code, by using the `int` suffix on integer literals:
+
+```rust,creusot
+===MID===
+    assert!(x + y == 100int);
+};
+```
+
+Ghost containers return their length as an `Int`, and `Seq` is indexed by `Int` as well:
+===END===
+    let m: FMap<_, _> = ...;
+    let len: Int = m.len_ghost();
+    let x = s[len + 3int];
+};
+```
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/installation.md===LINES===131
+# Installation
+
+This section explains how to install Creusot, what goes into the installation,
+and some configuration options.
+
+===MID===
+
+    # Install the Creusot prelude
+    cargo run --bin prelude-generator
+    mkdir -p $XDG_DATA_HOME/share/why3find
+    cp -rT target/creusot/packages $XDG_DATA_HOME/share/why3find/packages
+===END===
+- `"tactics"`: list of tactics to apply during proof search.
+  "Tactics" are [Why3 transformations](https://www.why3.org/doc/technical.html#transformations) that take no arguments.
+  For example: `compute_in_goal` and `inline_goal` are tactics; `apply H`, `exists X` are not tactics.
+
+See [the Why3find README](https://git.frama-c.com/pub/why3find#why3find) for more information.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/limitations.md===LINES===42
+# Known limitations
+
+Formal verification provides strong guarantees about your code.
+Nevertheless, it is important to be aware of the limits of what one has specified.
+Creusot users should take note of the following limitations.
+===MID===
+## Architecture specificity
+
+Creusot compiles code for some given target architecture,
+so the resulting proofs are only valid for that architecture.
+
+===END===
+Instead, we provide the replacement macro `creusot_std::std::vec::vec`, which has the same
+semantics and can be used in Creusot, albeit being slightly less efficient (the content of the
+vector is first allocated in the stack, and then moved to the newly allocated vector, instead of
+being directly initialized in the heap). It needs to be explicitly imported in order to not conflict
+with Rust's default implementation.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/logic_functions.md===LINES===82
+# Logic functions
+
+Functions marked with `#[logic]` can be used in specifications (`requires`/`ensures` and `invariant`) and in `snapshot!`, but cannot be called from normal Rust code.
+Typically, `logic` functions manipulate variables of logical model types such as `Int` and `Seq<Int>` rather than normal Rust types such as `i32` and `&[i32]`.
+
+===MID===
+Basic example:
+
+```rust
+#[logic]
+fn logic_add(x: Int, y: Int) -> Int {
+===END===
+
+```rust
+TODO
+```
+
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/logic_functions/lemma_law.md===LINES===84
+# Lemmas and laws
+
+## Lemmas
+
+A _lemma_ is a logical function that is useful because of its pre and postconditions, rather than the value it returns.
+===MID===
+```rust,creusot
+trait Commutative: Sized {
+    #[logic]
+    fn op(self, other: Self) -> Self;
+
+===END===
+fn foo<T: Commutative>(x: T, y: T) {
+    let z = x.op(y);
+    proof_assert!(z == y.op(x)); // Works!
+}
+```
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/logic_functions/open.md===LINES===34
+# Visibility of logical functions
+
+By default, `logic` functions are *opaque* outside the module they are defined in (in other words, they are only *open* at the module level).
+When a function is opaque, only its pre- and postconditions are visible.
+This is useful if the function is only used to express (and prove) that the preconditions imply the postconditions, and we do not care about the result (a *lemma* [^dafny]).
+===MID===
+    pub fn adds_one_closed(x: Int) -> Int { x + 1 }
+
+    // no need for `ensures` here!
+    #[logic(open)]
+    pub fn adds_one_open(x: Int) -> Int { x + 1 }
+===END===
+    dead
+}
+```
+
+[^dafny]: The [Dafny tutorial](https://dafny.org/latest/OnlineTutorial/Lemmas) is a pretty good resource on how to use lemmas.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/logic_functions/prophetic.md===LINES===7
+# Prophetic functions
+
+As seen in the chapter on [mutable borrow](../representation_of_types/mutable_borrows.md), a mutable borrow contains a _prophetic_ value, whose value depends on future execution. In order to preserve the soundness of the logic, `#[logic]` functions are not allowed to observe that value: that is, they cannot call the prophetic `^` operator.
+
+If you really need a logic function to use that operator, you need to mark it with `#[logic(prophetic)]` instead. In exchange, this function cannot be called from `snapshot!`.
+===MID===
+# Prophetic functions
+
+As seen in the chapter on [mutable borrow](../representation_of_types/mutable_borrows.md), a mutable borrow contains a _prophetic_ value, whose value depends on future execution. In order to preserve the soundness of the logic, `#[logic]` functions are not allowed to observe that value: that is, they cannot call the prophetic `^` operator.
+
+If you really need a logic function to use that operator, you need to mark it with `#[logic(prophetic)]` instead. In exchange, this function cannot be called from `snapshot!`.
+===END===
+As seen in the chapter on [mutable borrow](../representation_of_types/mutable_borrows.md), a mutable borrow contains a _prophetic_ value, whose value depends on future execution. In order to preserve the soundness of the logic, `#[logic]` functions are not allowed to observe that value: that is, they cannot call the prophetic `^` operator.
+
+If you really need a logic function to use that operator, you need to mark it with `#[logic(prophetic)]` instead. In exchange, this function cannot be called from `snapshot!`.
+
+A normal `#[logic]` function cannot call a `#[logic(prophetic)]` function.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/pearlite.md===LINES===35
+# Pearlite
+
+Pearlite is the language used in:
+
+- contracts (`ensures`, `requires`, `invariant`, `variant`)
+===MID===
+## Logical implication
+
+Since `=>` is already a used token in Rust, we use `==>` to mean implication:
+
+```rust
+===END===
+#[requires(forall<i: Int> i >= 0 && i < list@.len() ==> list@[i] == 0)]
+fn requires_all_zeros(list: &[i32]) {
+    // ...
+}
+```
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/quickstart.md===LINES===128
+# Quick start
+
+## Installation
+
+See the [Installation](https://creusot-rs.github.io/creusot/guide/installation.html) section.
+===MID===
+    ```
+
+    Multiple files can also be specified in a single command.
+
+When the proof fails, you can add the `-i` option to open the Coma file in Why3 IDE.
+===END===
+
+Difference with `cargo creusot prove`:
+
+- `cargo creusot prove` (with `-i` or `--ide-always`) runs the Creusot compiler and the Why3find proof search beforehand, ensuring that you're always working on the latest version of your code.
+- `cargo creusot why3 ide` only runs `why3 ide` with the necessary options to load Coma files produced by Creusot. It's up to you to make sure that the Coma files are up-to-date.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/quickstart/editor_config.md===LINES===15
+From the root of your project, write the following in the `.vscode/settings.json` file:
+```json
+{
+  "rust-analyzer.check.overrideCommand": [
+    "cargo",
+===MID===
+    "cargo",
+    "creusot",
+    "--",
+    "--message-format=json"
+  ]
+===END===
+```
+
+For other editors, see <https://rust-analyzer.github.io/book/other_editors.html> to add the above option to your configuration.
+
+Note that you will probably want to enable this option _only_ in projects that use creusot.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/representation_of_types.md===LINES===3
+# Representation of types
+
+Creusot translates Rust code to Why3. But Rust types don't always exist in Why3, and would not have the same semantics: thus we need to map each Rust type to a Why3 type.
+===MID===
+# Representation of types
+
+Creusot translates Rust code to Why3. But Rust types don't always exist in Why3, and would not have the same semantics: thus we need to map each Rust type to a Why3 type.
+===END===
+# Representation of types
+
+Creusot translates Rust code to Why3. But Rust types don't always exist in Why3, and would not have the same semantics: thus we need to map each Rust type to a Why3 type.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/representation_of_types/most_types.md===LINES===14
+# Base types
+
+Most type have a very simple interpretation in Why3:
+
+- The interpretation for a scalar type (`i32`, `bool`, `f64`, ...) is itself.
+===MID===
+- The interpretation for a scalar type (`i32`, `bool`, `f64`, ...) is itself.
+- The interpretation of `[T]` is `Seq<T>`, the type of sequences.
+- The interpretation of `&T` is the interpretation of `T`.
+
+  Creusot is able to assume that `T` and `&T` behave the same, because of the "shared xor mutable" rule of Rust: we won't be able to change the value (interior mutability is handled by defining a special model for e.g. `Cell<T>`), so we may as well be manipulating an exact copy of the value. 
+===END===
+- The interpretation of `Box<T>` is the interpretation of `T`.
+
+  This is because a `Box` uniquely own its content: it really acts exactly the same as `T`.
+- Structures and enums are interpreted by products and sum types.
+- The interpretation of `&mut T` is a bit more complicated: see the next section.
+===DONE===

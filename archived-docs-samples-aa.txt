@@ -1,0 +1,4319 @@
+===FILE===archived-docs/ACTIVE-Reference/current-codebase-graph-orientation-20260308.md===LINES===174
+# Current Codebase Graph Orientation - 2026-03-08
+
+This note captures the current Parseltongue 1.7.2 graph export for the repo so we can reference the actual indexed graph while deciding the next architecture.
+
+## Artifact Paths
+===MID===
+
+- trustworthy context convergence
+- public-interface anchoring
+- clean blast-radius reasoning
+
+===END===
+
+- which nodes are real application entities vs placeholders
+- where unresolved references dominate
+- which crate surfaces are dense enough to support convergence workflows
+- how much current PT08 logic is reusable vs should be replaced
+===DONE===
+===FILE===archived-docs/Notes20260317.md===LINES===1137
+# Parseltongue: Rust LLM Companion
+
+> Grep returns files. Parseltongue returns understanding.
+> A minimalistic, well-verified proof of Rust craft.
+
+===MID===
+    export_statement (JS/TS)       → inner is class/function/variable declaration
+    decorated_definition (Python)  → inner is function_definition or class_definition
+    template_declaration (C++)     → inner is class/function/struct
+    type_declaration (Go)          → inner type_spec reveals struct vs interface vs alias
+
+===END===
+# CPU-Only Guarantee
+
+No GPU. No embedding model. No LLM in the middle.
+Symbol trie lookup, trigram index, graph traversal, rustc type info.
+Full transparency: logs show exactly why each result ranked.
+===DONE===
+===FILE===archived-docs/PRD-v300.md===LINES===1897
+# Parseltongue v3.0
+
+> Grep returns files. Parseltongue returns understanding.
+> A minimalistic, well-verified proof of Rust craft.
+
+===MID===
+---
+
+## Coverage Model (grounded in apache/iggy: 2712 files, 775 dirs, 379K lines)
+## (iggy cloned to: docs/research-glommer/iggy-sample/)
+
+===END===
+    - Rust files (.rs) -> Layer 2 (tree-sitter) + Layer 3 (rustc_private enrichment)
+    - Rust config (Cargo.toml) -> parsed as TOML, yields dependency/package_meta/config_section entities
+    - Other parsable languages (py, js, ts, go, java, c, cpp) -> Layer 2 only
+    - Unparsable files -> Layer 1 only (just the address + hash)
+    - Tests -> same entities, flagged with is_test=true
+===DONE===
+===FILE===archived-docs/debates/2026-03-09-v200-compiler-truth-storage.md===LINES===124
+# Debate: Where should rich Rust compiler information live in Parseltongue v200?
+
+**Created:** 2026-03-09
+**Agent 1:** Codex-Store-Split
+**Agent 2:** Codex-Minimal-SingleDB
+===MID===
+
+[A2-R1] Counterpoint: for v200, the minimum viable shape is **one physical local SQL database with two logical table groups**, not two separate databases or engines.
+
+- Evidence: codemogger already proves that a single local SQL store can hold search chunks, indexed files, and per-codebase FTS successfully at [CR09/codemogger/src/db/schema.ts:12-85](/Users/amuldotexe/Desktop/parseltongue-rust-LLM-companion/CR09/codemogger/src/db/schema.ts:12).
+- Evidence: blast-radius computation already runs in Rust and only needs keyed edge lookups from storage, so truth tables do not need a separate engine to support v200 traversal at [crates/pt08-http-code-query-server/src/http_endpoint_handler_modules/blast_radius_impact_handler.rs:223-269](/Users/amuldotexe/Desktop/parseltongue-rust-LLM-companion/crates/pt08-http-code-query-server/src/http_endpoint_handler_modules/blast_radius_impact_handler.rs:223).
+===END===
+| 1 | Codex-Minimal-SingleDB | Proposal | Challenged separate physical stores; argued for one physical DB with logical separation | no evidence yet that v200 needs dual engines, while current traversal already runs in Rust over relational lookups | CLOSED |
+| 2 | Codex-Store-Split | Proposal | Conceded physical split is unnecessary for v200 and rewrote proposal around one DB with two logical stores | minimum viable architecture should optimize product flow, not storage ideology | CLOSED |
+| 2 | Codex-Minimal-SingleDB | Proposal | Accepted converged design after independent verification | proposal keeps search rows lean and preserves compiler-truth separation | CLOSED |
+
+**Status values:** `OPEN` = unresolved, `CLOSED` = resolved, `PARKED` = deferred and not blocking convergence.
+===DONE===
+===FILE===archived-docs/journey-of-parseltongue/how-cozodb-connects-relations.md===LINES===179
+# How CozoDB Connects Relations (ELI5)
+
+CozoDB is **not** a traditional graph DB like Neo4j. It's a **Datalog** database -- think of it as "spreadsheets that can ask each other questions by matching column values."
+
+## The "Spreadsheets" (Relations)
+===MID===
+
+This is where CozoDB shines -- **recursive queries**:
+
+```
+  "What does main() affect, up to 3 hops deep?"
+===END===
+| DDL (create/drop index) during writes | **Serialized** | DDL takes exclusive lock |
+
+## In One Sentence
+
+CozoDB is **spreadsheets that talk to each other through shared column values**, with the superpower of **recursive graph traversal** built into the query language. No explicit "edges" or "JOINs" -- just Datalog variable binding.
+===DONE===
+===FILE===archived-docs/journey-of-parseltongue/v160-v165-release-notes.md===LINES===166
+# Release Notes: v1.6.0 through v1.6.5
+
+From v1.5.6 to v1.6.5, Parseltongue gained 7 graph analysis algorithms, folder-scoped queries, ingestion diagnostics, and a 2.92x parallelism speedup.
+
+## Summary
+===MID===
+| `test_entities` | All test functions that were excluded from the graph |
+| `ignored_files` | Files skipped during ingestion (non-parseable extensions) |
+
+**Dual coverage metrics**: `raw_coverage_pct` = entity words / source words. `effective_coverage_pct` = entity words / (source words - imports - comments). A file at 72% raw / 96% effective is healthy.
+
+===END===
+- **337 files changed**: +31,194 lines / -2,270 lines
+- **67 source files** in crates/ (+11,743 / -233)
+- **134 new public items** (functions, structs, enums, traits)
+- **94 new test fixtures** in test-fixtures/
+- **15 new documentation files** in docs/
+===DONE===
+===FILE===archived-docs/parseltongue-code-graph-db/embedded_code_graph_db_thesis_20260309.md===LINES===572
+# Embedded Code Graph Database Thesis
+
+**Version:** 1.0.0
+**Date:** 2026-03-09
+**Author:** Research synthesis for Parseltongue v300
+===MID===
+
+### The Switch Decision
+
+| Option | Effort | Risk | Reward |
+|--------|--------|------|--------|
+===END===
+---
+
+**Document Status:** Complete
+**Next Action:** Implement validation suite against NetworkX
+**Owner:** Parseltongue v300 Architecture
+===DONE===
+===FILE===archived-docs/plans/2026-03-20-v300-executable-spec-v2.md===LINES===422
+# Executable Spec v2: Complete Parseltongue v300
+
+**Date:** 2026-03-20
+**Source PRD:** [PRD-v300.md](/Users/amuldotexe/Desktop/parseltongue-rust-LLM-companion/PRD-v300.md)
+**Revision:** v2 — after rubber-duck analysis of v1 against actual codebase state
+===MID===
+**SHALL** record ingestion errors (individual file parse failures) without aborting
+
+**Current state:** Pipeline works. This requirement adds E2E validation.
+
+### REQ-A-009: Coverage Reporting Distinguishes File Categories
+===END===
+- Add `tauri` dependency to pt10
+- Create frontend (React/TypeScript)
+- Wire workspace lifecycle commands as Tauri commands
+- Build `.dmg` distribution
+- REQ-V300-010, REQ-V300-011, REQ-V300-014 from v1 spec
+===DONE===
+===FILE===archived-docs/plans/2026-03-20-v300-executable-spec-v3.md===LINES===564
+# Executable Spec v3: Complete Parseltongue v300 — Iteration A
+
+**Date:** 2026-03-20
+**Source PRD:** [PRD-v300.md](/Users/amuldotexe/Desktop/parseltongue-rust-LLM-companion/PRD-v300.md)
+**Revision:** v3 — synthesized from 4 parallel research agents studying all docs/ + crate implementations
+===MID===
+**Source:** PRD lines 1582-1595: "Tree-sitter does NOT distinguish doc comments from plain comments at the node type level."
+
+### REQ-A-018: splitNodes Splits Containers Over 150 Lines
+
+**WHEN** the tree-sitter entity extractor encounters an `impl_item`, `trait_item`, `mod_item`, `class_definition`, or `class_declaration` node exceeding 150 lines
+===END===
+- Wire workspace lifecycle commands as `#[tauri::command]`
+- Slug-based multi-project port management
+- FRESH/STALE badge with hash comparison
+- macOS notification on ingest completion
+- `.dmg` distribution
+===DONE===
+===FILE===archived-docs/plans/2026-03-21-architecture-truth-table.md===LINES===150
+# v300 Architecture Truth Table
+
+**Date**: 2026-03-21
+**Purpose**: Honest audit of what exists, what works, what is fake.
+
+===MID===
+
+### Git recency detail
+- `build_git_recency_scores()` works — runs `git log`, computes exponential decay
+- `SharedServerAppState` sets `git_recency: HashMap::new()` — **always empty at runtime**
+- Test hardcodes path `/code/that-in-rust/parseltongue-rust-LLM-companion` — fails everywhere else
+===END===
+## The one thing that matters most
+
+**Edge resolution**. Without it, the graph is noise. Every algorithm, every BFS anchor, every ego cluster, every hotspot ranking — all meaningless until `to_path: "HashMap", to_start: -1, to_end: -1` becomes `to_path: "src/collections/map.rs", to_start: 45, to_end: 120`.
+
+Fix edges first. Everything else follows.
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-PRD/2026-03-02-code-understanding-domain-thesis-design.md===LINES===236
+# Code-Understanding Domain Thesis - Design Document
+
+**Date:** 2026-03-02
+**Status:** Approved
+**Purpose:** Internal strategic guide for Parseltongue v2.0.0 roadmap and architecture decisions
+===MID===
+
+---
+
+### Phase 2: Synthesis
+**Goal:** Produce actionable strategic recommendations
+===END===
+- Blast radius analysis
+
+---
+
+*Design approved: 2026-03-02*
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-PRD/2026-03-02-code-understanding-domain-thesis.md===LINES===766
+# Code-Understanding Domain Thesis
+## The Definitive Strategic Guide for Parseltongue v2.0.0
+
+**Version:** 2.0.0 (INSURMOUNTABLE EDITION)
+**Date:** 2026-03-02
+===MID===
+        .collect();
+
+    // Add nodes until budget exhausted
+    for node in nodes {
+        let cost = token_cost(&node);
+===END===
+---
+
+*Thesis Version 2.0.0 completed: 2026-03-02*
+*This insurmountable edition contains comprehensive algorithmic knowledge for competitive differentiation*
+*For implementation details, see companion documents*
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-PRD/2026-03-02-exhaustive-research-journal.md===LINES===973
+# EXHAUSTIVE Research Journal: Code-Understanding Domain Thesis
+## 20-Agent Parallel Research Initiative - Parseltongue v2.0.0
+
+**Created:** 2026-03-02
+**Last Updated:** 2026-03-02 (Session Start)
+===MID===
+- [ ] Interdependent Network Cascading
+- [ ] Aspect-Aware Analysis
+
+**Key Findings:**
+*To be populated*
+===END===
+
+---
+
+*Journal initialized: 2026-03-02*
+*This tracking system enables seamless resumption of the 20-agent parallel research effort*
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-PRD/2026-03-02-research-implementation-plan.md===LINES===1186
+# Code-Understanding Domain Thesis - Implementation Plan
+
+## Overview
+
+This document provides a detailed, step-by-step implementation plan for conducting the Code-Understanding Domain Thesis research. The plan is designed to be executable by any general-purpose agent without additional context.
+===MID===
+**Reproducibility:**
+- Code available: [YES/NO]
+- Datasets used: [names]
+```
+
+===END===
+## Critical Files for Implementation
+
+- `/Users/amuldotexe/Desktop/notebook-gh/docs/plans/2026-03-02-code-understanding-domain-thesis-design.md` - Design document
+- `/Users/amuldotexe/Desktop/notebook-gh/docs/plans/2026-03-02-research-journal.md` - Research journal
+- `/Users/amuldotexe/Desktop/notebook-gh/docs/plans/2026-03-02-code-understanding-domain-thesis.md` - Final thesis document
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-PRD/2026-03-02-research-journal.md===LINES===452
+# Research Journal: Code-Understanding Domain Thesis
+## Parseltongue v2.0.0 Strategic Research
+
+**Created:** 2026-03-02
+**Last Updated:** 2026-03-02
+===MID===
+- **Graph matching** for code similarity
+- **Attention mechanisms** (GAT) for code understanding
+
+#### What Has Struggled
+- **Pure ML approaches** without structural information
+===END===
+```
+
+---
+
+*Journal completed: 2026-03-02*
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-PRD/ES-V200-Decision-log-01.md===LINES===1067
+# v200-Decision-log-01
+Status: Active — restructured 2026-02-22 using Minto Pyramid Principle
+Purpose: Record binding decisions and open questions for V200.
+
+## Top-of-Stack Decision Focus (2026-03-01)
+===MID===
+10. `10-vfs-base-db-patterns.md`: Path canonicalization and bounded file IDs are critical for stable hashes/keys; option is path normalization policy as a first-class ingest contract. `OQ-RA-10`: What is the canonical normalization spec across macOS/Linux path edge cases?
+11. `11-project-model-patterns.md`: Workspace discovery fallback logic should be deterministic and observable; option is ordered project-root resolution with ledger traces. `OQ-RA-11`: Which root-discovery precedence order is frozen for V200?
+12. `12-token-tree-macro-patterns.md`: Macro/token-tree span compression indicates macro-aware spans need dedicated storage shapes; option is macro-expansion provenance edges separate from regular call edges. `OQ-RA-12`: What macro-derived facts qualify as `verified` versus `heuristic`?
+13. `13-utility-crates-patterns.md`: Invariant-oriented utility patterns suggest stronger type-level guarantees in core contracts; option is non-empty and constrained wrappers in API schemas. `OQ-RA-13`: Which response fields should be modeled as non-empty by type, not convention?
+14. `14-lib-arena-lsp-patterns.md`: Arena/sparse-map patterns support custom high-performance graph memory layouts; option is to benchmark arena-based in-memory indices for hot traversal paths. `OQ-RA-14`: Which graph queries warrant arena specialization in V200 timeframe?
+===END===
+### Acceptance Criteria For This Policy
+1. A failed run can answer: exactly what was missed, where, and why.
+2. Same input + same tool versions => same output graph and ledger.
+3. Post-MVP optimization can be done without changing query contracts.
+4. Time-to-ready and throughput are measurable from built-in telemetry.
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-PRD/Parseltongue-Journal-20260220.md===LINES===1122
+I am trying to build Parseltongue v2.0.0. PRD
+
+but it is confusing
+
+what is important, what is not important
+===MID===
+
+So the tool feels honest, not hallucinated.
+
+---
+
+===END===
+5. Comments/docstrings can improve retrieval ranking, but cannot create verified edges without parser/LSP evidence.
+
+
+===
+
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-PRD/V200-context-query-converge-executable-spec.md===LINES===216
+# V200 Context Query Converge - Executable Spec
+
+Feature outcome: add one CPU-only HTTP endpoint that replaces multi-step grep-like exploration with a deterministic query -> candidate clusters -> deep dive workflow.
+
+Actors and boundaries:
+===MID===
+**SHALL** record p99 and median timings in benchmark output for regression tracking
+
+### REQ-CQC-012.0: Register one route and one response contract
+
+**WHEN** the route builder is initialized
+===END===
+2. What is the canonical preview cluster ID: anchor entity key only, or anchor key plus ranking hash?
+3. Should `selected_candidate_key` be validated only against current request results, or accepted if it exists globally in the graph?
+4. Do we want deep packets to include raw code snippets by default, or only metadata pointers plus explicit follow-up reads in snapshot mode?
+5. For non-Rust languages, should v1 return heuristic anchor clusters at all, or hide them until tiered language support is explicitly shipped?
+6. Does `resolved` need compiler-context sections immediately, or should v1 ship graph-only deep packets and reserve compiler evidence for a second slice?
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-PRD/V216-PRD.md===LINES===91
+# V216 - PRD - Parseltongue reborn as a Rust LLM companion
+
+# User Segment x Diferentiation
+
+- Rust Open Source Library
+===MID===
+
+
+
+
+# Detailed notes
+===END===
+1. mark stale
+2. trigger reindex for affected file/chunk
+3. degrade confidence until refreshed
+4. block `verified` truth-grade from stale rows
+
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-PRD/code-cluster-01-user-journey.md===LINES===239
+# Parseltongue: Replace Grep for Code
+
+**Version**: v256 Positioning
+**Date**: 2026-03-03
+**Core Thesis**: CPU-only, zero GPU, zero LLM intervention
+===MID===
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  EVENT 7: DEEP DIVE                                                         │
+│                                                                             │
+│  Return full context for chosen cluster (up to 20k tokens)                  │
+│                                                                             │
+===END===
+5. **ASK** - Present [1][2][3][4][none]
+6. **CHOICE** - LLM picks one
+7. **DEEP DIVE** - Full context + next query options
+
+All CPU. All transparent. All compiler-verified.
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-PRD/code-cluster-01-workflow.md===LINES===328
+# Code Cluster 01 Workflow - The 5-Phase Graph-Based Query Flow
+
+**Version**: v256 Design
+**Date**: 2026-03-02
+**Status**: Core Architecture Pattern
+===MID===
+### Traditional Embedding Search
+```
+"authentication" → 50 similar code chunks → 10,000 tokens of guessed relevance
+```
+
+===END===
+## References
+
+- `parseltongue-competitive-intel-2026/05-PARSELTONGUE-LEARNINGS-v1.7.2.md` - RRF implementation
+- `parseltongue-competitive-intel-2026/06-PARSELTONGUE-EXISTING-TOOLS-RESEARCH.md` - Axon, Flowistry analysis
+- `parseltongue-conversational-mcp-simulation.md` - Full UX simulation
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-PRD/parseltongue-compiler-endpoints-master.md===LINES===1649
+# Parseltongue Compiler Endpoints — Master Reference
+
+**Version:** 1.0.0  
+**Compiled:** March 3, 2026  
+**Purpose:** Single authoritative reference for all compiler APIs that power the Parseltongue "super code-graph" for Rust.
+===MID===
+```
+
+#### 3.7.2 Dynamic Dispatch (dyn Trait)
+
+```rust
+===END===
+
+1. **ra_ap_* API Research** — [ra_ap_hir docs](https://docs.rs/ra_ap_hir/latest/ra_ap_hir/), [ra_ap_ide docs](https://docs.rs/ra_ap_ide/latest/ra_ap_ide/), [rust-analyzer GitHub](https://github.com/rust-lang/rust-analyzer)
+2. **rustc Internals Research** — [nightly rustc docs](https://doc.rust-lang.org/nightly/nightly-rustc/), [rustc dev guide](https://rustc-dev-guide.rust-lang.org/), [GitHub rust-lang/rust](https://github.com/rust-lang/rust)
+3. **MIR APIs Research** — [MIR mod.rs](https://github.com/rust-lang/rust/blob/main/compiler/rustc_middle/src/mir/mod.rs), [MIR syntax.rs](https://github.com/rust-lang/rust/blob/main/compiler/rustc_middle/src/mir/syntax.rs), [dataflow framework](https://github.com/rust-lang/rust/blob/main/compiler/rustc_mir_dataflow/src/framework/mod.rs), [dominators](https://github.com/rust-lang/rust/blob/main/compiler/rustc_data_structures/src/graph/dominators/mod.rs)
+4. **Polonius / Stable MIR / rustc_plugin / Charon Research** — [Polonius repo](https://github.com/rust-lang/polonius), [rustc_public docs](https://doc.rust-lang.org/nightly/nightly-rustc/rustc_public/index.html), [rustc_plugin repo](https://github.com/cognitive-engineering-lab/rustc_plugin), [Charon repo](https://github.com/AeneasVerif/charon), [Flowistry docs](https://willcrichton.net/flowistry/flowistry/)
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-PRD/research_mir_apis.md===LINES===1790
+# Rust Compiler MIR APIs: Control Flow & Data Flow Analysis Reference
+
+**Source**: `github.com/rust-lang/rust` (main branch, March 2026)  
+**Crates covered**: `rustc_middle` (mir), `rustc_mir_dataflow`, `rustc_data_structures`  
+**Purpose**: Complete API reference for building a code-graph via MIR control flow and data flow analysis
+===MID===
+### `EverInitializedPlaces<'a, 'tcx>`
+
+```rust
+// Tracks places that have EVER been initialized (without an intervening StorageDead).
+// Used to detect double-initialization of immutable locals.
+===END===
+
+---
+
+*Research conducted from GitHub source: https://github.com/rust-lang/rust  
+See also: [MIR chapter in rustc-dev-guide](https://rustc-dev-guide.rust-lang.org/mir/index.html)*
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-PRD/research_polonius_smir_plugin.md===LINES===829
+# Rust Compiler Ecosystem Research: Polonius, Stable MIR, rustc_plugin, and Charon
+## For Parseltongue Code-Graph Construction
+
+*Research date: March 3, 2026*
+
+===MID===
+    // Associated type for plugin-specific serializable arguments
+    type Args: Serialize + DeserializeOwned;
+
+    // Required: version string (e.g. "0.1.0")
+    fn version(&self) -> Cow<'static, str>;
+===END===
+- [PlaceExt trait docs](https://willcrichton.net/flowistry/rustc_utils/mir/place/trait.PlaceExt.html)
+- [SpanExt trait docs](https://willcrichton.net/flowistry/rustc_utils/source_map/span/trait.SpanExt.html)
+- [Charon repository](https://github.com/AeneasVerif/charon)
+- [Charon paper](https://arxiv.org/html/2410.18042v2) — "Charon: An Analysis Framework for Rust"
+- [CHARON/AENEAS pipeline overview](https://www.emergentmind.com/topics/charon-aeneas-pipeline)
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-PRD/research_ra_ap_apis.md===LINES===1730
+# rust-analyzer `ra_ap_*` API Research
+
+> **Crate version at time of research:** `0.0.322` (published ~2026-03-02)  
+> **Source:** docs.rs, GitHub rust-lang/rust-analyzer  
+> All crates share this version number (ra_ap_hir, ra_ap_hir_def, ra_ap_hir_ty, ra_ap_syntax, ra_ap_ide, ra_ap_base_db, ra_ap_vfs).
+===MID===
+InferenceVar(InferenceVar, Kind)   → inference variable
+Never                              → !
+Error                              → type error
+```
+
+===END===
+- [ra_ap_ide docs.rs](https://docs.rs/ra_ap_ide/latest/ra_ap_ide/)
+- [ra_ap_base_db docs.rs](https://docs.rs/ra_ap_base_db/latest/ra_ap_base_db/)
+- [ra_ap_vfs docs.rs](https://docs.rs/ra_ap_vfs/latest/ra_ap_vfs/)
+- [rust-analyzer GitHub](https://github.com/rust-lang/rust-analyzer)
+- [crates.io ra_ap_hir](https://crates.io/crates/ra_ap_hir)
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-PRD/research_rustc_internals.md===LINES===1594
+# rustc Internals Research: APIs for Building a Rich Code Graph
+
+**Research Date:** March 2026  
+**Sources:** [nightly rustc docs](https://doc.rust-lang.org/nightly/nightly-rustc/), [rustc dev guide](https://rustc-dev-guide.rust-lang.org/), [GitHub: rust-lang/rust](https://github.com/rust-lang/rust)
+
+===MID===
+    TyKind::FnDef(def_id, args) => {
+        let sig = tcx.fn_sig(*def_id).instantiate(tcx, args);
+    }
+    TyKind::Tuple(tys) => {
+        for ty in tys.iter() { ... }
+===END===
+8. **Access `SourceMap` via** `tcx.sess.source_map()` or `compiler.session().source_map()` — it is the single source of file/line/column information.
+
+9. **`typeck` results** contain expression-level type information that `type_of` does not provide. Use `tcx.typeck(local_def_id).node_type(hir_id)` to get the type of any HIR expression or pattern.
+
+10. **Trait impls**: `tcx.all_local_trait_impls(())` returns a `HashMap<TraitDefId, Vec<LocalImplId>>` — use this to build the full trait-impl bipartite graph efficiently.
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/06-LUCENE-ES-FOR-DATA-FLOW-ANALYSIS.md===LINES===531
+# Can Lucene/Elasticsearch Help with Data Flow/Control Flow Analysis?
+## Research for Parseltongue Architecture Decisions
+
+**Research Date**: 2026-02-28
+**Question**: Can search engine algorithms (Lucene, Elasticsearch, Zoekt) benefit code understanding tools like Parseltongue for data flow and control flow analysis?
+===MID===
+        ranked.into_iter().take(top_k).collect()
+    }
+}
+```
+
+===END===
+- Zoekt (Sourcegraph): Trigram-based code search
+- Data flow analysis: Worklist algorithm, monotone frameworks, fixed-point iteration
+- Control flow: CFG construction, dominance, path analysis
+- Graph databases for code: Neo4j, CozoDB, Code Property Graph
+- RRF: Reciprocal Rank Fusion from Sourcegraph Cody
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/07-ARCHITECTURE-RUBBER-DUCK-DEBUG.md===LINES===522
+# Parseltongue Architecture Options: Rubber Duck Debug Session
+## What's the Right Differentiated Architecture for an "LSP Companion for LLMs"?
+
+**Session Date**: 2026-02-28
+**Context**: Strategic architecture planning after competitive analysis of Sourcegraph, Lucene/ES, and code search landscape
+===MID===
+
+---
+
+## Architecture Dimension 3: Freshness Model
+
+===END===
+6. **Benchmark first** — prove the value before over-engineering the architecture
+
+---
+
+*Rubber duck session complete. Next step: Build the eval framework to validate assumptions.*
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/14-V216-SEMANTIC-CONTEXT-COMPRESSOR-THESIS.md===LINES===1057
+# Parseltongue v216: The Semantic Context Compressor Thesis
+
+**Analysis Date:** 2026-01-29
+**Method:** Rubber Duck Debugging + Rust-Analyzer Architecture Synthesis
+**Conclusion:** The 3-layer model maps directly to rust-analyzer's HIR layer
+===MID===
+**The missing piece we already have:** Rust-analyzer's HIR layer already computes all of this. We're not building a compiler — we're building a **serialization layer** that captures what rust-analyzer knows and formats it for LLM consumption.
+
+---
+
+# V2: Three Production Upgrades
+===END===
+
+*Thesis compiled: 2026-01-29*
+*V2 Upgrades added: 2026-01-29*
+*Method: Rubber Duck Debugging + Rust-Analyzer Architecture Analysis*
+*Sources: 14 rust-analyzer pattern documents + user thesis input*
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/15-API-STABILITY-VERIFICATION.md===LINES===330
+# API Stability Verification: Claims vs Reality
+
+**Analysis Date:** 2026-02-29
+**Method:** GitHub API queries, crates.io data, commit history analysis
+**Purpose:** Verify whether "API instability" claims in Rust tooling are hearsay or factual
+===MID===
+| **Timeline** | v0.1 targeted for late 2025 |
+
+**Not ready for production use yet.**
+
+---
+===END===
+---
+
+*Analysis compiled: 2026-02-29*
+*Data sources: GitHub API, crates.io API, commit history analysis*
+*Method: Automated queries + manual verification*
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/2026-03-02-code-understanding-domain-thesis-design.md===LINES===236
+# Code-Understanding Domain Thesis - Design Document
+
+**Date:** 2026-03-02
+**Status:** Approved
+**Purpose:** Internal strategic guide for Parseltongue v2.0.0 roadmap and architecture decisions
+===MID===
+
+---
+
+### Phase 2: Synthesis
+**Goal:** Produce actionable strategic recommendations
+===END===
+- Blast radius analysis
+
+---
+
+*Design approved: 2026-03-02*
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/2026-03-02-code-understanding-domain-thesis.md===LINES===766
+# Code-Understanding Domain Thesis
+## The Definitive Strategic Guide for Parseltongue v2.0.0
+
+**Version:** 2.0.0 (INSURMOUNTABLE EDITION)
+**Date:** 2026-03-02
+===MID===
+        .collect();
+
+    // Add nodes until budget exhausted
+    for node in nodes {
+        let cost = token_cost(&node);
+===END===
+---
+
+*Thesis Version 2.0.0 completed: 2026-03-02*
+*This insurmountable edition contains comprehensive algorithmic knowledge for competitive differentiation*
+*For implementation details, see companion documents*
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/2026-03-02-exhaustive-research-journal.md===LINES===973
+# EXHAUSTIVE Research Journal: Code-Understanding Domain Thesis
+## 20-Agent Parallel Research Initiative - Parseltongue v2.0.0
+
+**Created:** 2026-03-02
+**Last Updated:** 2026-03-02 (Session Start)
+===MID===
+- [ ] Interdependent Network Cascading
+- [ ] Aspect-Aware Analysis
+
+**Key Findings:**
+*To be populated*
+===END===
+
+---
+
+*Journal initialized: 2026-03-02*
+*This tracking system enables seamless resumption of the 20-agent parallel research effort*
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/2026-03-02-research-implementation-plan.md===LINES===1186
+# Code-Understanding Domain Thesis - Implementation Plan
+
+## Overview
+
+This document provides a detailed, step-by-step implementation plan for conducting the Code-Understanding Domain Thesis research. The plan is designed to be executable by any general-purpose agent without additional context.
+===MID===
+**Reproducibility:**
+- Code available: [YES/NO]
+- Datasets used: [names]
+```
+
+===END===
+## Critical Files for Implementation
+
+- `/Users/amuldotexe/Desktop/notebook-gh/docs/plans/2026-03-02-code-understanding-domain-thesis-design.md` - Design document
+- `/Users/amuldotexe/Desktop/notebook-gh/docs/plans/2026-03-02-research-journal.md` - Research journal
+- `/Users/amuldotexe/Desktop/notebook-gh/docs/plans/2026-03-02-code-understanding-domain-thesis.md` - Final thesis document
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/2026-03-02-research-journal.md===LINES===452
+# Research Journal: Code-Understanding Domain Thesis
+## Parseltongue v2.0.0 Strategic Research
+
+**Created:** 2026-03-02
+**Last Updated:** 2026-03-02
+===MID===
+- **Graph matching** for code similarity
+- **Attention mechanisms** (GAT) for code understanding
+
+#### What Has Struggled
+- **Pure ML approaches** without structural information
+===END===
+```
+
+---
+
+*Journal completed: 2026-03-02*
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/AR000-Else-Block.md===LINES===720
+
+---
+
+## GOVERNING THOUGHT
+
+===MID===
+```text
+-32001  EntityNotFound        key does not exist in store
+-32002  StoreNotReady         no workspace loaded / store not open
+-32003  IngestInProgress      concurrent ingest guard (see OQ-E04)
+-32004  IngestFailed          ingest aborted, partial state rolled back
+===END===
+  OQ-T07  Tauri HTTP query boundary rule
+  OQ-T08  Workspace persistence store
+  OQ-T09  System tray decision
+  OQ-T10  macOS sidecar vs external binary
+```
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/AR001-CONSOLIDATED_FEATURE_PMF_JOURNEY_MATRIX.md===LINES===427
+# Consolidated Feature PMF + Journey Matrix (Shreyas Doshi Lens)
+
+Generated: 2026-02-25
+
+Scope: all canonical features from `docs/CONSOLIDATED_FEATURE_POSSIBILITIES_DEDUP.md`
+===MID===
+### J7 — Visualization Journey
+Turn graph intelligence into explainable visuals and reports.
+
+| Feature | PMF | Basis | Aliases Merged | Filenames |
+|---|---:|---|---|---|
+===END===
+| 46 | Query Token Budget Estimator | 90 | J3 Query Journey | source |
+| 47 | Slim Graph Snapshot Model | 90 | J2 Ingest Journey | inferred |
+| 48 | Snapshot Guarded Endpoint Set | 90 | J2 Ingest Journey | inferred |
+| 49 | Spectral Graph Partition | 90 | J4 Reasoning Journey | source |
+| 50 | Technical Debt Quantification Scoring | 90 | J4 Reasoning Journey | source |
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/AR002-CONSOLIDATED_FEATURE_POSSIBILITIES_DEDUP.md===LINES===2512
+# Consolidated Feature Possibilities (Deduplicated Union)
+
+Generated: 2026-02-25 02:38:21 UTC
+
+Method: union + dedup across docs, with alias merges and user-journey style descriptions.
+===MID===
+- Journey trigger: insights must appear inside existing CI, IDE, and collaboration workflows.
+- User action: connect `JetBrains Plugin` to the target platform or developer surface.
+- System behavior: parseltongue signals are embedded where work already happens.
+- User outcome: reduced context switching and broader adoption across the engineering org.
+- Build value: integration depth increases retention and practical utility of core analysis.
+===END===
+- User outcome: fresher graph state, fewer stalls, and predictable query behavior under load.
+- Build value: raises the quality floor so every downstream intelligence feature stays trustworthy.
+- Aliases merged: Zig Support
+- Filenames: docs/pre175/FINAL_FEATURE_EXTRACTION_MASTER_TABLE.md
+
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/AR003-CR-cachebro-202601.md===LINES===296
+# CR-cachebro-202601: Cachebro Competitive Research Thesis
+
+**Date**: 2026-02-18
+**Repo**: https://github.com/glommer/cachebro (118 stars, MIT, TypeScript)
+**Author**: @glommer (Turso/libSQL team)
+===MID===
+**V200 contrast**: QLT-C02 requires bounded resource behavior. V200's store must have an explicit retention policy — at minimum, keep only the latest version per entity and prune on ingest.
+
+### 2. O(mn) Diff Algorithm
+
+The custom LCS implementation in `differ.ts` uses a naive 2D DP array:
+===END===
+**Risk to V200**: LOW. Cachebro doesn't threaten Parseltongue's value proposition (graph analysis, semantic understanding, taint detection). It might reduce some token savings claims (if agents cache file reads, Parseltongue's "99% token reduction" becomes harder to measure in isolation). But the analysis depth is non-overlapping.
+
+---
+
+*Generated 2026-02-18. Competitive research for Parseltongue V200. Source: CR04/cachebro/ (gitignored).*
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/AR004-CR-codex-architecture.md===LINES===1212
+# CR-codex-architecture: OpenAI Codex Deep Architecture Analysis
+
+**Date**: 2026-02-19
+**Tool**: Parseltongue Graph Analysis v1.7.3
+**Server**: http://localhost:7780
+===MID===
+|        - assert_seatbelt_denied() for testing                         |
++=========================================================================+
+```
+
+### 5.4 Windows Sandbox: ACL-Based
+===END===
+
+---
+
+*Generated by Parseltongue v1.7.3 graph analysis on 2026-02-19*
+*Server: http://localhost:7780 | DB: rocksdb:parseltongue20260219195022/analysis.db*
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/AR005-CR-codex-eli5-ascii-summary.md===LINES===203
+# CR-codex-eli5-ascii-summary.md
+# Phase 5: ELI5 ASCII Summary — OpenAI Codex + Factory Droid + V200
+# Date: 2026-02-19
+
+---
+===MID===
+**ELI5**: Droid is like hiring a project manager (orchestrator) who breaks your request into tasks, then assigns programmers (workers) to each task. Each programmer reports back with a receipt (handoff) showing what they did, what tests passed, and what problems they found. The project manager can't code — only plan and review.
+
+---
+
+## Key Line 4: Same Tools, Different Orchestration
+===END===
+
+---
+
+*Generated 2026-02-19. Phase 5: ELI5 ASCII Summary.*
+*Minto Pyramid: Governing thought → 6 key lines → supporting ASCII → 5 action bullets.*
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/AR006-CR-codex-graph-overview.md===LINES===334
+# CR-codex-graph-overview.md
+# Phase 1: Codex CLI Graph Overview
+# Date: 2026-02-19
+# Parseltongue server: port 7780
+# Database: rocksdb:parseltongue20260219195022/analysis.db
+===MID===
+
+---
+
+## 8. Key Architectural Subsystems (from Entity Search)
+
+===END===
+- Trace MCP tool dispatch: `mcp-server/src/` -> `exec_approval` -> `sandbox`
+
+---
+
+*Generated by Parseltongue v1.7.2 graph analysis | Port 7780 | 2026-02-19*
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/AR007-CR-codex-implications.md===LINES===676
+# CR-codex-v200-implications.md
+# Phase 4: Competitor Findings → V200 Contract Implications
+# Date: 2026-02-19
+# Sources: CR07 (Codex analysis), CR05 (Droid decompilation), ZAI-PRD-contracts-02-FINAL
+
+===MID===
+|                           Expensive, slow         graph (shared callees)     |
+|                                                  → DEFERRED to v210         |
+|                                                                              |
+|  naming_consistency       LLM reads names,       Entity naming pattern      |
+|                           checks conventions      analysis (regex on keys)   |
+===END===
+---
+
+*Generated 2026-02-19. Phase 4: V200 Contract Implications from Competitor Analysis.*
+*Sources: ZAI-PRD-contracts-02-FINAL.md (970 lines), CR07/CR-codex-*.md (2,504 lines), CR05/factory-droid/ (decompiled binary).*
+*Parseltongue server: port 7780, 15,901 entities, 136,130 edges.*
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/AR008-CR-codex-vs-factory-droid.md===LINES===958
+# CR-codex-vs-factory-droid.md
+# Phase 3: OpenAI Codex vs Factory Droid — Side-by-Side Architecture Comparison
+# Date: 2026-02-19
+# Sources: Parseltongue v1.7.2 graph analysis (port 7780) + binary decompilation (CR05)
+
+===MID===
+|  HEALTH PROFILE:                          HEALTH PROFILE:                    |
+|  ┌──────────────────────────────┐         ┌──────────────────────────┐      |
+|  │ God files:                   │         │ Unknown — binary is       │      |
+|  │ codex.rs        CBO=1124  F  │         │ opaque. Decompiled JS     │      |
+|  │ chatwidget.rs   CBO=1075  F  │         │ is minified, no AST      │      |
+===END===
+
+*Generated 2026-02-19. Phase 3: Codex vs Factory Droid side-by-side comparison.*
+*Sources: Parseltongue v1.7.2 graph analysis (port 7780, 15,901 entities) + binary decompilation (CR05, 96MB Mach-O).*
+*Graph data: CR07/CR-codex-graph-overview.md + CR07/CR-codex-architecture.md.*
+*Droid data: CR05/factory-droid/ + docs/CR-droid-factory-20260219/.*
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/AR009-CR-factory-droid-202601.md===LINES===489
+# CR-factory-droid-202601: Factory Droid Binary Decompilation Thesis
+
+**Date**: 2026-02-18
+**Binary**: `/Users/amuldotexe/.local/bin/droid` (Mach-O arm64, 95.9 MB)
+**Version**: 1.0.71 (CLI), Bun 1.3.8 (embedded runtime)
+===MID===
+**GitHub Action**: `Factory-AI/droid-action@v2` — triggers on `@droid` mentions in PR comments, issues, and reviews. Commits signed as `factory-droid[bot]`.
+
+---
+
+## Browser Automation
+===END===
+**The fundamental difference**: Droid is an AGENT (it writes code). Parseltongue is a TOOL (it analyzes code). They're complementary — the best outcome is Droid calling Parseltongue's MCP server for graph intelligence.
+
+---
+
+*Generated 2026-02-18. Binary decompilation thesis for Parseltongue V200. Source: CR05/factory-droid/ (gitignored). Method: strings extraction + symbol analysis on Mach-O arm64 binary.*
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/AR010-CR-v173-01.md===LINES===581
+# CR-v173-01: Low Coverage Repos - Parse Failure Analysis
+
+## Summary
+
+After thorough investigation of all 5 repos with genuinely low or zero Parseltongue ingestion coverage, the root cause is **NOT** tree-sitter parse failure. Tree-sitter successfully parses all of these files -- they are valid TypeScript, JavaScript, and Python. The actual issue is that **Parseltongue's entity extraction queries (.scm files) have narrow extraction patterns** that miss common code patterns used in MCP server codebases.
+===MID===
+
+### What This Repo Does (manually captured)
+
+mcp-server-semgrep is an MCP server wrapping Semgrep (a static analysis tool) for AI-accessible security scanning. It exposes 7 tools:
+- `scan_directory`: Run Semgrep scan on a directory with configurable rules
+===END===
+| Shebang handling | 3 repos | ~6 files | 0% -> 40-80% for affected repos |
+| Const object exports | 4 repos | ~16 files | +20-40% coverage per repo |
+| Decorated Python | 1 repo | 3 files | 25% -> 60-80% for ast-grep-mcp |
+| CRLF normalization | 1 repo | 2 files | Safety net for CodeSeeker-MCP |
+| Variable declarations | 4 repos | ~10 files | +10-15% additional coverage |
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/AR011-CR-v173-02.md===LINES===562
+# CR-v173-02: Competitor Code Patterns -- Deep Parseltongue Analysis
+
+**Generated**: 2026-02-14
+**Method**: Parseltongue HTTP Server v1.6.5 (22 endpoints) analyzing 9 competitor repos ingested into a single CozoDB instance
+**Database**: `rocksdb:parseltongue20260213235924/analysis.db`
+===MID===
+
+2. **Clusters 2 and 3** are the "unresolved reference" clusters -- Python builtins/stdlib (8,052 entities) and TypeScript builtins/node modules (6,480 entities). These are the "gravity wells" that all repos depend on.
+
+3. **Cluster 4** is the gemini-cli/ACP cluster with 4,975 entities. Its 1,633 external edges reflect the TypeScript ecosystem dependencies.
+
+===END===
+- **Parsed successfully**: 1,012 (41.3%)
+- **Parse errors**: 1,561 (see `parseltongue20260213235924/ingestion-errors.txt`)
+- Many unparsed files are test files, configuration files, or build artifacts
+- The `grep_app_mcp` and `mcp-server-semgrep` TypeScript repos had parse failures documented in CR-v173-01
+- Coverage could be improved by fixing the parse error patterns identified in the ingestion error log
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/AR012-CR-v173-03.md===LINES===1019
+# CR-v173-03: Competitor Feature Deep-Dive -- Code-Level Analysis
+
+**Generated**: 2026-02-14
+**Method**: Pass 1 of 3 -- cclsp LSP code reading + direct source analysis
+**Pass 2**: Parseltongue graph validation (COMPLETE -- 7779 port, 19,431 entities, 144,137 edges)
+===MID===
+  -> mcp-client.ts:39-42 -> GoogleCredentialProvider, ServiceAccountImpersonationProvider
+  -> mcp-client.ts:48 -> MCPOAuthProvider, MCPOAuthTokenStorage
+  -> mcp-client.ts:41 -> DiscoveredMCPTool for wrapping discovered tools
+  -> mcp-client.ts:85 -> MCPServerStatus enum (DISCONNECTED, DISCONNECTING, CONNECTING, CONNECTED)
+  -> mcp-client.ts:99 -> MCPDiscoveryState enum (NOT_STARTED, IN_PROGRESS, COMPLETED, FAILED)
+===END===
+**Features intentionally excluded**: 1.3, 3.1, 3.2, 4.1, 4.3, 4.4, 5.2 (7 features = 0 LoC saved)
+
+---
+
+*Document generated by Agent 03 (Pass 3) on 2026-02-14. Analysis based on Parseltongue v1.6.5 (API v1.6.5, 24 endpoints, 44,890 entities, 385,560 edges) running on port 7777. See also: [CR-v173-04-oh-my-pi.md](CR-v173-04-oh-my-pi.md) for oh-my-pi competitive deep-dive.*
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/AR013-CR-v173-04-oh-my-pi.md===LINES===248
+# CR-v173-04: oh-my-pi Competitive Deep-Dive
+
+**Generated**: 2026-02-15
+**Method**: cclsp + direct source reading (831 TypeScript files, 3 Rust crates)
+**Repo**: https://github.com/can1357/oh-my-pi (fork of pi-mono by @mariozechner)
+===MID===
+coding-agent/src/task/index.ts:134 -> TaskTool class
+  -> task/discovery.ts -> discoverAgents() from bundled + ~/.omp/agent/agents/*.md + .omp/agents/*.md
+  -> task/executor.ts -> runSubprocess() with JSON event progress
+  -> task/worktree.ts -> ensureWorktree(), captureBaseline(), captureDeltaPatch(), applyBaseline()
+  -> task/parallel.ts -> mapWithConcurrencyLimit() for controlled parallelism
+===END===
+The 831 .ts files and 3 Rust crates represent a massive investment (~50K+ LoC estimated) in building an orchestrator. Parseltongue's strategy of being the best **analysis backend** that orchestrators call remains correct. Building a competing orchestrator would be 6+ months of work with no defensible moat.
+
+---
+
+*Generated 2026-02-15. Analysis based on oh-my-pi v12.4.0 source code reading via cclsp + direct file analysis.*
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/AR014-CR07-codex-research-progress-tracker.md===LINES===336
+# CR07 Codex Research Progress Tracker
+
+**Created**: 2026-02-19
+**Last Updated**: 2026-02-19 (Phase 3 complete + Leiden background task complete)
+**Subject**: Competitor Research 07 - OpenAI Codex CLI (codex-rs)
+===MID===
+- Community 26 (520 members = collab tools test cluster) **confirms multi-agent is a real subsystem**, not just documentation
+- The top 3 communities contain ~30% of all 15,901 entities, confirming hub-and-spoke concentration
+- Distribution validates God Object finding: codex.rs dominates through community membership
+
+---
+===END===
+
+---
+
+*Last updated: 2026-02-19 (Phase 3 complete + Leiden background task results added)*
+*Next update: After Phase 4 (V200 Implications) is complete*
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/AR015-ES-Decision-log-01.md===LINES===7
+# Moved
+
+Canonical decision log moved to:
+
+- `docs/ACTIVE-PRD/ES-V200-Decision-log-01.md`
+===MID===
+# Moved
+
+Canonical decision log moved to:
+
+- `docs/ACTIVE-PRD/ES-V200-Decision-log-01.md`
+===END===
+Canonical decision log moved to:
+
+- `docs/ACTIVE-PRD/ES-V200-Decision-log-01.md`
+
+This file is a pointer to preserve discoverability from existing v200 references.
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/AR016-ES-Dependency-Graph-Contract-Hardening.md===LINES===102
+# ES-V200-Dependency-Graph-Contract-Hardening
+Status: Living method doc
+Purpose: Define the reasoning method we will use on every V200 pass to reduce architecture risk through interface-level evidence.
+
+## Why this method exists
+===MID===
+3. Ingest metric contract (`#29`):
+   - token count computed and persisted at ingest with deterministic replay.
+4. Extraction contract (`#35`):
+   - data-flow edges (`assign`, `param`, `return`) extracted with fixture-backed correctness.
+
+===END===
+- add better probe taxonomy
+- add better dependency-walk rules
+- add exit criteria refinements
+
+Pass-level findings remain in the evolving crate ledger doc.
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/AR017-ES-Hashing-Risks-v01.md===LINES===1188
+# ES-V200-Hashing-Risks-v01
+Status: Draft v01
+Purpose: Make V200 clean-room crate risks measurable by documenting public interfaces, dependency edges, and a repeatable rubber-debug loop that reduces Risk/Unclear scores with evidence.
+Method reference: `docs/ES-V200-Dependency-Graph-Contract-Hardening.md`
+
+===MID===
+RED:
+- Assert TE-P4-A..F on current extractor; expect failures for blind-spot and range-bounded contracts.
+
+GREEN:
+- Extend query patterns/capture normalization until TE-P4-A..E pass with deterministic outputs.
+===END===
+7. `rust-llm-interface-gateway` (Pass 07): execute `GW-P7-F` first (attach E58), then `GW-P7-A..L`; include crate-wise 80-89 queue capture for `#6` (endpoint guards) and `#24` (watcher/runtime noise hygiene), plus promoted requirement captures `#7/#8/#10/#25/#27/#28` (E60..E65).
+8. `rust-llm-test-harness` (Pass 08): execute `TH-P8-F` first (attach E59), then `TH-P8-A..E`; include crate-wise 80-89 queue capture for `#19` (test exclusion coverage) and `#20` (zero-entity tagging).
+9. `rust-llm-store-runtime` hardening extension: capture crate-wise 80-89 queue item `#3` (export/import deterministic-lossless roundtrip) and attach parity digest artifacts.
+10. Re-score all 8 crates only after gate-linked `F` probes pass and artifacts are attached.
+11. Produce v01->v02 transition digest with stable-contract promotions and unresolved-risk carryover list.
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/AR018-ES-User-Journey-01.md===LINES===515
+# ES-V200-User-Journey-01
+Status: Draft v01
+Purpose: Define end-to-end user journeys for V200 with executable acceptance criteria, organized by consumption mode and user intent.
+
+## Document Philosophy
+===MID===
+**User Clicks** "rust:fn:verify_token" → Tauri loads detail view:
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│  rust:fn:verify_token                         [↩️ Back] [💾 Export] │
+===END===
+Total acceptance criteria defined: **21**
+- Tauri App journeys: 21 criteria across 8 journey steps
+- Pending (CLI/MCP/HTTP): ~40 additional criteria estimated
+
+All criteria follow WHEN/THEN/SHALL format per Design101 executable specifications principle.
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/AR019-ES-User-Journey-Addendum-Tauri-CLI-Philosophy.md===LINES===519
+# ES-V200-User-Journey-Addendum: Tauri App Philosophy
+
+## The Critical Reframe: Tauri is a Visual CLI Launcher
+
+After reviewing the three-layer architecture from `v173-pt04-bidirectional-workflow.md`, the Tauri app's purpose must be radically reframed.
+===MID===
+# Auto-spawned server on port 7779
+# Writing to: rocksdb:parseltongue20260217151630/analysis.db
+# Port file: ~/.parseltongue/billing-service.port
+```
+
+===END===
+**Primary Users**: Day 1-7 learners, quick-lookup needs
+**Power Users**: Graduate to pure CLI by Day 7
+**Not For**: Multi-step analysis, LLM composition, CI automation (use terminal)
+
+**Core Value**: Teaches users the CLI by showing them exactly which commands to run.
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/AR020-ES-attempt-01.md===LINES===462
+# ES-V200-attempt-01: Executable Contract Ledger (Design101 Style)
+Status: Requirements Draft v02
+Date: 2026-02-17
+Purpose: Convert V200 architecture intent into testable contracts with explicit preconditions, postconditions, error conditions, probes, and TDD sequencing.
+
+===MID===
+- `CF-P1-A..F`
+
+### CRT-C02: Tree Extractor
+Contract:
+WHEN parser/query extraction executes
+===END===
+- STUB:
+- RED:
+- GREEN:
+- REFACTOR:
+```
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/AR021-FINAL_FEATURE_EXTRACTION_MASTER_TABLE.md===LINES===754
+# Parseltongue v2.0 Feature Extraction Master Table
+
+> **Complete Feature Inventory**: 218 features extracted from 221 markdown files
+> **Date**: 2026-02-08
+> **Source**: Systematic extraction from PRDs, research docs, architecture specs
+===MID===
+| # | Feature | PMF | LOC | Version | Notes |
+|---|---------|-----|-----|---------|-------|
+| 148 | **LLM-Generated Code Summaries** | 48 | 1000 | v2.0.0 | Auto-doc generation (experimental) |
+| 149 | **Semantic Code Search (Vector DB)** | 46 | 1500 | v2.0.0 | Embedding-based search (Pinecone/Weaviate) |
+| 150 | **Predictive Refactoring Suggestions** | 45 | 1200 | v2.0.0 | ML suggests improvements proactively |
+===END===
+
+---
+
+*This master table represents a systematic extraction from 221 markdown files totaling ~50,000 lines of specifications, with PMF scores based on Shreyas Doshi framework, effort estimates from detailed implementation plans, and confidence levels derived from research backing and codebase analysis.*
+
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/AR022-IMPLEMENTATION-v173-slim-snapshot-plan.md===LINES===285
+# IMPLEMENTATION: v1.7.3 Slim Snapshot Plan
+
+**Date**: 2026-02-13
+**Context**: Implementation plan for pt02 (MessagePack) and pt03 (JSON) slim graph snapshot exporters, plus pt08 snapshot loading. Based on codebase exploration and architectural research documented in:
+- `docs/RESEARCH-v173-serialization-formats.md`
+===MID===
+Add after `IgnoredFileRow` (line 1796):
+- `SlimEntityGraphSnapshot` -- 9 fields (isgl1_key, file_path, line_start, line_end, entity_type, entity_class, language, root_subfolder_l1, root_subfolder_l2)
+- `SlimEdgeGraphSnapshot` -- 3 fields (from_key, to_key, edge_type)
+- `PtGraphSnapshotContainer` -- 7 fields (version, generated_at, source_directory, entity_count, edge_count, entities, edges)
+
+===END===
+|------|--------|-----------|
+| Peak RAM during pt02 ingestion (~3.2GB at 400K entities) | Can't run pt02 on 8GB machine for Linux kernel | pt02 is one-time CLI. Run on beefy machine, copy .ptgraph. |
+| interface_signature JSON parsing for line_start/line_end | Export fails if JSON is malformed | Default to line_start=0, line_end=0 on parse failure |
+| CozoDB batch insert size limits | Large codebases may need chunking | Chunk into 5000-entity batches (same pattern as existing insert_entities_batch) |
+| Current_Code="" vs NULL semantics | Detail view handler returns empty code string | Acceptable -- LLM gets file_path to read source directly |
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/AR023-MASTER_FEATURE_EXTRACTION_TABLE.md===LINES===271
+# Parseltongue Master Feature Extraction Table
+
+**Generated**: 2026-02-08
+**Total Files Processed**: 7 of 221 (3% complete - in progress)
+**Total Features Extracted**: 85+ features (preliminary count)
+===MID===
+---
+
+## BUG FIXES
+
+| # | Bug Name | Description | Source File | PMF | Status |
+===END===
+---
+
+**Document Status**: IN PROGRESS (3% complete)
+**Last Updated**: 2026-02-08 11:45 PST
+**Next Update**: After processing remaining high-value PRD files
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/AR024-PRD-Level01.md===LINES===19
+# PRD: Parseltongue v2.0.0
+
+**Date**: 2026-02-16
+
+---
+===MID===
+## Requirement #1
+
+**NO BACKWARD COMPATIBILITY NEEDED.**
+
+v2.0.0 is a clean break. New ingestion pipeline, new storage, new server. It does not need to produce the same JSON shapes, use the same endpoint names, accept the same CLI flags, or interoperate with v1.x in any way.
+===END===
+v1.x (pt01, pt08, parseltongue-core, CozoDB) stays in the repo, compiles, and works. v2.0.0 is additive. New crates, new modules, new binaries. The old code is not touched, not deprecated, not removed. Both can coexist in the same workspace.
+
+
+## Requirement #2
+
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/AR025-PRD_v173.md===LINES===1336
+# PRD: Parseltongue v1.7.3 — Dual-Mode Graph Server + MCP + Desktop App
+
+**Version**: 1.7.3
+**Date**: 2026-02-14
+**LNO Rating**: LEVERAGE (unblocks Windows + `/db/` and `/mem/` API routing + MCP for native LLM tool use + Tauri desktop companion)
+===MID===
+
+```
+parseltongue-v1.7.3-aarch64-apple-darwin.tar.gz     (CLI — 12 MB)
+Parseltongue.Central-v1.7.3-aarch64.dmg             (Desktop app — 3 MB)
+```
+===END===
+| Organization | `modelcontextprotocol` (official — same org as the spec) |
+| Transport | stdio (stdin/stdout JSON-RPC 2.0) |
+| Macros | `#[tool]`, `#[tool_router]`, `#[tool_handler]` — eliminates boilerplate |
+| Tokio-native | Yes — fits existing async architecture |
+| Why not others | `rust-mcp-sdk` (community), `mcp-protocol-sdk` (less mature), `pmcp` (less adoption) |
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/AR026-Prep-Competitive-Deep-Dive.md===LINES===694
+# Prep-V200: Competitive Deep Dive
+
+**Date**: 2026-02-16
+**Context**: Exhaustive competitive analysis for rust-llm v2.0.0 positioning as "Code Intelligence for LLMs." Builds on existing research from `competitor_research/FEATURE-MATRIX-COMPARISON.md`, `docs/Prep-Doc-V200.md`, and `docs/Prep-V200-Max-Adoption-Architecture-Strategy.md`.
+
+===MID===
+CURRENT STATE OF AI CODE UNDERSTANDING (2026):
+
+  Cursor:     Tree-sitter + RAG embeddings = lexical/semantic similarity
+  Aider:      ctags repo-map = flat symbol list
+  Continue:   Manual/configurable context = user-defined
+===END===
+4. **`docs/PRD-research-20260131v1/PARSELTONGUE_V2_FEATURES_RESEARCH_BACKED.md`** -- 28 research-backed features from 40+ papers. Algorithm choices (Leiden, GVE-LPA, etc.) referenced in graph algorithm comparisons.
+
+5. **`docs/THESIS-taint-analysis-for-parseltongue.md`** -- Taint analysis research informing the security analysis comparison.
+
+6. **`docs/PRD-v200.md`** -- The clean-break requirement that frames v2.0.0 as a new product, not an update to v1.x.
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/AR027-Prep-Compiled-Research-Best-Ideas.md===LINES===544
+# Prep-V200-Compiled-Research-Best-Ideas
+
+## Context
+
+This document compiles the best actionable ideas from 8 research documents into a single reference for v2.0.0 planning. Parseltongue v2.0.0 is a clean-room rewrite with 8 `rust-llm-*` crates. Every idea traces back to its source document.
+===MID===
+1. **Semantic relevance prioritization** (with pt04): Instead of selecting entities by graph distance, prioritize by TRAIT_DEFINITION > TRAIT_SIBLING > ERROR_TYPE > TRAIT_DISPATCH_CALLER. Direct utility calls are nearby but architecturally irrelevant. [PT04-WORKFLOW]
+
+2. **Two-tier response model** (from AiDex, Greptile): Overview first (entity keys + locations), detail on demand (/code-entity-detail-view/{key}). Reduces per-query context consumption. [SHREYAS]
+
+3. **Session persistence**: Store analysis findings in CozoDB alongside the graph. Next session retrieves prior context. Turns stateless queries into stateful analysis sessions. [SHREYAS]
+===END===
+H6, H7, H8 have zero dependencies -- ship them first as parser improvements. H1 (slim model) is the foundation for everything else. H2 (TypedCallEdges) unlocks the semantic supergraph. H3 (MCP) unlocks ecosystem adoption. H4+H5 make every response optimized for LLM consumption.
+
+---
+
+*Compiled 2026-02-16 from 8 research documents totaling ~80,000 words. Every claim traces to a source document.*
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/AR028-Prep-Cross-Language-Detection-Heuristics.md===LINES===1821
+# Prep Doc: Cross-Language Boundary Detection Heuristics for v2.0.0
+
+**Date**: 2026-02-16
+**Author**: Research document for rust-llm-02-cross-lang-edges crate
+**Context**: Parseltongue v2.0.0 will detect cross-language boundaries in multi-language codebases. This document catalogs the five detection patterns, their tree-sitter extraction signals, accuracy characteristics, and real-world test targets. This capability maps to the rust-llm-02-cross-lang-edges crate in the v2.0.0 architecture.
+===MID===
+```
+
+**Client (Python with grpcio)**:
+```python
+channel = grpc.insecure_channel('localhost:50051')
+===END===
+8. **Confidence scoring model** with base scores, bonuses, and penalties provides a principled way to filter false positives while preserving recall.
+
+9. **Phased rollout** (compile-time first, runtime second) reduces risk and delivers high-confidence results early.
+
+10. **The `rust-llm-02-cross-lang-edges` crate** should expose a `CrossLangPatternDetector` trait with `extract_signals()` and `match_signals()` methods, feeding into Ascent Datalog rules in `rust-llm-04`.
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/AR029-Prep-Datalog-Ascent-Rule-Patterns.md===LINES===1326
+# Prep: Datalog Ascent Rule Patterns for Parseltongue v2.0.0
+
+**Date**: 2026-02-16
+**Context**: Deep research into the Ascent crate (Rust Datalog engine) for `rust-llm-04-reasoning-engine`. Covers Ascent syntax, base relations for code analysis, 18 derived rule patterns, CodeQL-inspired patterns, alternatives comparison, and limitations with workarounds.
+
+===MID===
+
+### Rule 9: API Surface Analysis
+
+**Purpose**: Find all public entities and their transitive internal dependencies.
+
+===END===
+- CMU Dataflow Analysis: https://www.cs.cmu.edu/~janh/courses/411/17/lec/17-dataflow.pdf
+
+### Rust Safety Research
+- PLDI 20 Rust Safety Study: https://cseweb.ucsd.edu/~yiying/RustStudy-PLDI20.pdf
+- Error Propagation Bugs: https://pages.cs.wisc.edu/~liblit/dissertations/crubio.pdf
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/AR030-Prep-Key-Format-Design.md===LINES===761
+# Prep: v2.0.0 Key Format Design
+
+**Date**: 2026-02-16
+**Status**: Research / Pre-Implementation
+**Scope**: Entity key format for rust-llm-core (v2.0.0 clean break)
+===MID===
+
+| # | Requirement | Rationale |
+|---|------------|-----------|
+| N1 | **Must NOT use line numbers as identity** | Line numbers shift on every edit. Keys must survive refactors. |
+| N2 | **Must NOT use opaque integer IDs** | Integers require a lookup table. LLMs cannot reason about `entity_42`. |
+===END===
+- Internal: `crates/pt01-folder-to-cozodb-streamer/src/isgl1_generator.rs` (Key generation)
+- Internal: `crates/parseltongue-core/src/entities.rs` (Entity types and CodeEntity struct)
+- Internal: `docs/RESEARCH-isgl1v3-exhaustive-graph-identity.md` (ISGL1 v3 research)
+- Internal: `docs/Prep-Doc-V200.md` (v2.0.0 prep document)
+- Internal: `docs/PRD-v200.md` (v2.0.0 product requirements)
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/AR031-Prep-LLM-Context-Optimization-Research.md===LINES===1070
+# Prep-V200: LLM Context Optimization Research
+
+**Date**: 2026-02-16
+**Purpose**: Deep research for `rust-llm-context` -- the killer crate of Parseltongue v2.0.0. This document examines how existing tools select code context for LLMs, what the academic literature says, how architectural graph signals can be used for ranking, token budgeting algorithms, context quality measurement, and API design.
+
+===MID===
+```
+1. Identify Leiden communities containing relevant entities
+2. Allocate token budget proportionally:
+   - Community containing focus entity: 50% of budget
+   - Adjacent communities (1-hop): 30% of budget
+===END===
+
+### Curated Paper Lists
+- [allanj/repo-level-codegen-papers](https://github.com/allanj/repo-level-codegen-papers)
+- [YerbaPage/Awesome-Repo-Level-Code-Generation](https://github.com/YerbaPage/Awesome-Repo-Level-Code-Generation)
+- [codefuse-ai/Awesome-Code-LLM](https://github.com/codefuse-ai/Awesome-Code-LLM)
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/AR032-Prep-MCP-Protocol-Integration.md===LINES===1553
+# Prep-V200: MCP Protocol Integration Research
+
+**Date**: 2026-02-16
+**Context**: Deep research into the Model Context Protocol (MCP) for Parseltongue v2.0.0. The v2.0.0 binary (`rust-llm`) will be MCP-FIRST: the primary consumer is an LLM (Claude, GPT, Gemini, etc.), not a human. This document covers the protocol specification, Rust SDK (`rmcp`), client integration patterns, capability mapping, reference implementations, and the MCP-vs-HTTP coexistence strategy.
+
+===MID===
+
+Or, if the user already has an analyzed codebase:
+
+```json
+{
+===END===
+The primary user is an LLM.
+MCP is how LLMs consume tools.
+Therefore, MCP is the primary interface.
+HTTP exists for humans and dashboards.
+```
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/AR033-Prep-Max-Adoption-Architecture-Strategy.md===LINES===1195
+# Prep-V200: Max Adoption Architecture Strategy
+
+**Date**: 2026-02-16
+**Context**: Rubber duck debugging of v2.0.0 architecture options. Two lenses applied: (1) pragmatic/risk analysis, (2) max adoption + max differentiation (Shreyas Doshi lens, time is not a constraint).
+
+===MID===
+    │  Write your own consumer in Python, Go, whatever.
+
+Layer 4: THE BINARY (wraps everything)
+─────────────────────────────────────────
+  rust-llm
+===END===
+SonarQube           partial       ✗           ✗              ✗           ✓
+tree-sitter         ✗             ✗           ✗              ✓           ✗
+rust-analyzer       ✗             ✗           ✗              ✗           ✗
+rust-llm (v2.0.0)   ✓             ✓           ✓              ✓           ✓
+```
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/AR034-Prep-Rust-Analyzer-API-Surface.md===LINES===968
+# Prep Doc: rust-analyzer API Surface for Parseltongue v2.0.0
+
+**Date**: 2026-02-16
+**Crate**: `rust-llm-03-rust-analyzer` (planned)
+**Purpose**: Deep semantic analysis of Rust code via rust-analyzer's `ra_hir` / `ra_ide` internal APIs
+===MID===
+### 5.3 Conditional Compilation in the Pipeline
+
+```rust
+// In rust-llm (binary) or rust-llm-04 (reasoning engine)
+
+===END===
+- [ra_ap_hir on crates.io](https://crates.io/crates/ra_ap_hir) (latest: 0.0.290)
+- [ra_ap_ide on crates.io](https://crates.io/crates/ra_ap_ide)
+- [ra_ap_load-cargo on crates.io](https://crates.io/crates/ra_ap_load-cargo)
+- [ra_ap_project_model on crates.io](https://crates.io/crates/ra_ap_project_model)
+- [salsa on GitHub](https://github.com/salsa-rs/salsa)
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/AR035-Prep-Tree-Sitter-Query-Patterns.md===LINES===1723
+# Prep Doc: Tree-Sitter Query Patterns for Parseltongue v2.0.0
+
+**Date**: 2026-02-16
+**Context**: Research into tree-sitter's declarative query language for enriched extraction in rust-llm-01-fact-extractor. This document catalogs every query pattern needed to replace v1.x's skeleton extraction with v2.0.0's full-fidelity fact extraction across all 12 languages.
+
+===MID===
+; Annotation with arguments: @RequestMapping(value="/api")
+(annotation
+  name: (identifier) @annotation_name
+  arguments: (annotation_argument_list) @annotation_args) @definition.annotation_with_args
+```
+===END===
+- [tree-sitter-highlight Crate](https://crates.io/crates/tree-sitter-highlight)
+- [Query struct in tree-sitter Rust docs](https://docs.rs/tree-sitter/latest/tree_sitter/struct.Query.html)
+- [DeepWiki: tree-sitter-java Query System](https://deepwiki.com/tree-sitter/tree-sitter-java/4.2-query-system)
+- [RFC 001: Tree-sitter Based File-Incremental Indexing](https://github.com/orgs/sheeptechnologies/discussions/4)
+- [Code Retrieval in Coding Agents (Preprint)](https://www.preprints.org/manuscript/202510.0924)
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/AR036-Prep-isgl1-ambiguity-risk-table.md===LINES===770
+# v200: ISGL1 Key Format Ambiguity & Risk Assessment (Expanded)
+
+**Generated**: 2026-02-16
+**Context**: Challenging the "MEDIUM risk" rating on key format from `v200-architecture-opinion-analysis.md`
+**Sources**: `Prep-V200-Key-Format-Design.md`, `RESEARCH-isgl1v3-exhaustive-graph-identity.md`, `isgl1_v2.rs`, `entities.rs`, `PRD_v173.md`
+===MID===
+Level 3: ContentHash  — "h_ab12cd34" (hash of function body, last resort)
+```
+
+Sub-questions:
+- **When can tree-sitter extract param types?**
+===END===
+```
+
+---
+
+*Generated 2026-02-16. Expanded risk reassessment for Parseltongue v2.0.0 ISGL1 key format. 18 questions across 9 areas.*
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/AR037-Priortization-v173.md===LINES===812
+# Final Priority to add
+
+- SARIF Export
+- Taint Analysis
+ 
+===MID===
+     - Every raw_query("?[x] := *CodeGraph{...}") becomes
+       "SELECT x FROM entities WHERE ..."
+
+  2. Graph algorithms stay in pure Rust (already are).
+     - Currently fed by CozoDB query → Vec<(String, String, String)>
+===END===
+Multi-agent Collaboration
+Deploy specialized agents for testing, documentation, and refactoring
+
+Built with TypeScript, LangGraph, and Next.js | Deployed on DigitalOcean & Vercel
+
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/AR039-RESEARCH-v173-rustanalyzer-semantic-supergraph.md===LINES===645
+# RESEARCH: v173-rustanalyzer-semantic-supergraph
+
+**Date**: 2026-02-15
+**Status**: Research / Pre-Implementation
+**Scope**: pt04 crate — rust-analyzer-based deep semantic ingestion for Rust codebases
+===MID===
+    pub fn declarations(self, db: &dyn HirDatabase) -> Vec<ModuleDef>
+    pub fn scope(&self, db: &dyn HirDatabase, visible_from: Option<Module>) -> ModuleScope
+    pub fn find_path(self, db: &dyn HirDatabase, item: impl Into<ItemInNs>, config: FindPathConfig) -> Option<ModPath>
+    pub fn path_to_root(self, db: &dyn HirDatabase) -> Vec<Module>
+    pub fn children(self, db: &dyn HirDatabase) -> impl Iterator<Item = Module>
+===END===
+---
+
+**Last Updated**: 2026-02-15
+**Key Insight**: tree-sitter gives you the skeleton. rust-analyzer gives you the nervous system.
+**Next Step**: Prototype loading a small Cargo workspace and extracting typed call edges.
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/AR040-Research-Extraction-Tools-Per-Language.md===LINES===1597
+# Research: Dependency Extraction Tools Per Language
+## Parseltongue V2.0 — Maximum-Depth Graph Extraction Stack
+
+**Date**: 2026-02-22
+**Context**: This document surveys the best available tools (as of early 2026) for extracting dependency graphs to maximum depth for each of Parseltongue's 7 target languages. The goal is to identify the "rust-analyzer equivalent" per language — meaning tools that go beyond syntactic tree-sitter parsing into semantic analysis: type resolution, call graphs, module graph, and framework-specific patterns.
+===MID===
+
+```bash
+# Install
+npm install -g madge
+
+===END===
+- [cargo-call-stack](https://github.com/japaric/cargo-call-stack)
+- [cargo-geiger](https://github.com/geiger-rs/cargo-geiger)
+- [tower-lsp crate](https://github.com/ebkalderon/tower-lsp)
+- [lsp-types crate](https://docs.rs/lsp-types)
+- [tree-sitter-stack-graphs (name resolution at scale)](https://crates.io/crates/tree-sitter-stack-graphs)
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/AR041-THESIS-v173-slim-graph-address-model.md===LINES===470
+# THESIS: v1.7.3 — Slim Graph+Address Model for pt02/pt03
+
+**Date**: 2026-02-12
+**Method**: Every endpoint queried on live Parseltongue server (3,847 entities, 10,459 edges) to capture exact response shapes. Then analyzed against the slim model at 1.6M edge scale.
+
+===MID===
+**pt01 response**: `{ entities: [{ entity, cbo, lcom, rfc, wmc, health_grade }] }` (3,432 entities)
+**pt02 response**: Identical. CBO/LCOM/RFC/WMC are computed from edge adjacency — pure graph metrics.
+
+**RAM**: ~500 MB (iterates all entities, computing per-entity graph metrics). **Total: ~980 MB. Fits 8GB.**
+
+===END===
+**Parseltongue's unique value is the dependency GRAPH, not the code STORAGE.**
+
+Code storage is what `cat`, `bat`, `less`, IDEs, and LLM file-reading tools already do perfectly. Parseltongue's value is answering: "what depends on what?" "what's the blast radius?" "where are the cycles?" "what are the community structures?"
+
+All of those are pure graph operations. The code body was always ballast.
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/AR042-ZAI-PRD-contracts-01.md===LINES===763
+# PRD Contracts: Parseltongue v2.0.0
+
+**Generated**: 2026-02-17
+**Sources**: v200-docs directory (18 documents)
+**Purpose**: Comprehensive contracts document defining v2.0.0 specifications, decisions, user journeys, technical specs, risks, and implementation priorities
+===MID===
+1. `rust-llm-core-foundation`
+2. `rust-llm-store-runtime`
+3. `rust-llm-rust-semantics`
+4. `rust-llm-tree-extractor`
+5. `rust-llm-cross-boundaries`
+===END===
+---
+
+*Generated: 2026-02-17*
+*Total Source Documents: 18*
+*Total Lines Analyzed: ~15,000*
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/AR043-ZAI-PRD-contracts-02.md===LINES===969
+# PRD Contracts: Parseltongue V200 FINAL
+
+**Generated**: 2026-02-17
+**Version**: 02-FINAL
+**Status**: DEFINITIVE SYNTHESIS
+===MID===
+
+### 7.4 Tree-Extractor Probes (TE-P4)
+
+| Probe | Intent | Pass Criterion |
+|-------|--------|----------------|
+===END===
+---
+
+*Generated: 2026-02-17*
+*Status: FINAL DEFINITIVE SYNTHESIS*
+*Total Source Documents: 18 + 3 primary sources*
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/AR044-ZAI-REUSABLE-Patterns-01.md===LINES===839
+# ZAI-REUSABLE-Patterns-01.md: V200 Pattern Extraction from v173
+
+**Generated**: 2026-02-18
+**Source**: parseltongue v1.7.2 codebase analysis via API (1021 entities, 9836 edges)
+**Purpose**: Identify reusable patterns for V200 clean-room rewrite
+===MID===
+|-----------|----------|---------|
+| Tarjan SCC | `/strongly-connected-components-analysis` | Cycle detection |
+| Leiden | `/leiden-community-detection-clusters` | Module clustering |
+| PageRank | `/centrality-measures-entity-ranking?method=pagerank` | Entity importance |
+| Blast Radius | `/blast-radius-impact-analysis` | Impact analysis |
+===END===
+
+*Generated: 2026-02-18*
+*Analysis Target: parseltongue v1.7.2*
+*Total Entities: 1021*
+*Total Edges: 9836*
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/AR045-ZAI-doc-progress-tracker.md===LINES===98
+# V200 Documentation Analysis Progress Tracker
+
+**Created**: 2026-02-17
+**Purpose**: Track document reading progress, key findings, and cross-references for v200-docs analysis
+
+===MID===
+- **Prep-V200-Rust-Analyzer-API-Surface.md** → **Prep-V200-Compiled-Research-Best-Ideas.md** (semantic depth)
+
+### User Experience Chain
+- **ES-V200-User-Journey-01.md** → **ES-V200-User-Journey-Addendum-Tauri-CLI-Philosophy.md** (reframes Tauri role)
+- **Prep-V200-LLM-Context-Optimization-Research.md** → **ES-V200-User-Journey-01.md** (context selection)
+===END===
+3. Validate cross-references between contracts
+
+---
+
+*Generated: 2026-02-17*
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/AR046-drawio-diagram-lessons-learned.md===LINES===251
+# Draw.io Diagram Lessons Learned
+
+*From building the parseltongue v1.6.1 crate dependency graph via Claude Code + @drawio/mcp*
+
+---
+===MID===
+       opacity=20;strokeWidth=2;"
+```
+
+`opacity=20` = 20% opaque fill → children are readable on top.
+
+===END===
+
+```bash
+# Supported by: GitHub, GitLab, VS Code (Draw.io Integration ext),
+#               JetBrains IDEs (Draw.io Integration plugin)
+```
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/AR048-v173-pt04-bidirectional-workflow.md===LINES===2261
+# v1.7.3 — pt04 Bidirectional Workflow: Compiler Truth + LLM Judgment
+
+**Date**: 2026-02-15
+**Status**: Architectural Thesis
+**Depends On**: RESEARCH-v173-rustanalyzer-semantic-supergraph.md, PARSELTONGUE_V2_BIDIRECTIONAL_LLM_ENHANCEMENT.md
+===MID===
+      "label_suggestion": "Parsing & Language Support",
+      "internal_cohesion": 0.91,
+      "external_coupling": 0.08,
+      "members": ["rust:fn:parse_rust:...", "rust:fn:parse_python:...", "..."]
+    }
+===END===
+
+**Last Updated**: 2026-02-15
+**Key Principle**: Compiler truth is cheaper, faster, and more accurate than LLM guessing. Use the LLM for judgment, not facts.
+**Next Step**: Prototype TypedCallEdges extraction on Parseltongue's own codebase (eat your own dog food).
+**Scope**: All 26 endpoints + 10 workflow patterns + 6 new endpoints + 5 new workflows.
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/AR049-v199-Notes.md===LINES===493
+# Prep Doc: Parseltongue v2.0.0
+
+**Date**: 2026-02-16
+**Context**: Research, architectural decisions, and competitive analysis leading to the v2.0.0 clean break. This document captures everything discovered in the pre-v200 research sessions.
+
+===MID===
+- Match on: attribute + import name
+
+### Pattern 4: gRPC/HTTP (Rust <-> Any)
+- Rust: `#[post("/api/v1/analyze")] async fn analyze(...)`
+- Client: `requests.post("/api/v1/analyze", ...)`
+===END===
+3. **rust-analyzer API stability**: ra_ide/ra_hir are internal APIs. How do we handle breakage?
+4. **CLI naming**: Is the binary called `rust-llm` or `parseltongue` (same name, new version)?
+5. **File format**: What replaces .ptgraph? Name, extension, versioning?
+6. **Build order**: Which crate do we build first? (Likely rust-llm-core + rust-llm-01)
+7. **Minimum viable v2.0.0**: What's the smallest v2.0.0 that ships? (Probably rust-llm-01 + 05 + 06 = enriched extraction + store + server, no rust-analyzer yet)
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/AR050-FUJ-Final-User-Journey.md===LINES===2152
+# v200 Final User Journey (FUJ)
+
+**Status**: Canonical Draft v01
+**Date**: 2026-02-21
+**Philosophy**: Shreyas Doshi — every moment matters. Every loading state, every error, every micro-interaction is a product decision.
+===MID===
+  to:   ts|||fn|||frontend.api|||fetchAuthData|||frontend/src/api/auth.ts|||
+  kind: http_boundary
+  confidence: 0.90
+  metadata: { "route": "POST /api/auth", "framework": "axum+fetch" }
+```
+===END===
+│  ✓ Every UI action shows its CLI equivalent                        │
+│  ✓ Power users switch to CLI within 7 days of first use            │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/AR052-v210-backlog.md===LINES===83
+# v210-backlog
+Status: Active backlog
+Purpose: Track work intentionally deferred out of V200.
+## Decision Summary
+- `rust-llm-context-packer` is moved out of V200 and parked in V210 backlog.
+===MID===
+|   5 | pt08 snapshot loader           | Load snapshot into server runtime mode.               |                    40 | No              |
+|   6 | Endpoint guards                | Enforce mode/capability correctness at API boundary.  |                    80 | Yes             |
+|   7 | Route prefix nesting           | Namespace API by mode for routing clarity.            |                    65 | Later           |
+|   8 | Auto port + port file          | Automatic port lifecycle/discovery management.        |                    55 | Later           |
+|   9 | POST /shutdown endpoint        | Controlled server stop contract.                      |                    50 | Later           |
+===END===
+|  25 | XML-tagged responses           | Semantic grouping to improve LLM context clarity.     |
+|  27 | Project slug in URL            | Self-describing multi-project endpoint identity.      |
+|  28 | Slug in port file              | Project-aware port-file naming for discovery.         |
+|  29 | Token count at ingest          | Store real token counts per entity.                   |
+|  35 | Data-flow tree-sitter queries  | Extract assignment/param/return flow edges.           |===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/AR053-Research-Graph-Workflow-Internet-Synthesis-20260227.md===LINES===207
+# AR053: Internet Synthesis for Graph + Dependency Workflows
+Date: 2026-02-27
+Status: Draft reference (web-verified, analysis basis v02)
+
+## Scope
+===MID===
+  - top-K critical transitive chains
+  - path-class breakdown by edge type
+
+### 5) Code property graph practice validates multi-view graph overlays
+- Joern CPG merges AST/CFG/PDG views and supports layered analysis/export.
+===END===
+- VS Marketplace listings (Roo and Cline metrics)
+  - https://marketplace.visualstudio.com/items?itemName=RooVeterinaryInc.roo-cline
+  - https://marketplace.visualstudio.com/items?itemName=saoudrizwan.claude-dev
+- Bloop repository status (archived)
+  - https://github.com/BloopAI/bloop
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/AR054-CR-codemogger-v200-options-20260227.md===LINES===180
+# AR054: Codemogger Analysis for Parseltongue V200 PRD
+Date: 2026-02-27
+Status: PRD input (competitor study, code-grounded)
+Source studied: `/Users/amuldotexe/Downloads/glommer-codemogger-8a5edab282632443.txt`
+
+===MID===
+### Option B: Query Preprocessing for FTS Endpoints (Recommended)
+Targets: BR02
+
+Adopt:
+- keyword extraction from conversational prompts before FTS lookup.
+===END===
+- Option E/F once BR01-BR03 trust contracts are closed.
+
+## Practical PRD Message
+Codemogger validates that local-first, fast, hybrid retrieval is valuable for agent UX.
+Parseltongue V200 should absorb that retrieval strength as an **evidence lane**, while preserving its core differentiator: **truthful dependency graph reasoning with explicit confidence and provenance contracts**.
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/AR055-ACTIVE-reference-Consolidated-Summary-20260227.md===LINES===87
+# AR055: ACTIVE-reference Consolidated Summary (AR000-AR054)
+
+**Date**: 2026-02-27  
+**Scope**: `docs/ACTIVE-reference`  
+**Coverage**: 54 artifacts (52 `.md`, 1 `.txt`, 1 `.drawio`)
+===MID===
+16. `AR015-ES-Decision-log-01.md` — Moved/placeholder reference for decision-log relocation.
+17. `AR016-ES-Dependency-Graph-Contract-Hardening.md` — Dependency-graph contract hardening and enforcement model.
+18. `AR017-ES-Hashing-Risks-v01.md` — Hashing/key-stability risks and mitigation strategy for V200.
+19. `AR018-ES-User-Journey-01.md` — User-journey framing for V200 interactions and outcomes.
+20. `AR019-ES-User-Journey-Addendum-Tauri-CLI-Philosophy.md` — Reframe: Tauri as visual CLI launcher, not core logic host.
+===END===
+- Build V200 around **graph correctness and deterministic retrieval contracts**.
+- Keep **line-addressable source references** as first-class identifiers for retrieval and tooling interop.
+- Treat semantic enrichment (rust-analyzer + tree-sitter) as **ground truth substrate**, not optional add-on.
+- Use LLMs where they add judgment; avoid using them for facts compilers already resolve.
+- Defer optimization layers until measured evidence shows necessity.
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/ES-V200-arch-patterns-01.md===LINES===330
+# v200-arch-patterns-01
+Status: Working reference
+Date: 2026-02-25
+Source studied: `CR09/codemogger`
+
+===MID===
+
+Code anchor snippet:
+```rust
+// incremental_reindex_core_logic.rs
+let current_hash = compute_content_hash_sha256(&file_content);
+===END===
+
+## Known Caveat
+- Full `pt08` E2E suite currently has a test harness signature mismatch:
+  `build_complete_router_instance(state, mode)` now takes two args, while some E2E tests still call one-arg form.
+- This does not invalidate the above patterns; it blocks only full-suite compile in those test targets.
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/ES-V200-cocoindex-options-01.md===LINES===174
+# ES-V200 Option Set from Cocoindex Code Study
+Date: 2026-02-27
+Inputs studied:
+- `/Users/amuldotexe/Downloads/cocoindex-io-cocoindex-code-8a5edab282632443.txt`
+- `/Users/amuldotexe/Desktop/parseltongue-rust-LLM-companion/docs/ACTIVE-PRD/ES-V200-Decision-log-01.md`
+===MID===
+Decision log targets:
+- BR03 (compiler truth + LLM judgment)
+- BR06 (external evidence federation)
+
+Additions to pick:
+===END===
+## What ES-V200 should explicitly avoid copying
+
+1. Avoid "single search tool" compression; Parseltongue's moat is graph-trust + analysis depth.
+2. Avoid scoring-only truth; similarity score is ranking signal, not correctness signal.
+3. Avoid blending docs/text chunks into canonical edges without BR06 promotion gates.
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/ES-V200-options-ELI5-mermaid.md===LINES===135
+# ES-V200 Options (ELI5) with Mermaid
+Date: 2026-02-27
+Source option memo:
+- `/Users/amuldotexe/Desktop/parseltongue-rust-LLM-companion/competior research/ES-V200-cocoindex-options-01.md`
+
+===MID===
+ELI5: System should openly say what it is good at, partial at, or weak at.
+
+```mermaid
+flowchart TB
+    A["Collect runtime capabilities"] --> B["Language tier coverage"]
+===END===
+flowchart TB
+    A["Similarity score"] --> B["Useful for ranking"]
+    B --> C["Not equal to truth"]
+    C --> D["Never mark verified without deterministic evidence"]
+```
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/THESIS-supermodel-competitive-analysis.md===LINES===908
+# THESIS: Supermodel Competitive Analysis
+## What Parseltongue v200 Can Learn from the Supermodel Ecosystem
+
+*Research date: 2026-02-22*
+*Sources: VSIX v0.1.162 (decompiled), GitHub repos: openapi-spec, mcp, arch-docs, dead-code-hunter, typescript-sdk*
+===MID===
+| Callees list | `GET /forward-callees-query-graph?entity=` | 0.5 day |
+| Copy key to clipboard | local | 0.5 day |
+| Open in $EDITOR | local | 0.5 day |
+| Blast radius (text tree) | `GET /blast-radius-impact-analysis?entity=` | 1 day |
+| Stats overview | `GET /codebase-statistics-overview-summary` | 0.5 day |
+===END===
+A frequently cited assumption is that arch-docs will add a VS Code extension. The deep-dive confirms this is false. The AI integration surface is exclusively MCP (Claude Code, Cursor, Codex). No VS Code extension exists or is planned. This validates Parseltongue's v200 direction: build the best MCP server, not a VS Code plugin. The VS Code GUI surface is a distraction at this stage of the product; the MCP protocol is the correct abstraction layer for AI-native tooling.
+
+---
+
+*Appendix B sources: arch-docs agent deep-dive (2026-02-22), supermodeltools/arch-docs repository, 7 ADR documents, Go 1.25 module structure analysis.*
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/computer-research/01-RUSTC-COMPILER-GRAPH-CFG-DFG-RESEARCH-20260301.md===LINES===209
+# Rust Compiler Research for Parseltongue (Code Graph + Control Flow + Data Flow)
+Date: 2026-03-01
+Status: Research Draft
+
+## Scope
+===MID===
+- `typeck`: `compiler/rustc_middle/src/queries.rs:1249`
+- `mir_borrowck`: `compiler/rustc_middle/src/queries.rs:1266`
+- `mir_callgraph_cyclic`: `compiler/rustc_middle/src/queries.rs:1320`
+- `mir_inliner_callees`: `compiler/rustc_middle/src/queries.rs:1331`
+
+===END===
+3. Route by query intent:
+   - explain/search: Analyzer-first
+   - refactor-risk, aliasing, lifecycle, tricky control/data-flow: rustc deep mode
+
+This gives you PMF-friendly latency while preserving a path to compiler-grade truth.
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/cross-domain/12-social-network-transfer.md===LINES===363
+# Social Network Analysis Algorithms: Transferable Patterns for Code Analysis
+
+**Research Date:** 2026-03-02
+**Focus:** Cross-domain transfer of graph algorithms from social network analysis to code understanding
+
+===MID===
+| **Target: Code Analysis Analog** | Modeling bug propagation; predicting test failure cascades; understanding how vulnerabilities spread through dependencies |
+| **Adaptation Required** | - Define "infection" states for code (buggy, fixed, vulnerable)<br>- Model different transmission mechanisms (inheritance, composition, API)<br>- Incorporate recovery/immunization (patches, mitigations) |
+| **Expected Benefit** | Predict security vulnerability impact; prioritize bug fixes by spread potential; design "immunization" strategies (defensive coding); identify superspreader modules |
+| **Implementation Difficulty** | Medium - Model design requires domain knowledge; simulation is straightforward |
+
+===END===
+2. **Impact analysis** through influence maximization
+3. **Coupling analysis** through tie strength prediction
+4. **Security risk assessment** through epidemic modeling
+
+Future work should focus on adapting temporal and dynamic models to capture the unique characteristics of software evolution, which differs from social network dynamics in important ways (intentional design, refactoring events, tool-driven changes).
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/cross-domain/13-fraud-detection-transfer.md===LINES===611
+# Fraud Detection Graph Algorithms: Transfer Patterns for Code Analysis
+
+> Research compilation of graph-based fraud detection algorithms and their transferability to code analysis (bug detection, smell detection, anomaly detection).
+>
+> **Date**: March 2026
+===MID===
+- Design memory-efficient node state storage
+- Create real-time anomaly scoring
+
+### Expected Benefit
+- Catch issues during development
+===END===
+
+---
+
+*Document generated: March 2026*
+*Cross-Domain Research: Fraud Detection to Code Analysis*
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/encyclopedia/01-centrality-algorithms.md===LINES===644
+# Centrality Algorithms for Code Graphs
+
+**Category:** Node Importance Measures
+**Target:** 25+ centrality measures documented
+**Purpose:** Identify important, critical, and high-impact code entities
+===MID===
+        }
+        *sigma.get_mut(&s).unwrap() = 1.0;
+        *dist.get_mut(&s).unwrap() = 0;
+
+        let mut queue = VecDeque::new();
+===END===
+
+1. Brandes, U. (2001). "A Faster Algorithm for Betweenness Centrality"
+2. Page, L. et al. (1999). "The PageRank Citation Ranking"
+3. Kitsak, M. et al. (2010). "Identification of Influential Spreaders"
+4. Batagelj, V. & Zaversnik, M. (2003). "An O(m) Algorithm for Cores Decomposition"
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/encyclopedia/02-community-detection.md===LINES===670
+# Community Detection Algorithms for Code Graphs
+
+**Category:** Graph Clustering / Module Detection
+**Target:** 30+ algorithms documented
+**Purpose:** Identify cohesive modules, architectural boundaries, and refactoring targets
+===MID===
+### 5. STATISTICAL METHODS
+
+#### 5.1 Stochastic Block Model (SBM)
+```
+Approach: Generative model for communities
+===END===
+
+1. Traag, V.A., Waltman, L., van Eck, N.J. (2019). "From Louvain to Leiden"
+2. Blondel, V.D. et al. (2008). "Fast Unfolding of Communities"
+3. Rosvall, M., Bergstrom, C.T. (2008). "Maps of Random Walks"
+4. Raghavan, U.N. et al. (2007). "Near Linear Time Algorithm for Community Detection"
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/encyclopedia/03-traversal-search.md===LINES===630
+# Graph Traversal & Search Algorithms for Code Graphs
+
+**Category:** Graph Navigation / Path Finding
+**Target:** 15+ algorithms documented
+**Purpose:** Navigate code relationships, find paths, explore dependencies
+===MID===
+---
+
+## 8. FLOYD-WARSHALL
+
+```
+===END===
+    }
+
+    false
+}
+```
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/encyclopedia/07-gnn-architectures.md===LINES===548
+# Graph Neural Network Architectures for Code Graphs
+
+**Category:** Deep Learning on Graphs
+**Target:** 30+ architectures documented
+**Purpose:** Learn code representations, detect patterns, enable ML-based analysis
+===MID===
+## 3. TASK-SPECIFIC ARCHITECTURES
+
+### 3.1 Devign (Vulnerability Detection)
+
+```
+===END===
+1. Kipf & Welling (2017). "Semi-Supervised Classification with GCNs"
+2. Veličković et al. (2018). "Graph Attention Networks"
+3. Hamilton et al. (2017). "Inductive Representation Learning on Large Graphs"
+4. Xu et al. (2019). "How Powerful are GNNs?"
+5. Zhou et al. (2019). "Devign: Effective Vulnerability Identification"
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/implementation/16-petgraph-ecosystem.md===LINES===447
+# petgraph Ecosystem Analysis
+
+**Purpose:** Complete analysis of petgraph and Rust graph ecosystem
+**Target:** Comprehensive API mapping, capabilities, gaps
+
+===MID===
+❌ Dynamic graph support
+❌ Temporal algorithms
+```
+
+---
+===END===
+
+- petgraph docs: https://docs.rs/petgraph
+- petgraph repo: https://github.com/petgraph/petgraph
+- graphalgs: https://github.com/starovoid/graphalgs
+- daggy: https://github.com/mitchmindtree/daggy
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/implementation/17-performance-optimization.md===LINES===1142
+# Performance Optimization Strategies for Graph Algorithms at Scale
+
+**Target**: Optimization strategies for 100K+ node code graphs
+
+## Executive Summary
+===MID===
+        }
+    }
+
+    distances
+}
+===END===
+---
+
+*Document generated: 2026-03-02*
+*Target scale: 100K+ node code graphs*
+*Primary language: Rust*
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/rust-analyzer/01-hir-ty-patterns.md===LINES===1015
+# Idiomatic Rust Patterns: hir-ty (Type System & Inference)
+> Source: rust-analyzer/crates/hir-ty
+> Purpose: Patterns to guide contributions to rust-analyzer's type inference engine
+
+## Pattern 1: Salsa Query Definitions with Cycle Handling
+===MID===
+**Why This Matters for Contributors:** When working with hierarchical data (generic parameters, scopes, etc.), provide multiple iterator views. The `chain!` macro and `flat_map` enable composition without allocating intermediate collections. Always respect the ordering constraints (parent before self, lifetimes before types).
+
+---
+
+## Pattern 14: Unsafe Pointer Update with Equality Check
+===END===
+16. **Deferred Computation**: Use `std::mem::take` for multi-phase algorithms
+17. **Index Resolution**: Implement recursive lookup with offset accumulation for hierarchical structures
+18. **Recursion Limits**: Always include depth limits and visited-set tracking
+19. **Equality Contracts**: Document deliberate Hash/Eq violations with FIXME and test references
+20. **Performance Comments**: Explain optimization rationale in comments
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/rust-analyzer/02-hir-def-patterns.md===LINES===1151
+# Idiomatic Rust Patterns: hir-def (Definition Layer)
+> Source: rust-analyzer/crates/hir-def
+> Purpose: Patterns to guide contributions to rust-analyzer
+
+## Pattern 1: Salsa Interned ID Pattern with Lookup Trait
+===MID===
+
+## Pattern 11: Signature Queries with Source Map Split
+**File:** `crates/hir-def/src/signatures.rs` (lines 1-200)
+**Category:** Salsa Queries, AST-to-HIR Mapping
+**Description:** Every signature type has two queries: one returning just the signature (tracked/cached), and one returning `(Signature, SourceMap)`. The tracked query delegates to the full query and extracts the first element, avoiding duplicate computation.
+===END===
+- Adapton: adaptive memoization
+
+---
+
+**Final Note**: The patterns in hir-def represent years of refinement for IDE-grade performance. When in doubt, follow existing code structure exactly. The patterns exist for reasons that may not be obvious until you profile at scale. Measure before optimizing, but respect the existing optimization patterns—they were learned through hard-won experience.
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/rust-analyzer/03-syntax-parser-patterns.md===LINES===1188
+# Idiomatic Rust Patterns: Syntax & Parser
+> Source: rust-analyzer/crates/syntax + crates/parser
+> Purpose: Patterns to guide contributions to rust-analyzer
+
+## Pattern 1: Language-Parameterized Syntax Tree via Rowan Wrapper
+===MID===
+**Rust-Specific Insight:** This is a specialized **Cow-like pattern** (Clone-on-Write) optimized for syntax trees. Unlike `Cow<'a, str>` which has two variants (Borrowed/Owned String), `TokenText` has Borrowed(&str) and Owned(GreenToken), leveraging rowan's interning. The `GreenToken` is reference-counted internally, so "owned" doesn't mean unique ownership—it means "owns a reference". The `Deref<Target=str>` impl enables using `TokenText` anywhere a `&str` is expected without explicit conversion. This pattern minimizes allocations when accessing token text in hot code paths (e.g., identifier resolution).
+**Contribution Tip:** Use `TokenText::borrowed()` when you have a direct reference to source text (e.g., from a &str slice). Use `owned()` when extracting text from a SyntaxToken (which may not have a direct source reference due to tree transformations). Leverage `Deref` for string operations—you can call `.len()`, `.chars()`, etc. directly. Avoid calling `to_string()` unless you need an owned String for storage. For comparisons, use `TokenText` directly—it implements PartialEq with &str.
+**Common Pitfalls:** (1) Unnecessarily converting to `String` (allocates). (2) Assuming Owned means unique ownership (GreenToken is shared). (3) Not understanding that borrowed variant is tied to original source text lifetime. (4) Using `TokenText` for large text blocks (it's optimized for tokens, not documents). (5) Forgetting that GreenToken is interned—multiple tokens with same text share storage.
+**Related Patterns in Ecosystem:** Compare with `Cow<'a, str>` (standard library), `SmartString` (small string optimization), and `Arc<str>` (shared string ownership). rust-analyzer's approach is unique in leveraging rowan's interning for efficient token storage. See also `InternedString` pattern in rustc.
+---
+===END===
+
+**Document Status:** ✅ Complete with Expert Commentary
+**Last Updated:** 2026-02-20
+**Reviewer Confidence:** High (all patterns verified against rust-analyzer source code)
+**Recommended for:** rust-analyzer contributors, parser library authors, compiler implementers
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/rust-analyzer/04-ide-features-patterns.md===LINES===1562
+# Idiomatic Rust Patterns: IDE Features Layer
+> Source: rust-analyzer/crates/ide
+> Purpose: Patterns to guide contributions to rust-analyzer
+
+## Pattern 1: AnalysisHost/Analysis Snapshot Pattern
+===MID===
+**Related Patterns in Ecosystem:**
+- Builder pattern (alternative for complex configuration)
+- Clap's Args struct (CLI argument parsing with similar pattern)
+- Serde's Deserializer config (similar extensible options)
+- Tower middleware configuration (similar layered config)
+===END===
+❌ Not testing with multiple Rust editions
+❌ Ignoring UpmappingResult and losing macro navigation info
+❌ Deep module nesting instead of flat feature organization
+
+---
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/rust-analyzer/05-ide-assists-patterns.md===LINES===1240
+# Idiomatic Rust Patterns: IDE Assists (Code Actions)
+> Source: rust-analyzer/crates/ide-assists
+> Purpose: Patterns for contributing new assists to rust-analyzer
+
+## Pattern 1: Handler Function Signature - The Foundational Pattern
+===MID===
+        try_merge_imports(self, other, mb)
+    }
+
+    fn into_either(self) -> Either<ast::Use, ast::UseTree> {
+        Either::Left(self)
+===END===
+**Submit PR when all applicable checkboxes are complete!**
+
+---
+
+*This document represents expert analysis of 15+ source files (3,500+ lines) from rust-analyzer's assist system. All patterns are production-proven and represent best practices for IDE refactoring tools in Rust.*
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/rust-analyzer/06-ide-completion-patterns.md===LINES===1253
+# Idiomatic Rust Patterns: IDE Completion Engine
+> Source: rust-analyzer/crates/ide-completion
+> Purpose: Patterns for contributing completion features to rust-analyzer
+
+## Pattern 1: Two-Phase Completion Architecture
+===MID===
+
+## Pattern 11: Postfix Completion Pattern
+**File:** crates/ide-completion/src/completions/postfix.rs:32-104
+**Category:** Postfix Completions
+**Code Example:**
+===END===
+5. Test with large workspaces
+
+This documentation provides a comprehensive guide to contributing IDE completion features to rust-analyzer, covering architecture, patterns, testing, and common pitfalls. Follow the checklist to ensure high-quality contributions that integrate seamlessly with the existing codebase.
+
+---
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/rust-analyzer/07-ide-db-patterns.md===LINES===1391
+# Idiomatic Rust Patterns: IDE Database Layer
+> Source: rust-analyzer/crates/ide-db
+> Purpose: Patterns for the shared IDE database layer
+
+## Pattern 1: Salsa Database Composition with ManuallyDrop Optimization
+===MID===
+        self.find_enum("core:result:Result")
+    }
+
+    pub fn core_iter_Iterator(&self) -> Option<Trait> {
+        self.find_trait("core:iter:traits:iterator:Iterator")
+===END===
+- Familiarity with LSP protocol
+- Experience profiling/optimizing code
+- Patience for 30+ minute test suites
+
+Start with documentation fixes, progress to small assists, then tackle search/indexing features.
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/rust-analyzer/08-hir-facade-expand-patterns.md===LINES===1863
+# Idiomatic Rust Patterns: HIR Facade & Macro Expansion
+> Source: rust-analyzer/crates/hir + crates/hir-expand
+> Analyzed: 20+ files across HIR public facade and macro expansion systems
+
+## Pattern 1: Public Facade with Internal Abstraction Boundary
+===MID===
+
+1. **Lifetime parameterization** (`'db`) ensures borrowed data doesn't outlive the database
+2. **Interior mutability** (`RefCell<FxHashMap>`) enables caching in `&self` methods
+3. **Generic + trait object variants** support both monomorphized and dynamic dispatch:
+   ```rust
+===END===
+8. **Type Safety**: Enum modeling (HirFileId, MacroDefKind) enforces invariants at compile time
+9. **Interning Pattern**: Intern/Lookup traits enable efficient ID-based references
+10. **Span Mapping**: SpanMap handles the dual nature of real vs expansion spans
+
+These patterns demonstrate rust-analyzer's sophisticated approach to handling one of Rust's most complex features—macro expansion—while maintaining an ergonomic public API for IDE features.
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/rust-analyzer/09-lsp-server-patterns.md===LINES===1921
+# Idiomatic Rust Patterns: LSP Server Implementation
+> Source: rust-analyzer/crates/rust-analyzer
+
+## Pattern 1: Event-Driven Main Loop with Crossbeam Select
+**File:** /Users/amuldotexe/Desktop/Pre20260126/OSS202601/Notes2026/rust-analyzer-patterns/crates/rust-analyzer/src/main_loop.rs (lines 265-303)
+===MID===
+```
+**Critical**: Place latency-sensitive arms (formatting, completion) *before* background work to prevent starvation.
+
+**Common Pitfalls:**
+1. **Blocking in select! arms**: Never call `.recv()` instead of using the macro syntax—it blocks the entire main loop
+===END===
+**External Process Integration:**
+- Generation-based staleness tracking (Pattern 9)
+- Multi-phase workspace loading state machine (Pattern 13)
+
+These patterns combine to create a responsive, concurrent LSP server that handles thousands of files while maintaining sub-100ms latency for typing-related operations.
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/rust-analyzer/10-vfs-base-db-patterns.md===LINES===2462
+# Idiomatic Rust Patterns: VFS & Base Database
+> Source: rust-analyzer/crates/vfs + crates/vfs-notify + crates/base-db
+
+## Pattern 1: FileId Newtype with Bounded Integer
+**File:** crates/vfs/src/lib.rs:66-82
+===MID===
+            old_crate.set_data(db).with_durability(Durability::MEDIUM).to(crate_data);
+        }
+        old_crate
+    }
+    Entry::Vacant(entry) => { /* create new */ }
+===END===
+- Contribution Tips: 60+
+- Common Pitfalls Identified: 80+
+
+**Last Updated:** 2026-02-20
+**Expert Review By:** Rust-Coder-01 (Architectural Analysis Specialist)
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/rust-analyzer/11-project-model-patterns.md===LINES===1351
+# Idiomatic Rust Patterns: Project Model
+> Source: rust-analyzer/crates/project-model
+
+## Pattern 1: NewType for Path Invariants (ManifestPath)
+**File:** crates/project-model/src/manifest_path.rs
+===MID===
+    }
+}
+```
+**Why This Matters for Contributors:** Fetching full cargo metadata can fail (offline, broken dependencies, etc.). This pattern pre-fetches metadata with `--no-deps` during construction as a fallback. If the full fetch fails, rust-analyzer can still provide partial functionality using basic workspace info. The tuple return `(Metadata, Option<Error>)` communicates both success with warning or partial success states. This resilience is essential for IDE robustness.
+
+===END===
+
+**For New Contributors:**
+Start with patterns 1-2 (simpler filesystem/parsing), progress to 3-4 (arena/concurrency basics), then tackle 13-15 (advanced graph surgery) once comfortable.
+
+---
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/rust-analyzer/12-token-tree-macro-patterns.md===LINES===2801
+# Idiomatic Rust Patterns: Token Trees & Macro Infrastructure
+> Source: rust-analyzer/crates/tt + mbe + macros + proc-macro-api
+
+## Pattern 1: Flat Storage with Compressed Spans
+**File:** crates/tt/src/storage.rs
+===MID===
+
+**Recursive Embedding:**
+```rust
+Op::Repeat { tokens: MetaTemplate, ... }
+```
+===END===
+
+**Document Version:** 2026-02-20
+**Analysis Depth:** Expert-level commentary with ecosystem context
+**Patterns Analyzed:** 15/15 (100% coverage)
+**Contribution Readiness:** ⭐⭐⭐⭐⭐ (Production-grade analysis)
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/rust-analyzer/13-utility-crates-patterns.md===LINES===4576
+# Idiomatic Rust Patterns: Utility Crates
+> Source: rust-analyzer utility crates (stdx, profile, intern, paths, toolchain, edition)
+
+## Pattern 1: format_to! Macro - Efficient String Formatting without Allocation
+**File:** /Users/amuldotexe/Desktop/Pre20260126/OSS202601/Notes2026/rust-analyzer-patterns/crates/stdx/src/macros.rs
+===MID===
+   // mallinfo2 uses `size_t` - safe for large allocations
+   // Code auto-detects and uses mallinfo2 when available
+   ```
+
+3. **Not enabling jemalloc feature:**
+===END===
+*Last Updated: 2026-02-20*
+*Contributor: Rust-Coder-01 Expert Commentary*
+*Source: rust-analyzer utility crates analysis*
+
+
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/rust-analyzer/14-lib-arena-lsp-patterns.md===LINES===3283
+# Idiomatic Rust Patterns: Library Crates
+> Source: rust-analyzer/lib/ (la-arena, line-index, lsp-server, smol_str, text-size, ungrammar)
+
+## Pattern 1: Type-Safe Arena with PhantomData Type Parameters
+**File:** lib/la-arena/src/lib.rs
+===MID===
+impl Index<TextRange> for str {
+    type Output = str;
+    #[inline]
+    fn index(&self, index: TextRange) -> &str {
+        &self[Range::<usize>::from(index)]
+===END===
+- Portfolio-quality open source contributions
+
+This is the **gold standard** for Rust library design. Study these patterns, internalize them, and apply them to your own projects. The rust-analyzer team has created a masterclass in production Rust engineering.
+
+---
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/rust-analyzer/15-ide-diagnostics-patterns.md===LINES===2895
+# Idiomatic Rust Patterns: IDE Diagnostics
+> Source: rust-analyzer/crates/ide-diagnostics
+>
+> **Purpose**: Diagnostic reporting system for Rust code analysis - structured diagnostics with fixes, severity mapping, experimental gating, and lint attribute handling.
+
+===MID===
+fn check_expr_field_shorthand(
+    db: &RootDatabase,
+    acc: &mut Vec<Diagnostic>,
+    file_id: EditionedFileId,
+    record_expr: ast::RecordExpr,
+===END===
+- Fail-safe defaults
+- Progressive feature rollout
+
+These patterns are applicable far beyond diagnostics—they're templates for building robust, high-performance Rust systems.
+
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/rust-analyzer/16-proc-macro-server-patterns.md===LINES===1903
+# Idiomatic Rust Patterns: Proc Macro Server
+> Source: rust-analyzer proc-macro crates (proc-macro-api, proc-macro-srv, proc-macro-srv-cli)
+
+## Pattern 1: Process Pool with Load Balancing for External Code
+**File:** /Users/amuldotexe/Desktop/Pre20260126/OSS202601/Notes2026/rust-analyzer-patterns/crates/proc-macro-api/src/pool.rs
+===MID===
+2. **Lock guard as RAII member**: `_guard: MutexGuard<'snap, ()>` field ensures lock held for entire scope of `EnvChange`
+3. **Poison recovery**: `unwrap_or_else(std::sync::PoisonError::into_inner)` allows continuing after panic in other thread
+4. **Snapshot restoration on drop**: Drop impl restores env vars to snapshot state - works even on panic
+5. **Tracked mutations**: `changed_vars: Vec<&'snap str>` tracks what was changed for efficient restoration
+6. **Empty rollback() method**: Forces users to call it explicitly for clarity, though Drop does the work
+===END===
+- **Protocol evolution** - When maintaining backward compatibility
+
+These patterns represent years of refinement in a production IDE. Study them carefully - they solve real problems that emerge at scale.
+
+---
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/rust-analyzer/17-test-infrastructure-patterns.md===LINES===1722
+# Idiomatic Rust Patterns: Test Infrastructure
+> Source: rust-analyzer testing crates and patterns
+
+## Pattern 1: Fixture Mini-DSL with //- Markers
+**File:** /Users/amuldotexe/Desktop/Pre20260126/OSS202601/Notes2026/rust-analyzer-patterns/crates/test-fixture/src/lib.rs
+===MID===
+        for (x, y) in xy {
+            let y_pred = a + b * x;
+            se += (y - y_pred).powi(2);
+            max_error = max_error.max((y_pred - y).abs());
+        }
+===END===
+**Ecosystem Impact:** High (patterns applicable to any Rust project with complex testing needs)
+
+These patterns represent the state-of-the-art in Rust testing infrastructure. They demonstrate that with careful design, test code can be as elegant, type-safe, and maintainable as production code—an embodiment of Rust's philosophy applied to the testing domain.
+
+---
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/rust-analyzer/18-xtask-codegen-patterns.md===LINES===2325
+# Idiomatic Rust Patterns: XTask & Code Generation
+> Source: rust-analyzer/xtask
+
+## Pattern 1: XTask Pattern for Project Tooling
+**File:** /Users/amuldotexe/Desktop/Pre20260126/OSS202601/Notes2026/rust-analyzer-patterns/xtask/src/main.rs
+===MID===
+- **Anti-pattern:** Using regex for simple column extraction - overkill and slower
+- **Anti-pattern:** Not normalizing kebab-case to snake_case - breaks Rust identifiers
+- **Anti-pattern:** Allocating intermediate `Vec<String>` - iterator chains are better
+- **Anti-pattern:** Assuming table format never changes - rustc output is not a stable API
+
+===END===
+**Patterns analyzed:** 20
+**Total lines of commentary:** ~2,500
+**Recommended for:** Intermediate to advanced Rust developers contributing to large-scale projects
+
+---
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/rust-analyzer/19-cross-cutting-architecture-patterns.md===LINES===2034
+# Idiomatic Rust Patterns: Cross-Cutting Architecture
+> Source: rust-analyzer (cross-crate analysis)
+> Analyzed: 20+ crate lib.rs files, database traits, and integration points
+> Focus: Layered architecture, incremental computation, error flow, and workspace-level patterns
+
+===MID===
+[workspace.dependencies]
+# Local crates with version 0.0.0 (not published)
+base-db = { path = "./crates/base-db", version = "0.0.0" }
+hir = { path = "./crates/hir", version = "0.0.0" }
+hir-def = { path = "./crates/hir-def", version = "0.0.0" }
+===END===
+---
+
+**Document Status:** ✅ Expert commentary complete with 5-star ratings across all 12 patterns
+**Contribution Readiness:** ✅ Comprehensive checklist and learning path provided
+**Recommendation:** Ready for use as contributor onboarding material and architectural reference
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/rust-analyzer/20-ssr-span-cfg-patterns.md===LINES===2814
+# Idiomatic Rust Patterns: SSR, Span, Cfg & Bridge Crates
+> Source: rust-analyzer (ide-ssr, span, cfg, syntax-bridge, load-cargo)
+
+## Pattern 1: Two-Phase Matching for Performance Optimization
+**File:** /Users/amuldotexe/Desktop/Pre20260126/OSS202601/Notes2026/rust-analyzer-patterns/crates/ide-ssr/src/matching.rs
+===MID===
+    }
+
+    pub fn is_nnf(&self) -> bool {
+        match self {
+            BoolExpr::Atom(_) => true,
+===END===
+**Document Status:** ✅ Complete with expert commentary
+**Total Patterns:** 20
+**Average Complexity:** Advanced (4.8/5)
+**Production Readiness:** 100% - All patterns are battle-tested in rust-analyzer
+**Recommended Prerequisites:** 12+ months Rust experience, compiler basics, graph algorithms
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/rust-analyzer/ANALYSIS_STATE.md===LINES===147
+# rust-analyzer Idiomatic Patterns Analysis State
+
+## TDD Session State: 2026-02-20
+
+### Current Phase: Complete - Documentation Generated
+===MID===
+
+4. **Semantic Classification**: IdentClass, NameClass, NameRefClass unify name resolution. All features use these abstractions rather than raw syntax.
+
+5. **Test Infrastructure**: Fixture module with $0 markers, annotations, multi-file support makes testing IDE features straightforward and readable.
+
+===END===
+Each pattern includes sufficient detail for contributors to:
+- Recognize when the pattern applies
+- Implement features following established conventions
+- Understand the rationale behind design choices
+- Avoid common pitfalls
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/strategy/18-competitive-landscape.md===LINES===433
+# Competitive Landscape Analysis
+
+**Purpose:** Deep competitor profiles and differentiation strategy
+**Target:** 30+ tools analyzed
+
+===MID===
+│ - Type hierarchy                                                    │
+│ - Module structure                                                  │
+│ - NO advanced graph algorithms                                      │
+├─────────────────────────────────────────────────────────────────────┤
+│ OUR RELATIONSHIP                                                    │
+===END===
+║                                                                   ║
+║   Competition is weak on graphs. We win on graphs.                ║
+║                                                                   ║
+╚═══════════════════════════════════════════════════════════════════╝
+```
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/strategy/19-moat-building.md===LINES===445
+# Competitive Moat-Building Strategy for Parseltongue
+
+**Purpose:** Define how to create lasting, defensible competitive advantage
+**Target:** 5-year moat that competitors cannot easily replicate
+
+===MID===
+   - Clear value proposition
+
+2. **Build learning systems**
+   - Feedback loops
+   - Continuous improvement
+===END===
+║                                                                   ║
+║   COMPETITOR CATCH-UP TIME: 2-3 YEARS (if they start today)      ║
+║                                                                   ║
+╚═══════════════════════════════════════════════════════════════════╝
+```
+===DONE===
+===FILE===archived-docs/pre202602/ACTIVE-Reference/strategy/20-research-agenda.md===LINES===598
+# Research Agenda for Parseltongue
+
+**Purpose:** 6-12 month forward-looking research plan
+**Target:** Maintain competitive edge through continued innovation
+
+===MID===
+
+Timeline: 6 weeks
+```
+
+### Expected Outcomes
+===END===
+2. "Graph Contrastive Learning" (2020)
+
+### Causal
+1. "Causal Inference in Graphs" (2018)
+2. "Counterfactual Reasoning" (2021)
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/A00_preserved_code_patterns/ISGL1-v2-key-generation-system.md===LINES===917
+# ISGL1 v2 Key Generation System
+
+**What it is**: The identity system that gives every code entity (function, struct, class, module, etc.) a unique, stable key across all 15 supported languages. "ISGL1" = Inter-System Graph Layer 1.
+
+**Why it exists**: LLMs and graph algorithms need a stable way to refer to code entities. Line numbers change when you edit a file. ISGL1 v2 uses birth timestamps derived from deterministic hashes, so keys survive refactors.
+===MID===
+    /// Source code location where relationship occurs (optional)
+    pub source_location: Option<String>,
+}
+```
+
+===END===
+| v1.5.6 | Added SQL entity types: `Table`, `View` |
+| Phase 5 | Thread-local parsers + extractors (zero mutex contention) |
+| v0.8.9 | QueryBasedExtractor replaced manual tree-walking for 11/12 languages |
+| v0.9.0 | Rust attribute enrichment (`#[test]` detection) |
+| v1.7.3 | Slim snapshot types for `.ptgraph` serialization |
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/CR-delegate-agent-coordination.md===LINES===337
+# CR-delegate-agent-coordination.md
+# Delegate Agent Coordination System — Deep Dive
+# Date: 2026-02-21
+# Source: CR08/delegate/delegate/
+
+===MID===
+
+### Runtime Architecture
+
+**Core Function**: `run_turn(hc_home, team, agent, exchange)`
+
+===END===
+
+---
+
+*Generated: 2026-02-21*
+*Source: delegate/agent.py, activity.py, mailbox.py, telephone.py, runtime.py*
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/CR-delegate-parseltongue-integration.md===LINES===335
+# CR-delegate-parseltongue-integration.md
+# CR08: Delegate → Parseltongue V200 Integration Opportunities
+# Date: 2026-02-21
+# Focus: What's easy to integrate and what V200 can learn
+
+===MID===
+# Delegate's .env or config
+PARSELTONGUE_URL=http://localhost:7777
+```
+
+### P1 — EASY (< 200 lines)
+===END===
+---
+
+*Generated: 2026-02-21*
+*Delegate: https://github.com/nikhilgarg28/delegate*
+*Parseltongue: Graph-based code analysis toolkit*
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/CR-delegate-research-summary.md===LINES===480
+# CR-delegate-research-summary.md
+# CR08: Delegate Competitive Research — Full Summary
+# Date: 2026-02-21
+# Repo: https://github.com/nikhilgarg28/delegate.git
+# Parseltongue Analysis: Port 7781 | 1,959 entities | 14,352 edges | 22K LoC
+===MID===
+└── db.sqlite                       # Team-specific database
+```
+
+---
+
+===END===
+
+---
+
+*Generated: 2026-02-21*
+*Parseltongue v1.7.2 | Port 7781 | Database: rocksdb:parseltongue20260221204410/analysis.db*
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/CR-droid-factory-20260219/factory-droid/CR-factory-droid-control-flow-202601.md===LINES===728
+# CR-factory-droid-control-flow-202601: Control Flow, Data Flow & Claude Code Differentiation
+
+**Date**: 2026-02-18
+**Binary**: `/Users/amuldotexe/.local/bin/droid` (Mach-O arm64, 95.9 MB)
+**Version**: 1.0.71 (CLI), Bun 1.3.8 (embedded runtime)
+===MID===
+│   edit_file, create_file, │
+│   apply_patch             │
+│   → Allowed at low+       │
+│                           │
+│ Execute tools:            │
+===END===
+Droid has the agent orchestration. Parseltongue has the code intelligence. They're complementary by architecture.
+
+---
+
+*Generated 2026-02-18. Control flow and differentiation thesis for Parseltongue V200. Source: CR05/factory-droid/ (gitignored). Method: binary decompilation (strings, otool, minified JS analysis) on Mach-O arm64 binary.*
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/Firebolt-PRD-20260202/PRD-v001.md===LINES===0
+(empty file)
+===MID===
+(empty)
+===END===
+(empty)
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/PRD-research-20260131v1/00_EXECUTIVE_SUMMARY.md===LINES===388
+# Parseltongue v1.7-v1.9: Arize Agent Memory Patterns - Executive Summary
+
+**Date**: 2026-01-31
+**Analysis**: Arize Agent Harness Architecture Applied to Parseltongue ISG
+**Document Set**: 5 comprehensive PRD research documents
+===MID===
+
+### 00_EXECUTIVE_SUMMARY.md (This Document)
+**Purpose**: Quick overview for decision-makers
+**Length**: ~10 minutes read
+**Audience**: PMs, Engineering Leads, Stakeholders
+===END===
+
+**Read Next**:
+- For detailed specs: `03_V17_V19_ARIZE_PATTERNS_EXTRACTED.md`
+- For visual roadmap: `04_VISUAL_ROADMAP_V14_TO_V19.md`
+- For implementation guidance: `02_V16_PRD_IDEAS_EXTRACTED.md` (v1.6 context)
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/PRD-research-20260131v1/01_ARCHITECTURE_OVERVIEW.md===LINES===160
+# Parseltongue Architecture Overview
+
+**Analysis Date**: 2026-01-31
+**Database**: rocksdb:parseltongue20260131154912/analysis.db
+**Codebase Version**: 1.4.2
+===MID===
+#### 4. **parseltongue-core** (Shared Library)
+- **Purpose**: Common infrastructure for all tools
+- **Key components**:
+  - `storage/cozo_client.rs`: CozoDB interface (CozoDbStorage)
+  - `query_extractor.rs`: Tree-sitter-based parsing (QueryBasedExtractor)
+===END===
+
+See subsequent documents for:
+- 02_CONTROL_FLOW.md - Detailed execution paths
+- 03_DATA_FLOW.md - Entity lifecycle and transformations
+- 04_MODULE_DEEP_DIVE.md - Per-module analysis
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/PRD-research-20260131v1/02_V16_PRD_IDEAS_EXTRACTED.md===LINES===451
+# Parseltongue v1.6: Agent-Native PRD Extraction
+
+**Analysis Date**: 2026-01-31
+**Source**: Comparative analysis of Parseltongue vs. Agent Harness Principles
+**Current Version**: v1.4.2
+===MID===
+parseltongue pt08 --db "rocksdb:workspace1/analysis.db,rocksdb:workspace2/analysis.db"
+
+curl "http://localhost:7777/code-entities-search-fuzzy?q=handle&workspace=workspace1,workspace2"
+# Returns entities tagged by workspace
+```
+===END===
+> "Parseltongue is a sophisticated L2 cache that needs to be wired into the memory hierarchy properly. The cache works—it just needs the bus."
+
+The fix isn't to rebuild Parseltongue; it's to **expose its internals as composable primitives**. The ISG is already the right data structure. The AIM daemon already provides the right update semantics. What's missing is the **interface** that lets agents treat Parseltongue operations like Unix commands they can chain together.
+
+**In agent terms**: Parseltongue has deterministic architectural facts that eliminate hallucination—it just needs MCP to make those facts accessible to the emerging agent ecosystem.
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/PRD-research-20260131v1/03_V17_V19_ARIZE_PATTERNS_EXTRACTED.md===LINES===1107
+# Parseltongue v1.7-v1.9: Arize Agent Harness Pattern Extraction
+
+**Analysis Date**: 2026-01-31
+**Source Material**: Arize Agent Harness Architecture Article (Aparna Dhinakaran)
+**Foundation**: Assumes v1.6 complete (MCP, Unix piping, streaming implemented)
+===MID===
+    "operations": [
+      {
+        "type": "search",
+        "params": {"module": "src/auth", "entity_type": "fn"}
+      },
+===END===
+**Next Steps**:
+1. Review with team
+2. Prioritize v1.7 scope
+3. Create TDD test plans for PRD #1 (Preview/Pointer)
+4. Start STUB phase for v1.7
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/PRD-research-20260131v1/04_VISUAL_ROADMAP_V14_TO_V19.md===LINES===568
+# Parseltongue Visual Roadmap: v1.4.2 → v1.9
+
+**Created**: 2026-01-31
+**Status**: Strategic Planning Document
+
+===MID===
+Total Time: ~2 seconds
+Total Tokens: 18,800 (wasteful)
+Agent UX: Poor (manual optimization required)
+```
+
+===END===
+**This document is part of PRD research series**:
+- `01_ARCHITECTURE_OVERVIEW.md` - Current state analysis
+- `02_V16_PRD_IDEAS_EXTRACTED.md` - v1.6 feature specs
+- `03_V17_V19_ARIZE_PATTERNS_EXTRACTED.md` - v1.7-v1.9 feature specs
+- `04_VISUAL_ROADMAP_V14_TO_V19.md` - This document
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/PRD-research-20260131v1/MERMAID_SYNTAX_GUIDE.md===LINES===449
+# Mermaid Syntax Guide: Common Mistakes to Avoid
+
+**Date**: 2026-02-01
+**Purpose**: Document common Mermaid parsing errors and how to fix them
+**Audience**: Engineers creating Mermaid diagrams for documentation
+===MID===
+
+```mermaid
+graph TD
+    A["He said Hello"]
+    B["It is working"]
+===END===
+  - Added debugging workflow
+
+---
+
+**Key Takeaway**: When in doubt, **keep it simple**. Mermaid favors clean, straightforward syntax over fancy notation.
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/PRD-research-20260131v1/PARSELTONGUE_V2_BIDIRECTIONAL_LLM_ENHANCEMENT.md===LINES===1003
+# Parseltongue v2.0+: Bidirectional LLM-CPU Feature Enhancement
+
+**Date**: 2026-02-01
+**Purpose**: Explore how LLM semantic understanding can improve CPU algorithm accuracy through feedback loops
+**Key Insight**: LLM → CPU (semantic guidance) + CPU → LLM (structured data) = Higher accuracy than either alone
+===MID===
+  "functions": [
+    {
+      "name": "validate_user_input",
+      "cyclomatic_complexity": 15,
+      "classification": "ESSENTIAL_COMPLEXITY",
+===END===
+---
+
+**Last Updated**: 2026-02-01
+**Key Innovation**: LLM doesn't just consume CPU results - it enhances CPU accuracy through semantic guidance
+**Next Step**: Implement semantic seeding in Leiden clustering (Feature 1) as proof of concept
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/PRD-research-20260131v1/PARSELTONGUE_V2_FEATURES_ELI10.md===LINES===561
+# Parseltongue v2.0+ Features: Explained Simply (ELI10)
+
+**Date**: 2026-02-01
+**Audience**: 10-year-olds, non-technical stakeholders, new team members
+**Purpose**: Understand what each feature does WITHOUT needing to know algorithm names
+===MID===
+    style F25 fill:#fff9c4
+    style F26 fill:#fff9c4
+    style F27 fill:#fff9c4
+    style F28 fill:#fff9c4
+```
+===END===
+
+**Last Updated**: 2026-02-01
+**Source**: Simplified from PARSELTONGUE_V2_FEATURES_RESEARCH_BACKED.md
+**Total Diagrams**: 10 simple diagrams
+**Reading Time**: 15 minutes (vs 2 hours for the technical version!)
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/PRD-research-20260131v1/PARSELTONGUE_V2_FEATURES_MERMAID_DIAGRAMS.md===LINES===594
+# Parseltongue v2.0+ Features: Mermaid Diagram Visualizations
+
+**Date**: 2026-02-01
+**Source**: PARSELTONGUE_V2_FEATURES_RESEARCH_BACKED.md
+**Purpose**: Visual representation of 28 research-backed features organized into digestible diagrams
+===MID===
+    section Deep Dive
+      Analyze technical debt: 5: Senior Architect
+      Check blast radius: 5: Mid-level Dev
+      Find similar code: 4: Mid-level Dev
+    section Integration
+===END===
+
+**Last Updated**: 2026-02-01
+**Source Document**: PARSELTONGUE_V2_FEATURES_RESEARCH_BACKED.md
+**Total Features Visualized**: 28
+**Total Diagrams**: 17
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/PRD-research-20260131v1/PARSELTONGUE_V2_FEATURES_RESEARCH_BACKED.md===LINES===2575
+# Parseltongue v2.0+ Feature Extraction: Research-Backed Roadmap
+
+**Date**: 2026-02-01
+**Source**: 40+ arXiv papers on CPU graph algorithms, clustering, code analysis, and mathematical frameworks
+**Methodology**: Shreyas Doshi product thinking + user journey analysis
+===MID===
+- **Time Saved**: Reduces "find all related code" from 2 hours to 5 seconds
+- **Delight Factor**: "Found auth code I would have missed - no 'auth' in name but semantically related"
+
+#### Implementation Approach
+- **Use existing**: Dependency graph
+===END===
+**Next Steps**:
+1. Review with engineering team for effort validation
+2. Prioritize Phase 1 features for v2.0
+3. Create detailed TDD specs for top 3 features
+4. Begin prototyping Leiden clustering (#1) + Entropy complexity (#5)
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/PRD-research-20260131v1/PARSELTONGUE_V2_LLM_AGENT_INTERACTIONS.md===LINES===643
+# Parseltongue v2.0+: LLM Agent Interaction Patterns
+
+**Date**: 2026-02-01
+**Purpose**: Demonstrate how LLM agents iteratively build semantic context using CPU-powered graph features
+**Key Insight**: CPU graph algorithms + LLM semantic reasoning = Exponentially more powerful than either alone
+===MID===
+Feature 3 (Blast Radius): utils.rs impacts 89 entities
+Feature 4 (Cohesion): utils.rs has cohesion 0.23
+
+LLM Synthesis:
+IF debt > 800 AND churn > 40 AND blast_radius > 80 AND cohesion < 0.3:
+===END===
+---
+
+**Last Updated**: 2026-02-01
+**Source**: Analysis of LLM agent interaction patterns with graph databases
+**Key Insight**: Context accumulation over iterations = Exponential intelligence gain
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/PRD-research-20260131v1/PRD-candidates-20260130.md===LINES===542
+# PRD-v144: Parseltongue Comprehensive Feature Roadmap
+
+**Date**: 2026-02-01
+**Extracted From**: All PRD-research-20260131v1 documents
+**Total Features**: 60+ features, bug fixes, enhancements
+===MID===
+**Type: API Enhancement** | **Version: v1.7** | **Effort: included**
+Add detail parameter to all entity-returning endpoints (core to preview/pointer feature).
+Core to v1.7 preview/pointer feature - 90% token reduction capability.
+
+### Query Parameter: ?dry_run=true
+===END===
+
+**Document Status**: Comprehensive extraction complete
+**Total Items**: 60+ features, fixes, enhancements, dependencies
+**Coverage**: All PRD-research-20260131v1 documents analyzed
+**Next Steps**: Review with engineering team, prioritize Phase 1 features
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/PRD-research-20260131v1/PRD-candidates-20260131.md===LINES===145
+# Research reveals MCP is UNSUITABLE for Parseltongue
+
+## Token Inefficiency:
+- **MCP**: 52,000 tokens for basic debugging
+- **CLI**: 1,200 tokens for same task
+===MID===
+| 31 | Random Walk Probability Impact | 72 | 550 | v2.1 | Calculate "89% chance this change breaks X" using Monte Carlo. More accurate than deterministic analysis. |
+| 32 | Program Slicing Backward Forward | 72 | 850 | v2.1 | Extract only code slices relevant to specific variables. Enables surgical debugging and focused test prioritization. |
+| 33 | Code Clone Detection AST | 70 | 1,100 | v2.2 | Find copy-pasted code with different variable names (87% recall). Identifies refactoring opportunities Type-1/2/3 clones. |
+| 34 | Node2Vec Entity Embeddings CPU | 70 | 1,200 | v2.2 | Convert code into 128D numbers for similarity search. Find structurally similar functions even with different names. |
+
+===END===
+
+## Average PMF: 73.8 (excluding bugs/infra, with MCP removed)
+
+## Estimated Timeline: 55.5 weeks (was 58.5, saved 3w by dropping MCP)
+
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/PRD-research-20260131v1/PRD-v142-Parseltongue.md===LINES===1077
+# Product Requirements Document: Parseltongue
+
+**Version**: 1.4.2
+**Date**: January 31, 2026
+**Status**: Verified against live codebase via Parseltongue API
+===MID===
+### Feature 4: Dependency Graph
+
+**Edge Structure** (Verified):
+```json
+{
+===END===
+
+**PRD Status**: ✅ Verified Against Running System
+**Methodology**: All features verified via Parseltongue's own API
+**Last Updated**: January 31, 2026
+**Next Review**: After v1.5.0 release
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/PRD-research-20260131v1/QUICK_REFERENCE_7_PRDS.md===LINES===341
+# Quick Reference: 7 PRD Ideas for v1.7-v1.9
+
+**Purpose**: One-page reference for all 7 Arize-inspired PRD ideas
+**Date**: 2026-01-31
+**Foundation**: Assumes v1.6 complete (MCP, Unix piping, streaming, multi-workspace)
+===MID===
+      {"type": "filter", "params": {"name_pattern": "db_*"}},
+      {"type": "rank", "params": {"by": "coupling_score"}},
+      {"type": "limit", "params": {"count": 10}}
+    ]
+  }'
+===END===
+
+**For Full Details**:
+- Executive summary: `00_EXECUTIVE_SUMMARY.md`
+- Comprehensive PRD specs: `03_V17_V19_ARIZE_PATTERNS_EXTRACTED.md`
+- Visual roadmap: `04_VISUAL_ROADMAP_V14_TO_V19.md`
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/PRD-research-20260131v1/README.md===LINES===267
+# Parseltongue Research Documentation - v1.6 Planning
+
+**Analysis Date**: 2026-01-31
+**Database**: rocksdb:parseltongue20260131154912/analysis.db
+**Current Version**: 1.4.2
+===MID===
+5. Return to agent/client
+
+## Data Flow Patterns
+
+**Entity Lifecycle**:
+===END===
+
+---
+
+**Generated**: 2026-01-31 using Parseltongue v1.4.2 self-analysis
+**Next Steps**: Review PRD ideas, prioritize P0+P1 features, begin implementation sprint
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/drawio-diagram-guide-llm-enhanced.md===LINES===1204
+# Draw.io Diagram Guide — LLM-Enhanced Edition
+
+*Foundation: lessons learned building the parseltongue v1.6.1 crate dependency graph via Claude Code + @drawio/mcp*
+*Enhanced with: GenAI-DrawIO-Creator research (arXiv 2601.05162), drawio-ninja validation techniques, mxGraph API reference, WCAG accessibility standards, and Gestalt perceptual design principles*
+
+===MID===
+
+### Font and text properties
+
+| Property | Values | Default | Notes |
+|----------|--------|---------|-------|
+===END===
+- *IBM Architecture Visualization best practices: [ibm.github.io/itaa-docs/ArchVisualization.html](https://ibm.github.io/itaa-docs/ArchVisualization.html)*
+- *WCAG contrast requirements: [webaim.org/articles/contrast](https://webaim.org/articles/contrast/)*
+- *Gestalt principles and diagram comprehension: [dl.acm.org/doi/10.5555/2521076](https://dl.acm.org/doi/10.5555/2521076)*
+- *ELK layered algorithm reference: [eclipse.dev/elk/reference/algorithms/org-eclipse-elk-layered.html](https://eclipse.dev/elk/reference/algorithms/org-eclipse-elk-layered.html)*
+- *draw.io MCP npm package: [npmjs.com/package/@drawio/mcp](https://www.npmjs.com/package/@drawio/mcp)*
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre154/BUG-ANALYSIS-v1.5.1-qualified-name-key-format.md===LINES===308
+# Bug Analysis: Qualified Name Key Format Issues (v1.5.1)
+
+## Executive Summary
+
+Two related bugs discovered when testing on larger codebases. Both involve **ISGL1 key format parsing failures** caused by qualified names containing `::` namespace separators, which conflict with the `:` delimiter used in ISGL1 keys.
+===MID===
+let entity_type = parts[1].to_string();
+let item_name = parts[2].to_string();  // Wrong if :: present
+let file_path = parts[3];              // Wrong if :: present
+```
+
+===END===
+---
+
+*Analysis Date: 2026-02-07*
+*Version: v1.5.1-pre*
+*Author: Claude Code Analysis*
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre154/BUGFIX-csharp-edge-detection-v1.4.8.md===LINES===327
+# Bug Fix Implementation: C# Edge Detection (v1.4.8)
+
+**Date**: 2026-02-06
+**Version**: 1.4.8
+**Bugs Fixed**: Bug 1 (ISGL1 v2 Key Mismatch) + Bug 2 Step 2 (Constructor Detection)
+===MID===
+  3. csharp:method:Create:__TestIntegration:T1676816502 -> csharp:fn:List:unresolved-reference:0-0
+  4. csharp:method:Create:__TestIntegration:T1676816502 -> csharp:fn:DataModel:unresolved-reference:0-0
+  5. csharp:method:Create:__TestIntegration:T1676816502 -> csharp:fn:Add:unresolved-reference:0-0
+
+=== Edge Type Summary ===
+===END===
+
+**Document Version**: 1.0.0
+**Implementation Status**: ✅ Complete (Bug 1 + Bug 2 Step 2)
+**Test Coverage**: 20/20 tests passing
+**Accuracy**: 100% (5/5 edges detected)
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre154/CK_METRICS_QUICK_REFERENCE.md===LINES===185
+# CK Metrics Suite - Quick Reference Card
+
+## Usage Example
+
+```rust
+===MID===
+→ LCOM = 0 / 1 = 0.0 (good cohesion)
+```
+
+### 3. RFC (Response For a Class)
+**What it measures**: Total number of methods that can be executed in response
+===END===
+
+## References
+
+- Chidamber, S.R. & Kemerer, C.F. (1994). "A Metrics Suite for Object-Oriented Design"
+- Parseltongue v1.6.0 implementation uses graph-based approximations for language-agnostic analysis
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre154/IMPLEMENTATION-REPORT-java-v1.4.9.md===LINES===400
+# Java Dependency Pattern Implementation Report (v1.4.9)
+
+**Date**: 2026-02-06
+**Commit**: 5df4c5eb7
+**Priority**: P0 CRITICAL
+===MID===
+### 1. Constructors.java (67 lines)
+- Simple constructors
+- Generic constructors
+- Constructor with arguments
+- Nested constructors
+===END===
+
+**Report Generated**: 2026-02-06
+**Implementation Time**: ~2 hours (following TDD methodology)
+**Quality**: Production-ready, zero technical debt
+**Co-Authored-By**: Claude Opus 4.5 <noreply@anthropic.com>
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre154/IMPLEMENTATION-REPORT-typescript-v1.4.9.md===LINES===428
+# Implementation Report: TypeScript Dependency Patterns v1.4.9
+
+**Date**: 2026-02-06
+**Priority**: P0 (Critical)
+**Status**: ✅ COMPLETE
+===MID===
+- **Overall impact**: <5% slowdown, well within acceptable range
+
+---
+
+## Test Coverage Analysis
+===END===
+**TDD Cycle**: RED → GREEN → REFACTOR (complete)
+
+---
+
+**END OF REPORT**
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre154/PHASE5_CK_METRICS_VERIFICATION.md===LINES===179
+# CK Metrics Suite Implementation Verification
+
+## Phase 5: CK Metrics Suite (4 of 6 metrics) - v1.6.0
+
+### Implementation Status: ✅ COMPLETE
+===MID===
+3. `test_cbo_nonexistent_node` - Returns 0 for missing nodes
+4. `test_rfc_node_a` - A has RFC=3 (calls B, C; they call D)
+5. `test_rfc_leaf_node` - E has RFC=2 (calls F; F calls D)
+6. `test_wmc_proxy_out_degree` - A has WMC=2 (out-degree)
+7. `test_wmc_node_d` - D has WMC=1 (out-degree)
+===END===
+- ✅ Comprehensive documentation
+- ✅ Grading system (A-F) implemented
+- ✅ Clean integration with existing graph infrastructure
+
+**Status**: READY FOR NEXT PHASE (HTTP endpoint integration)
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre154/PHASE5_COMPLETION_CHECKLIST.md===LINES===416
+# Phase 5 Completion Checklist - CK Metrics Suite
+
+## Implementation Date: 2026-02-08
+
+---
+===MID===
+### REFACTOR Phase
+- [x] Code cleaned up
+- [x] Documentation added
+- [x] No performance regressions
+- [x] Tests still passing after refactoring
+===END===
+**Completed by**: Claude Opus 4.6
+**Date**: 2026-02-08
+**Time**: ~90 minutes (design + implementation + testing + documentation)
+**Methodology**: TDD (RED → GREEN → REFACTOR)
+**Branch**: v160
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre154/PHASE5_IMPLEMENTATION_SUMMARY.md===LINES===309
+# Phase 5 Implementation Summary - CK Metrics Suite
+
+## ✅ COMPLETE - Ready for HTTP Endpoint Integration
+
+### Implementation Date: 2026-02-08
+===MID===
+**Trade-off**: Less precise than AST-based LCOM, but language-agnostic
+
+### 2. WMC Proxy
+**Challenge**: No AST access for cyclomatic complexity
+**Solution**: Use out-degree as complexity proxy
+===END===
+
+**Implemented by**: Claude Opus 4.6
+**Date**: 2026-02-08
+**Version**: Parseltongue v1.6.0-alpha
+**Branch**: v160
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre154/RELEASE-CHECKLIST-v1.5.0.md===LINES===328
+# Release Checklist: Parseltongue v1.5.0
+
+**Feature**: Batch Entity Insertion for 10-60x Ingestion Speedup
+**Date**: 2026-02-06
+**Status**: READY FOR RELEASE
+===MID===
+
+- [ ] **Verify binary**
+  ```bash
+  ./target/release/parseltongue --version
+  # Expected: parseltongue 1.5.0
+===END===
+---
+
+**Checklist Items**: 50+ actionable steps
+**Based On**: Explore agent analysis + existing release patterns
+**Created**: 2026-02-06
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre154/RELEASE-PROGRESS-v1.5.0.md===LINES===287
+# Release Progress: v1.5.0
+
+**Release Date**: 2026-02-06
+**Branch**: `v148-language-check-20260203.md`
+**Status**: BLOCKED - Test failures and clippy warnings must be resolved
+===MID===
+**Test Coverage**:
+- Unit tests: PASSING
+- Integration tests: PASSING
+- Performance benchmarks: PASSING
+- Dogfooding test: CLAIMED COMPLETE (needs re-verification)
+===END===
+---
+
+**Last Updated**: 2026-02-06 23:20 PST
+**Updated By**: tdd-task-progress-context-retainer agent
+**Next Review**: After C++ include detection fix
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre154/SESSION-CONTEXT-20260202.md===LINES===407
+# Session Context Dump - 2026-02-02
+
+## Session Overview
+
+**Branch**: wf20260131 (created from main at 87e659c12)
+===MID===
+1. `/docs/ISGL1-v2-Stable-Entity-Identity.md` (1000+ lines) - Comprehensive ISGL1 v2 design
+2. `/.stable/archive-docs-v2/archive-p2/D04_Incremental_Indexing_Architecture.md` (1,308 lines)
+3. `/.stable/archive-docs-v2/archive-p2/ADR_001_KEY_NORMALIZATION.md` (366 lines)
+4. `/.claude/plans/vectorized-fluttering-manatee.md` (349 lines) - TDD implementation plan (23 tests, 5 cycles)
+
+===END===
+
+*Session ended: 2026-02-02*
+*Context preserved for future reference*
+*Branch: wf20260131*
+*Ready to exit and resume later*
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre154/TDD-PROGRESS-v1.4.9-dependency-patterns.md===LINES===1883
+# TDD Progress Tracker: v1.4.9 Multi-Language Dependency Patterns
+
+**Project**: Parseltongue Dependency Graph Generator
+**Version**: 1.4.9
+**Created**: 2026-02-06
+===MID===
+- [x] ✅ **COMMIT**: a3ffb00 - C++ patterns complete
+
+#### Ruby ✅ COMPLETE
+- [x] 🔴 **RED**: Write failing tests for `Class.new`
+- [x] 🟢 **GREEN**: Implement new method pattern
+===END===
+
+Last synchronized with codebase: 2026-02-06 (v1.4.9 COMPLETE - All 11 languages)
+Status: COMPLETE ✅ - No further updates needed for v1.4.9
+
+🎉 v1.4.9 Multi-Language Dependency Patterns: COMPLETE! 🎉
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre154/TDD-PROGRESS-v1.5.0-batch-insertion.md===LINES===763
+# TDD Progress Tracker: v1.5.0 Batch Entity Insertion
+
+**Version**: 1.5.0
+**Feature**: Batch entity insertion for 10-60x ingestion speedup
+**Date Created**: 2026-02-06
+===MID===
+
+---
+
+## Performance Baselines (Pre-Optimization)
+
+===END===
+
+---
+
+*TDD Progress Tracker initialized: 2026-02-06 22:30 PST*
+*Ready for implementation to begin*
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre154/TDD-SPEC-multi-language-dependency-patterns-v1.4.9.md===LINES===2339
+# TDD Specification: Multi-Language Dependency Pattern Enhancement v1.4.9
+
+**Version**: 1.4.9
+**Date**: 2026-02-06
+**Target Release**: v1.4.9 (One Feature: Comprehensive Dependency Pattern Coverage)
+===MID===
+; ============================================================================
+; PATTERN B: Property Access (v1.4.9)
+; ============================================================================
+
+; Property access: obj.name
+===END===
+---
+
+**End of TDD Specification**
+
+This document is implementation-ready. All patterns are specified, all test cases are defined, all success metrics are measurable. rust-coder-01 can implement purely from this spec without additional research.
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre154/TDD-SPEC-v1.5.0-ingestion-performance.md===LINES===968
+# TDD Specification: v1.5.0 Ingestion Performance Optimization
+
+**Version**: 1.5.0
+**Date**: 2026-02-06
+**Target**: Batch entity insertion for 10x speedup
+===MID===
+**WHEN** I insert batch with duplicate ISGL1 keys
+**THEN** the system SHALL overwrite with latest value (CozoDB :put semantics)
+**AND** SHALL NOT fail the entire batch
+
+```rust
+===END===
+
+---
+
+*Specification follows parseltongue TDD-First principles and four-word naming convention.*
+*Ready for rust-coder-01 agent to implement via STUB → RED → GREEN → REFACTOR cycle.*
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre154/THESIS-ingestion-speed-optimization-v1.5.0.md===LINES===389
+# THESIS: Parseltongue Ingestion Speed Optimization
+
+**Version**: v1.5.0 Proposal
+**Date**: 2026-02-06
+**Analysis Method**: Self-referential parseltongue API exploration (no grep/glob)
+===MID===
+rust:method:parse_source - creates tree-sitter parser
+```
+
+**Problem**: Parser instantiation overhead may not be amortized. Tree-sitter parsers are reusable but may be recreated.
+
+===END===
+4. **Architecture overhaul**: Two-phase design (v1.5.3)
+
+---
+
+*Analysis performed using parseltongue v1.4.5 on its own codebase. 2,304 entities analyzed across 127 files with 6,681 dependency edges.*
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre154/THESIS-parsing-vulnerability-qualified-names-v1.5.1.md===LINES===457
+# Parsing Vulnerability Thesis: Qualified Name Key Format Issues
+
+## v1.5.1 Pre-Release Analysis | February 2026
+
+---
+===MID===
+// Lines 207-219 - THE VALIDATION THAT FAILS
+let parts: Vec<&str> = key.split(':').collect();
+
+if parts.len() != 5 {
+    return Err(StreamerError::ParsingError {
+===END===
+---
+
+*Document Version: 1.0*
+*Analysis Date: February 7, 2026*
+*Prepared for: v1.5.1 Pre-Release Review*
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre154/UserJourney20260202v1.md===LINES===572
+# Parseltongue v1.4.7 User Journey - Complete API Testing
+
+**Date**: February 2, 2026
+**Version**: 1.4.7
+**Test Database**: parseltongue20260202160809/analysis.db
+===MID===
+curl http://localhost:7777/circular-dependency-detection-scan
+```
+
+**Response**:
+```json
+===END===
+- **Hotspot limit**: 10
+
+---
+
+**End of User Journey Document**
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre154/csharp-patterns-quick-reference.md===LINES===223
+# C# Dependency Patterns - Quick Reference
+
+## Complete Pattern Support Matrix
+
+| Pattern | Status | Example | Query File |
+===MID===
+```bash
+# All C# tests
+cargo test csharp --all
+
+# Specific test suites
+===END===
+
+---
+
+**Last Updated**: 2026-02-06
+**Status**: Complete ✅
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre154/csharp-remaining-patterns-completion.md===LINES===309
+# C# Remaining Dependency Patterns - Completion Report
+
+**Date**: 2026-02-06
+**Version**: 1.4.8
+**Status**: ✅ Complete
+===MID===
+- Async/await (lines 49-51)
+
+### 2. Test File
+**File**: `/crates/parseltongue-core/tests/csharp_remaining_patterns_test.rs`
+
+===END===
+---
+
+**Implementation Time**: ~2 hours
+**Test Coverage**: 12 new tests, all passing
+**Zero Regressions**: Existing C# tests maintained
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre154/phase2-batch-insertion-complete.md===LINES===171
+# Phase 2: Batch Entity Insertion - COMPLETE ✅
+
+## Summary
+
+Successfully integrated `insert_entities_batch()` into the streaming pipeline, replacing N individual database round-trips with a single batch operation.
+===MID===
+- Graceful degradation maintained
+
+## Performance Characteristics
+
+### Before (Estimated with Individual Inserts)
+===END===
+
+**Status**: ✅ COMPLETE
+**Date**: 2026-02-06
+**Performance Target**: ✅ Met (50 entities in <1 second)
+**Tests**: ✅ All passing (67 unit + 3 integration)
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre154/v1.5.0-IMPLEMENTATION-SUMMARY.md===LINES===259
+# v1.5.0 Implementation Summary
+
+**Quick Reference for rust-coder-01 Agent**
+
+---
+===MID===
+
+    match self.parsed_entity_to_code_entity(&parsed_entity, &isgl1_key, &content, file_path) {
+        Ok(mut code_entity) => {
+            if let Some(metadata) = lsp_metadata {
+                code_entity.lsp_metadata = Some(metadata);
+===END===
+Expected result: **10-60x speedup** with minimal code changes.
+
+---
+
+*Ready for implementation by rust-coder-01 via TDD-First cycle.*
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre154/v148-ruby-rails-language-verification-20260203.md===LINES===495
+# Ruby and Rails Language Support Verification - v1.4.8
+
+**Date**: February 3, 2026
+**Branch**: v148-language-check-20260203.md
+**Purpose**: Verify Ruby (.rb) language support and document Rails framework limitations
+===MID===
+
+**Benefits**:
+- Tag Rails patterns as special entity types
+- Store metadata: `{type: "has_many", target: "posts"}`
+- Enable Rails-specific queries: "Show me all associations"
+===END===
+
+**Generated**: February 3, 2026
+**Test Environment**: macOS ARM64, Rust 1.83.0
+**Parseltongue Version**: 1.4.7 (testing for v1.4.8)
+**Branch**: v148-language-check-20260203.md
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre154/v149-go-dependency-patterns-implementation-20260206.md===LINES===436
+# Go Dependency Patterns Implementation (v1.4.9)
+
+**Date**: 2026-02-06
+**Status**: ✅ COMPLETE (8/8 core patterns, 2 known limitations documented)
+**Priority**: P1 (HIGH)
+===MID===
+### 3. Test File (NEW)
+**Path**: `crates/parseltongue-core/tests/go_dependency_patterns_test.rs`
+**Size**: 333 lines
+**Test count**: 10 tests (8 passing, 2 ignored)
+**Coverage**:
+===END===
+---
+
+**Implementation Complete**: 2026-02-06
+**Status**: ✅ READY FOR COMMIT
+**Next**: JavaScript dependency patterns (P1)
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre154/v151-CRITICAL-BUG-zero-edges-csharp-typescript.md===LINES===276
+# CRITICAL BUG: Zero Edges for C# and TypeScript
+
+## v1.5.1 Bug Analysis | February 2026
+
+---
+===MID===
+---
+
+## Debugging Steps Required
+
+### Step 1: Add Debug Logging to Edge Creation
+===END===
+---
+
+*Analysis Date: February 7, 2026*
+*Discovered via: Parseltongue self-analysis API*
+*Related: docs/v151-TDD-SPEC-key-sanitization-qualified-names.md*
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre154/v151-RESEARCH-10x-ingestion-optimization-v2.md===LINES===373
+# Research v2: 10x Ingestion Speed Optimization (Rubber Duck Debugged)
+
+## v1.5.1 Performance Analysis | February 2026
+
+---
+===MID===
+#### 2.2 Fixed-Size Database Batches
+
+```rust
+const BATCH_SIZE: usize = 300;
+
+===END===
+
+---
+
+*Research v2 - Rubber Duck Debugged*
+*February 7, 2026*
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre154/v151-RESEARCH-10x-ingestion-optimization.md===LINES===408
+# Research: 10x Ingestion Speed Optimization
+
+## v1.5.1 Performance Analysis | February 2026
+
+---
+===MID===
+// Pool of pre-initialized parsers per language
+struct ParserPool {
+    rust_parsers: Vec<Parser>,    // Pre-warmed
+    python_parsers: Vec<Parser>,
+    // ... etc
+===END===
+---
+
+*Research Date: February 7, 2026*
+*Methodology: Parseltongue self-analysis (dogfooding)*
+*Target Release: v1.5.1*
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre154/v151-SPEC-rust-ruby-edge-persistence.md===LINES===778
+# SPEC: Rust/Ruby Edge Persistence Bug Investigation
+
+**Version**: 1.0
+**Date**: 2026-02-07
+**Status**: INVESTIGATION SPECIFICATION
+===MID===
+- Rust edge keys may violate unique constraint
+- Rust edges may reference non-existent entities
+- CozoDB may have Rust-specific schema issues
+
+**How to Test**:
+===END===
+---
+
+**END OF SPECIFICATION**
+
+*This document guides the investigation of the Rust edge persistence bug. Update with findings as investigation progresses.*
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre154/v151-TDD-PROGRESS.md===LINES===1338
+# TDD Session State: v1.5.1 Bug Fixes
+
+**Session Start**: 2026-02-07
+**Last Updated**: 2026-02-07 (**ALL THREE BUGS RESOLVED - Same Root Cause**)
+**Version Target**: v1.5.1
+===MID===
+- ✅ No dead code warnings
+- ✅ No regressions in existing functionality
+
+**Bug Status**: BUG-001 (qualified name `::` breaking keys) is now **FIXED**
+
+===END===
+
+**END OF TDD PROGRESS TRACKING**
+
+*This document is the single source of truth for v1.5.1 development state.*
+*Update this file after completing each phase or making significant progress.*
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre154/v151-TDD-SPEC-key-sanitization-qualified-names.md===LINES===1665
+# TDD Specification: ISGL1 Key Format Sanitization for Qualified Names
+
+**Version**: 1.5.1
+**Date**: 2026-02-07
+**Status**: SPECIFICATION
+===MID===
+        .collect();
+
+    for entity in resource_refs {
+        let parts: Vec<&str> = entity.key.split(':').collect();
+        assert_eq!(parts.len(), 5, "C# global:: key failed: {}", entity.key);
+===END===
+- [ ] No compiler warnings
+
+---
+
+**END OF SPECIFICATION**
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre154/v151-primary-PRD.md===LINES===1599
+# Product Requirements Document: v1.5.1 Bug Fixes
+
+**Version**: 1.5.1
+**Date**: 2026-02-07
+**Status**: READY FOR IMPLEMENTATION
+===MID===
+```
+
+---
+
+#### Phase 2: Apply Sanitization to Key Generation (1 hour)
+===END===
+- Users: Affected by C++/Rust/Ruby/C# parsing failures
+
+---
+
+**END OF PRD**
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre154/v152-ASYNC-PIPELINE-ARCHITECTURE-DIAGRAMS.md===LINES===664
+# v152 Async Pipeline Architecture Diagrams
+
+**Version**: 1.5.2
+**Date**: 2026-02-07
+
+===MID===
+flowchart LR
+    subgraph MIGRATION["Database Migration Timeline"]
+        direction TB
+
+        subgraph V147["v1.4.7"]
+===END===
+    MILESTONE2 -.->|Score| S3[10/10 Feasibility]
+    END -.->|Score| S4[10/10 Feasibility]
+```
+
+**Status**: Architecture design complete, ready for implementation ✅
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre154/v152-ASYNC-PIPELINE-RUBBER-DUCK-ANALYSIS.md===LINES===910
+# v152 Async Pipeline Rubber Duck Debugging Analysis
+
+**Version**: 1.5.2
+**Date**: 2026-02-07
+**Status**: Research Phase - Improving 5/10 and 6/10 to 10/10
+===MID===
+
+    Ok(())
+}
+```
+
+===END===
+2. **Implement**: Strategy 2 (Write Queue) in CozoDbStorage
+3. **Refactor**: Streamer with pure functions and channels
+4. **Measure**: Benchmark improvements and validate contracts
+
+**Status**: Ready to proceed with v1.5.2 async pipeline implementation ✅
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre154/v152-ASYNC-PIPELINE-SUMMARY.md===LINES===444
+# v152 Async Pipeline Research Summary
+
+**Version**: 1.5.2
+**Date**: 2026-02-07
+**Status**: ✅ Research Complete - Ready for Implementation
+===MID===
+
+| Metric | Target | Improvement |
+|--------|--------|-------------|
+| Concurrent writes | N threads | 5.4x throughput |
+| Ingestion throughput | ~2700 files/sec | 5.4x (parallel writes) |
+===END===
+---
+
+**Status**: ✅ Research complete, ready to proceed with implementation
+
+**Next Step**: Review documents and approve implementation plan
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre154/v152-DATABASE-ALTERNATIVES-RESEARCH.md===LINES===903
+# v152 Database Alternatives Research
+
+**Version**: 1.5.2
+**Date**: 2026-02-07
+**Purpose**: Evaluate multi-writer database alternatives to RocksDB
+===MID===
+SurrealDB is a modern multi-model database with native Rust implementation and embedded mode.
+
+**Website**: https://surrealdb.com
+
+#### Pros
+===END===
+3. Validate concurrent read improvements
+4. Plan PostgreSQL migration for v1.6.0
+5. Document migration guide for users
+
+**Status**: Research complete, ready to implement ✅
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre154/v152-INDEX.md===LINES===340
+# v152 Documentation Index
+
+**Version**: 1.5.2
+**Date**: 2026-02-07
+**Research Status**: ✅ Complete
+===MID===
+**Recommended reading**:
+1. All documents (full read)
+2. Focus areas:
+   - Database alternatives evaluation
+   - Concurrency patterns
+===END===
+Refer to specific documents above or contact the Parseltongue team.
+
+**Research Status**: ✅ Complete and ready for implementation
+
+**Confidence Level**: High (9/10) - Clear path forward with proven patterns
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre154/v152-OPTION3-ASYNC-PIPELINE-RESEARCH.md===LINES===486
+# V152 Option 3: Async Pipeline Research Document
+
+**Date**: 2026-02-07
+**Version**: 1.5.2 (Proposed)
+**Research Method**: Parseltongue HTTP API Analysis Only
+===MID===
+
+### Call Chain Analysis
+
+```
+main()
+===END===
+**Estimated Timeline**: 3-4 versions (v1.5.2 through v1.5.5)
+
+---
+
+*Document generated using Parseltongue HTTP API analysis on 2026-02-07*
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre154/v152-PIPELINE-OPTIMIZATION-POV.md===LINES===249
+# Pipeline Optimization POV: Three-Stage Ingestion Architecture
+
+**Date**: 2026-02-07
+**Version**: v1.5.2 Research
+**Author**: Claude Code (Anthropic)
+===MID===
+                  ┌─────────────────────┐
+                  │  walkdir (current)  │ ← Keep sequential
+                  └─────────────────────┘
+                            │
+                            ▼
+===END===
+
+---
+
+*Analysis performed using Parseltongue HTTP API endpoints only (no grep/glob)*
+*Server: http://localhost:7777*
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre154/v152-README.md===LINES===427
+# v152 Async Pipeline Research - README
+
+**Version**: 1.5.2
+**Date**: 2026-02-07
+**Status**: ✅ Research Complete
+===MID===
+---
+
+## Performance Expectations
+
+### Current (v1.4.7)
+===END===
+**Ready to Proceed**: ✅
+
+---
+
+**Questions?** Review the detailed documents above or contact the Parseltongue team.
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre154/v153-PRD-WRITE-QUEUE-MAXIMUM-SPEED.md===LINES===812
+# v153-PRD-WRITE-QUEUE-MAXIMUM-SPEED.md
+
+**Version**: 1.5.3
+**Status**: DRAFT
+**Author**: AI-Native Development
+===MID===
+| Alternative | Rejected Because |
+|-------------|------------------|
+| std::sync::mpsc | Unbounded only (no backpressure) |
+| flume | Less mature, smaller ecosystem |
+| async channels | Unnecessary complexity (blocking is fine) |
+===END===
+2. Implement Phase 1 (Foundation) following TDD
+3. Benchmark against v1.4.7 baseline
+4. Release v1.5.3 with comprehensive documentation
+
+**End of PRD**
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre175/DECISION-v173-pt02-pt03-endpoint-selection.md===LINES===312
+# DECISION: v1.7.3 — Which Endpoints Should pt02/pt03 Support?
+
+**Date**: 2026-02-12
+**Target Scale**: Rust compiler / Linux kernel class codebases (~400K entities, ~1.6M edges)
+
+===MID===
+/folder-structure-discovery-tree     → loads ALL entities (1.2 GB, small result)
+/smart-context-token-budget          → loads ALL edges (1.2 GB in two HashMaps)
+/complexity-hotspots-ranking-view    → loads ALL edges (800 MB)
+/blast-radius-impact-analysis        → per-hop edge scans (200-500 MB)
+/circular-dependency-detection-scan  → loads ALL edges + DFS (1 GB)
+===END===
+  "suggestion": "Use pt01 with RocksDB backend on Mac/Linux, or run on a machine with 32GB+ RAM.",
+  "tier": 3,
+  "estimated_ram_gb": 5.2
+}
+```
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre175/PRD-v165.md===LINES===1268
+# PRD: Ingestion Diagnostics Coverage Report (v1.6.5)
+
+**Feature**: Ingestion Quality Diagnostics API
+**Version**: v1.6.5
+**Status**: Draft
+===MID===
+      {
+        "folder_L1": "crates",
+        "entity_count": 1820,
+        "subfolders": [
+          { "folder_L2": "parseltongue-core", "entity_count": 1200 },
+===END===
+The PRD specified filesystem walk at query time (Section 4, Report 1). The actual implementation stores ignored files in a CozoDB relation (`IgnoredFiles`) during pt01 ingestion, following the same ingestion-time storage pattern as `TestEntitiesExcluded` and `FileWordCoverage`. This was chosen for consistency and reliability (data survives workspace directory moves).
+
+---
+
+*End of PRD-v165*
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre175/RESEARCH-v173-serialization-formats.md===LINES===259
+# RESEARCH: v1.7.3 — Serialization Format Analysis for pt02/pt03
+
+**Date**: 2026-02-12
+**Context**: Evaluating serialization formats for pt02 (binary snapshot) and pt03 (human-readable export) as Windows-compatible alternatives to pt01's CozoDB/RocksDB pipeline.
+
+===MID===
+- **Problem**: Nested structs must be stored as JSON blobs. More code than binary formats.
+
+#### Parquet/Arrow (columnar)
+- **Crate**: `parquet = "53"` + `serde_arrow = "0.12"`
+- **File size**: ~400-600KB (great compression)
+===END===
+- [Curtis Lowder, "Sufficient Serialization" (2025)](https://curtislowder.com/blog/2025-08-10-sufficient-serialization/)
+- [rkyv documentation](https://rkyv.org/)
+- [Cloudflare mmap-sync](https://github.com/cloudflare/mmap-sync)
+- [bincode crates.io](https://crates.io/crates/bincode) — Maintenance status
+- [rmp-serde crates.io](https://crates.io/crates/rmp-serde)
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre175/SPEC-v169-sled-on-windows.md===LINES===501
+# SPEC-v169-sled-on-windows.md
+
+**Version**: 1.6.9
+**Date**: 2026-02-12
+**Status**: Implementation Ready
+===MID===
+
+    // ... rest of function writes OPTIONS file ...
+}
+```
+
+===END===
+**End of Specification**
+
+**Estimated Implementation Time**: 2-3 hours
+**Estimated Testing Time**: 1 hour (macOS), 1 hour (Windows)
+**Total**: ~4-5 hours for complete implementation + verification
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre175/SPEC-v172-windows-mem-backup.md===LINES===172
+# SPEC: v1.7.2 — Windows In-Memory Ingestion with SQLite Backup
+
+## Progress Tracker
+
+### Part A: UNDO Previous Windows Hacks
+===MID===
+- On Mac/Linux: unchanged (`rocksdb:workspace/analysis.db`)
+
+```rust
+// Windows: ingest into memory, then backup to SQLite
+#[cfg(target_os = "windows")]
+===END===
+- v1.6.7: RocksDB direct IO for compaction — no effect on Windows
+- v1.6.8: Windows-only chunked batch inserts — no effect
+- v1.6.9: Sled on Windows — abandoned project, data loss
+- v1.7.0: SQLite on Windows — 12KB empty database
+- v1.7.1: Sequential SQLite inserts on Windows — still 12KB empty
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre175/TDD-SESSION-STATE-v172.md===LINES===375
+# TDD Session State: v1.7.2 Windows mem→SQLite Backup Implementation
+
+**Session Start**: 2026-02-12
+**Current Phase**: RED (Tracking implementation by rust-coder-01 agent)
+**Working Directory**: `/Users/amuldotexe/Desktop/A01_20260131/parseltongue-dependency-graph-generator`
+===MID===
+**Remaining simplification opportunities**:
+- None identified - this is the cleanest solution
+
+---
+
+===END===
+
+---
+
+**Last Updated**: 2026-02-12 (session start)
+**Next Update**: After rust-coder-01 completes first file modification
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre175/THESIS-v173-storage-architecture.md===LINES===408
+# Thesis: Parseltongue Storage Architecture — Beyond CozoDB
+
+**Date**: 2026-02-12
+**Branch**: v173
+**Status**: Research complete, revisit later
+===MID===
+Lite version (new, all platforms including WASM):
+  parseltongue-lite analyze .             → RAM + .ptgraph + .json
+  parseltongue-lite analyze . --serve     → combined ingest + HTTP server
+```
+
+===END===
+| petgraph | In-memory graph lib | 2.1M+ Rust downloads | The go-to Rust graph library |
+
+---
+
+*Research by Claude Code, 2026-02-12. Revisit when ready to implement.*
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre175/UserJourney20260202v1.md===LINES===946
+# Parseltongue User Journey - Complete API Testing
+
+**Date**: February 2, 2026 (v1.4.7) | Updated: February 9, 2026 (v1.6.1)
+**Version**: 1.6.1
+**Test Database**: parseltongue20260202160809/analysis.db
+===MID===
+
+# Only core entities (k >= 3)
+curl "http://localhost:7777/kcore-decomposition-layering-analysis?k=3"
+```
+
+===END===
+- **Leiden resolution**: 1.0
+
+---
+
+**End of User Journey Document**
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre175/WINDOWS-SPECIFIC-CODE-TO-REMOVE.md===LINES===415
+# Windows-Specific Code to Remove for v1.7.2
+
+This document lists ALL Windows-specific code added in v1.6.7 through v1.7.1 that needs to be undone for the v1.7.2 mem→SQLite backup strategy.
+
+## Summary of Changes Needed
+===MID===
+        } else {
+            self.db.insert_test_entities_excluded_batch(&all_excluded_tests).await
+        }
+    },
+    // Task 4: Insert file word coverage
+===END===
+### What STAYS unchanged:
+- Mac/Linux: RocksDB + tokio::join! (no changes)
+- HTTP server: opens sqlite: or rocksdb: based on --db flag (no changes)
+- Test suite: runs on Mac/Linux with mem or rocksdb (no changes)
+- All 22 endpoints: no changes
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre175/v154-PRD-RAYON-SLED-PARALLEL-INGESTION.md===LINES===932
+# v154 PRD: Rayon + Sled Parallel Ingestion
+
+**Version**: 1.5.4
+**Status**: Planning
+**Created**: 2026-02-07
+===MID===
+        .into_iter()
+        .filter_map(|e| e.ok())
+        .filter(|e| e.is_file() && should_process_file(e.path()))
+        .map(|e| e.path().to_path_buf())
+        .collect();
+===END===
+---
+
+**Document Status**: READY FOR IMPLEMENTATION
+**Author**: Claude Code (via Parseltongue API)
+**Review Date**: 2026-02-07
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre175/v154-RCA-ENDPOINT-ISSUES.md===LINES===633
+# Root Cause Analysis: HTTP Endpoint Issues
+
+**Version**: v1.4.2
+**Date**: 2026-02-07
+**Analyzed By**: Claude Code via Parseltongue HTTP API
+===MID===
+
+**Option 2: Document Current Behavior**
+
+Add to API documentation:
+
+===END===
+**Document Version:** 1.0
+**Analysis Date:** 2026-02-07
+**Parseltongue Version:** v1.4.2
+**Entities Analyzed:** 1,101
+**Edges Analyzed:** 7,450
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre175/v154-RELEASE-CHECKLIST.md===LINES===106
+# v1.5.4 Release Checklist
+
+**Date**: 2026-02-07
+**Fix**: RwLock Deadlock in HTTP Endpoints
+
+===MID===
+| TypeScript | 10 | ✅ |
+| PHP | 5 | ✅ |
+| Ruby | 4 | ✅ |
+| Rust | 3 | ✅ |
+| JavaScript | 3 | ✅ |
+===END===
+    let db_guard = state.database_storage_connection_arc.read().await;
+    db_guard.as_ref().cloned()?  // Clone Arc, release lock
+};
+storage.raw_query(...).await;  // No lock held
+```
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre175/v154-TDD-PROGRESS.md===LINES===540
+# v154 TDD Progress Journal: Rayon + Sled Parallel Ingestion
+
+## Version Goal
+
+**Target**: 5-7x faster ingestion through parallel processing and lock-free storage
+===MID===
+#### Measurements
+
+**Performance Tiers**:
+- Fast (<5ms): 4 endpoints (health, API ref, fuzzy search, edges)
+- Medium (5-20ms): 7 endpoints (stats, callers, callees, blast, cycles, hotspots, tokens)
+===END===
+### Communication Protocol
+- Always reference phase number and TDD state (RED/GREEN/REFACTOR)
+- Include concrete measurements (time, entity count, speedup)
+- Note any deviation from plan with rationale
+- Flag blockers immediately with severity (blocking/non-blocking)
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre175/v154-rayon-sled-parallel-ingestion.md===LINES===325
+# v1.5.4: Rayon + Sled Parallel Ingestion
+
+## Summary
+
+Implemented parallel file parsing with Rayon + Sled backend support for 5-7x faster ingestion on multi-core systems.
+===MID===
+
+### Benchmark Tests
+
+```bash
+# Performance comparison (ignored by default)
+===END===
+
+**Recommended deployment**:
+- **Production**: RocksDB + parallel ingestion (fastest)
+- **Embedded**: Sled + parallel ingestion (pure Rust)
+- **Small codebases**: Sequential + RocksDB (lowest memory)
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre175/v155-PRD-p1.md===LINES===771
+# v1.5.5 PRD Part 1: SQL Support Research
+
+**Version**: 1.5.5
+**Date**: 2026-02-07
+**Author**: Parseltongue Research Team
+===MID===
+```python
+# Detection: Model class with class name -> table name convention
+class User(models.Model):  # -> sql:table:app_user (app_modelname)
+    email = models.CharField(max_length=255)
+
+===END===
+---
+
+**Document Version**: 1.0
+**Last Updated**: 2026-02-07
+**Next Steps**: Review with team, begin Phase 1 implementation
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre175/v155-PRD-p2-CODEBASE-ANALYSIS.md===LINES===608
+# v1.5.5 PRD Part 2: Codebase Analysis for SQL Support
+
+**Date**: 2026-02-07
+**Purpose**: Analyze Parseltongue codebase using HTTP API to understand how to add SQL as the 13th language
+**Methodology**: Query-driven analysis using only Parseltongue HTTP endpoints
+===MID===
+|---------------|-------------|---------|
+| Table definition | `table` | `CREATE TABLE users (...)` |
+| View definition | `view` | `CREATE VIEW active_users AS ...` |
+| Stored procedure | `procedure` | `CREATE PROCEDURE get_user(...)` |
+| Function | `function` | `CREATE FUNCTION calculate_tax(...)` |
+===END===
+
+**Document Status**: ✅ Complete
+**Analysis Method**: HTTP API Query-Driven
+**Confidence Level**: High (80%+)
+**Ready for Implementation**: Yes - Proceed to Phase 1 (v1.5.5)
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre175/v155-RCA_01.md===LINES===259
+# v155-RCA_01: CozoDB Query Syntax Error - Generic Type Parameters in ISGL1 Keys
+
+**Date**: 2026-02-08
+**Severity**: Medium (11 edges failed out of ~164)
+**Affected Languages**: C#, TypeScript, JavaScript, C++, Java (any language with generic types)
+===MID===
+
+```rust
+// This only sanitizes path separators, not generic type characters
+let sanitized = without_ext
+    .replace(['/', '\\', '-', '.'], "_");
+===END===
+1. [ ] Implement `sanitize_entity_name()` in `isgl1_v2.rs`
+2. [ ] Update `format_key()` in `isgl1_generator.rs` to use sanitization
+3. [ ] Add unit tests for generic type name sanitization
+4. [ ] Update test fixtures to verify fix
+5. [ ] Document ISGL1 v2.1 key format with generic sanitization rules
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre175/v155-SPEC-GENERIC-TYPE-SANITIZATION.md===LINES===838
+# v155-SPEC: Generic Type Parameter Sanitization for ISGL1 Keys
+
+**Date**: 2026-02-08
+**Version**: ISGL1 v2.1
+**Status**: Draft
+===MID===
+}
+
+/// T155-009: Rust generics (edge case)
+#[test]
+fn test_sanitize_rust_generics() {
+===END===
+**Estimated Effort**: 4-6 hours (1 hour tests, 2 hours implementation, 2 hours integration testing, 1 hour docs)
+
+---
+
+*This specification follows the TDD-First methodology and Four-Word Naming Convention as defined in CLAUDE.md.*
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre175/v156-PRD-final.md===LINES===1032
+# v1.5.6 PRD: SQL Language Support + Generic Type Sanitization
+
+**Version**: 1.5.6
+**Date**: 2026-02-08
+**Status**: Final Specification
+===MID===
+
+**TDD Cycle**:
+1. **STUB**: Write 13 failing tests in `isgl1_v2_generic_sanitization_tests.rs`
+2. **RED**: Run `cargo test` → verify all tests fail
+3. **GREEN**: Implement `sanitize_entity_name_for_isgl1()` in `isgl1_v2.rs`
+===END===
+**Target Completion**: Within 2 development days
+
+---
+
+*This PRD follows the TDD-First methodology and Four-Word Naming Convention as defined in CLAUDE.md. All implementations must pass the RED → GREEN → REFACTOR cycle before integration.*
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre175/v156-RELEASE-CHECKLIST.md===LINES===339
+# v1.5.6 Release Checklist
+
+**Date**: 2026-02-08
+**Version**: 1.5.6
+**Codename**: Generic Sanitization + Windows/PHP Fix + SQL Infrastructure
+===MID===
+## Files Changed (23)
+- parseltongue-core: entities.rs, isgl1_v2.rs, query_extractor.rs, cozo_client.rs
+- pt01-folder-to-cozodb-streamer: isgl1_generator.rs, streamer.rs, external_dependency_handler.rs
+
+Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
+===END===
+| Breaking Change | Yes (re-ingest required) |
+
+---
+
+**Release Status**: Ready for deployment
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre175/v160-PRD-7-GRAPH-ANALYSIS-FEATURES.md===LINES===2786
+# PRD: Parseltongue v1.6.0 - Seven Mathematical Graph Analysis Features
+
+**Version**: 1.6.0
+**Date**: 2026-02-08
+**Status**: DRAFT
+===MID===
+H_max = log₂(n)
+
+where n = number of edge types
+
+For 4 edge types (Calls, Uses, Implements, Inherits):
+===END===
+| 1.1 | 2026-02-08 | Explore agent | Rubber-duck debugging: found 3 critical issues (missing Inherits edge, entropy H_max, DIT/NOC blocked) |
+
+---
+
+**END OF PRD**
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre175/v160-development-journal.md===LINES===224
+# Parseltongue v1.6.0 Development Journal
+
+**Date**: 2026-02-08
+**Branch**: `v160`
+**Base**: `a9fca5f62` (Merge pull request #6 from that-in-rust/v155)
+===MID===
+| **Files changed** | 26 |
+| **Lines added** | ~4,475 |
+| **Lines removed** | ~9 |
+| **New algorithm files** | 8 (6 algorithms + SQALE + integration) |
+| **New HTTP handler files** | 7 |
+===END===
+
+1. **Run release checklist**: `bash docs/v160-release-checklist.sh`
+2. **Merge to main**: Create PR from `v160` -> `main`
+3. **Tagged release**: `git tag v1.6.0`
+4. **Roadmap**: Entity Preview Signature Pointers (v1.7) for 90% token reduction
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre175/v160-release-dryrun-20260208223938.md===LINES===88
+# Parseltongue v1.6.0 Release Dry Run Report
+
+**Generated**: Sun Feb  8 22:39:38 IST 2026
+**Branch**: v160
+**Commit**: c15233c23
+===MID===
+- [x] **PASS**: 05. /code-entity-detail-view
+- [x] **PASS**: 06. /code-entities-search-fuzzy
+- [x] **PASS**: 07. /dependency-edges-list-all
+- [x] **PASS**: 08. /reverse-callers-query-graph
+- [x] **PASS**: 09. /forward-callees-query-graph
+===END===
+**Verdict**: RELEASE READY
+
+---
+
+Generated by v160-release-checklist.sh on Sun Feb  8 22:40:09 IST 2026
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre175/v161-PRD-ingestion-coverage-report.md===LINES===1059
+# PRD: Ingestion Coverage Report (v1.6.1)
+
+**Feature**: Code Graph Coverage Report
+**Version**: v1.6.1
+**Status**: Draft
+===MID===
+---
+
+## 8. Integration with Existing Pipeline
+
+### 8.1 Changes to `pt01-folder-to-cozodb-streamer`
+===END===
+- [LLM Hallucinations in Code Generation (arXiv:2409.20550)](https://arxiv.org/pdf/2409.20550)
+- [Token-Level Hallucination Detection: HaluGate (vLLM Blog)](https://blog.vllm.ai/2025/12/14/halugate.html)
+- [CodeHalu: Code Hallucination Framework (AAAI)](https://ojs.aaai.org/index.php/AAAI/article/download/34717/36872)
+- [Code Quality Metrics (Codacy Blog)](https://blog.codacy.com/code-quality-metrics)
+- [Best Practices for Code Coverage (Graphite)](https://graphite.com/guides/code-coverage-best-practices)
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre175/v161-release-dryrun-20260209081044.md===LINES===95
+# Parseltongue v1.6.1 Release Dry Run Report
+
+**Generated**: Mon Feb  9 08:10:44 IST 2026
+**Branch**: v160
+**Commit**: 30f994e13
+===MID===
+- [x] **PASS**: 08. /reverse-callers-query-graph
+- [x] **PASS**: 09. /forward-callees-query-graph
+- [x] **PASS**: 10. /blast-radius-impact-analysis
+- [x] **PASS**: 11. /circular-dependency-detection-scan
+- [x] **PASS**: 12. /complexity-hotspots-ranking-view
+===END===
+**Verdict**: RELEASE READY
+
+---
+
+Generated by v160-release-checklist.sh on Mon Feb  9 08:11:17 IST 2026
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre175/v162-dependency-graph-export-plan.md===LINES===179
+# Plan: Dependency Graph Export Endpoints (v1.6.2)
+
+## Context
+
+Parseltongue has 22 endpoints that return edges, entity lists, or derived analysis -- but no single endpoint returns a dependency graph (nodes + edges together). An LLM agent or visualization tool currently needs multiple round-trips to assemble a graph. Two new endpoints fix this:
+===MID===
+
+### NEW: `crates/pt08-http-code-query-server/src/http_endpoint_handler_modules/dependency_subgraph_entity_handler.rs`
+
+Structs (4-word names):
+- `SubgraphExportQueryParamsStruct` -- entity, hops (default 2), max_nodes (default 500)
+===END===
+4. Verify: subgraph nodes are subset of full export nodes
+5. Verify: subgraph edges only connect nodes in the subgraph (no dangling edges)
+6. Verify: full export node_count matches `/codebase-statistics-overview-summary` entity count
+7. Verify: full export edge_count matches `/codebase-statistics-overview-summary` edge count
+8. Verify: API reference shows total_endpoints >= 24
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre175/v162-ingestion-error-logging-plan.md===LINES===162
+# Plan: Ingestion Error Logging (v1.6.2)
+
+## Context
+
+pt01 already detects and collects errors during ingestion into `StreamResult.errors: Vec<String>`, but this vector is **never written to disk or shown to the user**. Errors print as yellow warnings to console during streaming, then vanish. Additionally, several error paths silently drop errors via `eprintln!` without collecting them. The user has no way to know which files failed or why after ingestion completes.
+===MID===
+
+After `stream_directory()` returns, write `StreamResult.errors` to disk. This is the minimal change -- just a few lines added after the existing result handling.
+
+**Location**: `main.rs` after line ~163 where `result` is received.
+
+===END===
+5. Verify file contains header with correct counts
+6. Verify error messages have category prefixes
+7. Verify console shows error count with file path
+8. Verify: error count in file matches "Errors encountered: N" from streaming output
+9. Run on a clean project with 0 errors -- verify file still created with header only
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre175/v165-TDD-PROGRESS.md===LINES===488
+# v1.6.5 TDD Progress Journal: Comprehensive Capability Testing
+
+## Version Goal
+
+**Target**: Full test coverage for all v1.6.0-v1.6.5 capabilities including graph algorithms, scope filtering, diagnostics, import word counting, ignored files tracking, parallelism, and HTTP endpoint correctness.
+===MID===
+| 2 | `Some("")` -> empty string | IMPLEMENTED | Empty scope = no filter |
+| 3 | `Some("src")` -> `, root_subfolder_L1 = 'src'` | IMPLEMENTED | L1-only filter |
+| 4 | `Some("src\|\|core")` -> `, root_subfolder_L1 = 'src', root_subfolder_L2 = 'core'` | IMPLEMENTED | L1+L2 filter |
+| 5 | Single-quote escaping | IMPLEMENTED | SQL injection prevention |
+| 6 | Scope validation with did-you-mean suggestions | IMPLEMENTED | Invalid scope returns suggestions |
+===END===
+10. Add determinism verification (run 5x, compare)
+
+**Total proposed new tests: ~33**
+**Current passing tests: 665**
+**Target after completion: ~698**
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre175/v165-executive-implementation-specs.md===LINES===1377
+# v1.6.5 Executive Implementation Specifications
+
+**Feature**: Ingestion Diagnostics Coverage Report + Folder-Scoped Queries
+**PRD**: `PRD-v165.md`
+**Date**: 2026-02-11
+===MID===
+**Step 5**: Audit and remove dangerous `unwrap()` on mutex locks
+**Step 6**: Benchmark: verify > 3x speedup on multi-core
+
+---
+
+===END===
+
+*Verified by Parseltongue code graph analysis on 2026-02-11*
+*Research agents completed 2026-02-11: web research covering JaCoCo, SonarQube, Semgrep, CodeQL, Neo4j, TigerGraph*
+*Database: rocksdb:parseltongue20260211193602/analysis.db*
+*Server: http://localhost:7777 (uptime: 1580s at time of verification)*
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre175/v165-wave2-implementation-guide.md===LINES===104
+# v1.6.5 Wave 2 Implementation Guide
+
+## Completed Handlers (5/16)
+
+### Simple Handlers (3/3) ✅
+===MID===
+9. **circular_dependency_detection_handler.rs**
+10. **strongly_connected_components_handler.rs**
+11. **technical_debt_sqale_handler.rs**
+12. **kcore_decomposition_layering_handler.rs**
+13. **centrality_measures_entity_handler.rs**
+===END===
+After each handler:
+- [ ] Cargo build --release
+- [ ] Test without ?scope= (should return all)
+- [ ] Test with ?scope=crates (should filter)
+- [ ] Test with ?scope=crates||parseltongue-core (should filter to L2)
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre175/v165-wave2-wave3-completion-plan.md===LINES===246
+# v1.6.5 Waves 2 & 3 Implementation Completion Plan
+
+## Status: 6/16 Handlers Complete ✅
+
+### Completed (6)
+===MID===
+// STEP 4: Update build_graph_from_database_edges signature
+async fn build_graph_from_database_edges(
+    storage: &Arc<parseltongue_core::storage::CozoDbStorage>,
+    scope_filter: &Option<String>,  // ADD THIS PARAM
+) -> Result<AdjacencyListGraphRepresentation, String> {
+===END===
+for endpoint in code-entities-list-all code-entity-detail-view dependency-edges-list-all complexity-hotspots-ranking-view reverse-callers-query-graph forward-callees-query-graph blast-radius-impact-analysis semantic-cluster-grouping-list smart-context-token-budget circular-dependency-detection-scan strongly-connected-components-list technical-debt-sqale-analysis kcore-decomposition-layering-view centrality-measures-entity-ranking entropy-complexity-measurement-report coupling-cohesion-metrics-analysis leiden-community-detection-clusters; do
+  echo "Testing $endpoint with scope..."
+  curl -s "http://localhost:7777/$endpoint?scope=crates" | jq '.success' || echo "FAILED: $endpoint"
+done
+```
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre175/v170-SPEC-concurrent-batch-insertion.md===LINES===811
+# v1.7.0 SPEC: Concurrent Batch Insertion with tokio::join!
+
+**Version**: 1.7.0
+**Status**: Draft Specification
+**Target**: `stream_directory_with_parallel_rayon()` in `pt01-folder-to-cozodb-streamer`
+===MID===
+### 4.1 Partial Failure Handling
+
+**Risk**: If one insert fails, the others may succeed, leaving the database in a partially-updated state.
+
+**Current Behavior**: Sequential inserts have the same issue - if `insert_entities_batch()` succeeds but `insert_edges_batch()` fails, entities are already committed.
+===END===
+4. Merge if ≥30% speedup achieved
+
+---
+
+END OF SPECIFICATION
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre175/v170-SPEC-rocksdb-windows-75mb-write-stall-fix.md===LINES===1200
+# v1.7.0 SPEC: RocksDB Windows 75MB Write Stall Fix
+
+**Version**: 1.7.0
+**Status**: Draft
+**Created**: 2026-02-12
+===MID===
+- `insert_test_entities_excluded_batch()`
+- `insert_file_word_coverage_batch()`
+- `insert_ignored_files_batch()`
+
+### 5.3 Test Plan
+===END===
+**End of Specification**
+
+**Status**: Ready for implementation
+**Next Steps**: Implement Phase 1 (OPTIONS file), then Phase 2 (chunking)
+**Estimated Effort**: 2-3 days development + 1-2 days testing
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre175/v172-STARTING-STATE-SNAPSHOT.md===LINES===458
+# v1.7.2 Starting State Snapshot
+
+**Snapshot Timestamp**: 2026-02-12
+**Purpose**: Capture exact starting state before v1.7.2 implementation begins
+
+===MID===
+            // Task 4: Insert file word coverage
+            async {
+                if all_word_coverages.is_empty() {
+                    Ok(())
+                } else {
+===END===
+```
+
+---
+
+**Snapshot Complete**: Ready for rust-coder-01 agent to begin implementation
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/pre175/v175-Shreyas-Doshi-Critique.md===LINES===288
+# v1.7.5 — Shreyas Doshi Critique of v1.7.3 Research Docs
+
+**Date**: 2026-02-13
+**Framework**: LNO (Leverage / Neutral / Overhead) applied to every doc and decision.
+**Core question for each doc**: "Did this move us closer to shipping, or did it feel like progress?"
+===MID===
+**LNO Rating: NEUTRAL (interesting, not actionable)**
+
+### What It Does
+6 full architectural simulations with scoring matrices. Explores what if we dropped CozoDB entirely.
+
+===END===
+| 1 | Kill pt03. Make it a `--format` flag on pt02. | Leverage |
+| 2 | Stop writing research docs. Start writing code. | Leverage |
+| 3 | Ship pt02 with MessagePack only. Add JSON flag later if asked. | Leverage |
+| 4 | Archive DECISION doc — it's wrong (based on full model, not slim). | Overhead reduction |
+| 5 | The IMPLEMENTATION doc is the only one that should guide coding. | — |
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/specs/ingestion-error-logging-spec.md===LINES===727
+# Ingestion Error Logging Specification
+
+**Feature**: Persistent error logging for pt01-folder-to-cozodb-streamer
+**Version**: 1.0
+**Status**: Draft
+===MID===
+The HTTP endpoint `/ingestion-coverage-folder-report` currently:
+1. Walks the source directory
+2. Identifies files that should be parseable but aren't in the database
+3. Writes `{workspace}/ingestion-errors.txt` with `[UNPARSED]` entries
+
+===END===
+| 1.0 | 2026-02-10 | Technical Specification | Initial draft |
+
+---
+
+**End of Specification**
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/unclassified/CRITICAL-BUGS-ANALYSIS-v143.md===LINES===648
+# CRITICAL BUGS ANALYSIS - Parseltongue v1.4.3
+
+**Analysis Date**: 2026-02-01
+**Codebase Version**: v1.4.3
+**Analysis Method**: Multi-agent exploration + Live server validation + Git history
+===MID===
+- Metadata enrichment feature non-functional
+- Type information, documentation not captured
+- Advertised "LSP metadata enrichment" doesn't work
+
+**Recommendation**: Either implement or remove from feature list.
+===END===
+
+**Report Compiled By**: Multi-agent analysis (Explore + Live server validation + Git history)
+**Tools Used**: Parseltongue server (localhost:7777), git log, grep, code inspection
+**Next Steps**: Prioritize fixes, create GitHub issues, implement hotfix
+
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/unclassified/FINAL_TEST_SUMMARY.md===LINES===148
+# FINAL TEST SUMMARY - File Watcher Live Dependency Graph
+**Date**: 2026-02-02
+**Commit**: 64fa2ad3f
+
+---
+===MID===
+  "data": {
+    "total_count": 0,
+    "entities": []
+  }
+}
+===END===
+---
+
+**Test completed**: 2026-02-02 09:31 UTC
+**Verdict**: File watcher lifetime fix SUCCESSFUL
+**Status**: Ready for v1.4.6 reindex implementation
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/unclassified/File-Watcher-Debug-20260202.md===LINES===514
+# File Watcher Debugging Report - 2026-02-02
+
+**Investigation Date**: February 2, 2026  
+**Severity**: CRITICAL - File watcher events NOT triggering on file modifications  
+**Status**: ROOT CAUSE IDENTIFIED + FIX LOCATION DOCUMENTED  
+===MID===
+:435                                 → build_complete_router_instance()
+  ↓
+:453                                 → axum::serve() - Server runs
+```
+
+===END===
+---
+
+*Report generated: 2026-02-02*  
+*Investigator: Claude Code (Rubber Duck Debugging)*  
+*Confidence Level: VERY HIGH - Root cause clearly identified with code references*
+===DONE===
+===FILE===archived-docs/pre202602/ARCHIVE/unclassified/ISGL1-v2-Stable-Entity-Identity.md===LINES===1108
+# ISGL1 v2: Stable Entity Identity Architecture
+
+> **Status**: Architecture Design Complete
+> **Version**: 2.0
+> **Date**: 2026-02-02
+===MID===
+
+---
+
+#### ISGL1 v2 Schema (Breaking Change)
+
+===END===
+
+*Document authored: 2026-02-02*
+*Structure: Minto Pyramid Principle (Answer → Arguments → Evidence)*
+*Simulation scenarios: 6 detailed examples with reasoning*
+*Next step: Implementation (when approved)*
+===DONE===

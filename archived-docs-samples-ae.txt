@@ -1,0 +1,4262 @@
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/rust-gpu/docs/src/tracing.md===LINES===21
+# Tracing
+
+`rust-gpu` has a lot of [debug!](https://docs.rs/tracing/0.1/tracing/macro.debug.html)
+(or trace!) calls, which print out logging information at many points. These are very
+useful to at least narrow down the location of a bug if not to find it entirely, or just
+===MID===
+To see the logs, you need to set the `RUSTGPU_LOG` environment variable to your log filter (note the "GPU" in the name). The full syntax of the log filters can be found in the [rustdoc of tracing-subscriber](https://docs.rs/tracing-subscriber/0.2.24/tracing_subscriber/filter/struct.EnvFilter.html#directives).
+
+Use `RUSTGPU_LOG_FORMAT` to control log output format (`"tree"`, `"flat"`, or `"json"`) and `RUSTGPU_LOG_COLOR` to manage color output (`"always"`, `"never"`, or `"auto"`).
+
+To trace non-`rust-gpu` parts of the compiler, set the standard [`RUSTC_LOG`](https://rustc-dev-guide.rust-lang.org/tracing.html) environment variable.
+===END===
+arguments](./codegen-args.md) to aid observability. As of
+[PR#196](https://github.com/Rust-GPU/rust-gpu/pull/196) the they
+have been removed and replaced with the following:
+
+- `--specializer-debug` &rarr; `RUSTGPU_LOG=rustc_codegen_spirv::specializer=debug`
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/rust-gpu/docs/src/writing-shader-crates.md===LINES===174
+# Writing Shader Crates
+
+This is section is going to walk you through writing a shader in Rust and
+setting up your shader crate.
+
+===MID===
+# the same settings as regular dependencies.
+[profile.release.build-override]
+opt-level = 3
+codegen-units = 16
+[profile.dev.build-override]
+===END===
+#[spirv(fragment)]
+pub fn main_fs(output: &mut Vec4) {
+    *output = vec4(1.0, 0.0, 0.0, 1.0);
+}
+```
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/rust-gpu/examples/README.md===LINES===66
+# Examples
+
+This directory contains several examples of rust-gpu use. There are shader
+examples in `shaders`, and runner programs that build and execute the shaders
+in a variety of ways in `runners`.
+===MID===
+    sky shader.
+  - `cargo run --release -p example-runner-wgpu -- --shader=simplest` runs the
+    simplest shader.
+  - `cargo run --release -p example-runner-wgpu -- --shader=mouse` runs the
+    mouse shader.
+===END===
+- CPU runner:
+  - `cargo run --release -p example-runner-cpu` runs the sky shader.
+
+Finally, the `multibuilder` folder is a very short example of how to use the
+`multimodule` feature of `spirv-builder`.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/rust-gpu/tests/compiletests/README.md===LINES===85
+# Compiletests
+
+This folder contains tests known as "compiletests", where each file in the `ui` folder corresponds
+to a single compiletest. Keep in mind that the tests here are not executed, they are merely checked
+for compile errors and the resulting binaries being valid (with spirv-val). If you also want to run
+===MID===
+before committing them.
+
+## Meta-comments reference
+
+Most meta-comments can be added multiple times, for example multiple `compile-flags` will be 
+===END===
+    * `// normalize-stderr-test "OpMemoryModel Logical Vulkan" -> "OpMemoryModel Logical Simple"` replace the `Vulkan` memory model with `Simple`, which `spv` targets use
+    * `// normalize-stderr-test "; .*\n" -> ""` remove comments on spirv version by rspirv
+  * remove rustc error src paths:
+    * `// normalize-stderr-test "\S*/lib/rustlib/" -> "$$SYSROOT/lib/rustlib/"` normalize path to crates delivered with rustc, such as `core`
+    * `// normalize-stderr-test "\S*/crates/spirv-std/src/" -> "$$SPIRV_STD_SRC/"` normalize path to the `spirv-std` crate
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/rust-gpu/tests/difftests/README.md===LINES===251
+# Difftests
+
+Difftests verify correctness by running multiple implementations of the same logic and
+comparing their outputs. Instead of relying on fixed reference outputs, they detect
+discrepancies across implementations.
+===MID===
+outputs:
+
+```rust
+use difftest::config::{TestMetadata, OutputType};
+
+===END===
+If you suspect a bug in the test harness, you can view detailed test harness logs:
+
+```sh
+RUST_LOG=trace cargo difftest
+```
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/rustc_codegen_clr/.github/ISSUE_TEMPLATE/feature_request.md===LINES===20
+---
+name: Feature request
+about: Suggest an idea for this project
+title: ''
+labels: ''
+===MID===
+---
+
+**Is your feature request related to a problem? Please describe.**
+A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
+
+===END===
+**Describe alternatives you've considered**
+A clear and concise description of any alternative solutions or features you've considered.
+
+**Additional context**
+Add any other context or screenshots about the feature request here.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/rustc_codegen_clr/.github/ISSUE_TEMPLATE/miscompilation.md===LINES===22
+---
+name: Miscompilation
+about: Report a miscompilation
+title: "[MISCOMPILATION]"
+labels: miscompilation
+===MID===
+
+**Describe the bug**
+A clear and concise description of what the bug is.
+
+**Example of miscompiled code**
+===END===
+**Info about your system (please complete the following information):**
+ - OS: [e.g. Linux Fedora 39 6.6.13-200.fc39.x86_64]
+
+**Additional context**
+Add any other context about the problem here.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/rustc_codegen_clr/BROKEN_TESTS.md===LINES===179
+# How to find the source code of a broken test?
+1. Download the rust compiler source
+`git clone https://github.com/rust-lang/rust.git --depth 1000`
+2. Go into the library directory
+3. Serach for the name of your test `grep -r "broken_test"`
+===MID===
+slice::take_first_nonempty
+num::i16::tests::test_from_str_radix
+num::f32::max
+option::as_slice
+num::u16::tests::test_rotate
+===END===
+vec_deque::test_try_rfold_moves_iter
+vec_deque::test_try_fold_moves_iter
+str::const_str_ptr
+vec::test_collect_after_iterator_clone
+```
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/rustc_codegen_clr/CODE_OF_CONDUCT.md===LINES===128
+# Contributor Covenant Code of Conduct
+
+## Our Pledge
+
+We as members, contributors, and leaders pledge to make participation in our
+===MID===
+reported to the community leaders responsible for enforcement at
+fractalfirdev@gmail.com.
+All complaints will be reviewed and investigated promptly and fairly.
+
+All community leaders are obligated to respect the privacy and security of the
+===END===
+[homepage]: https://www.contributor-covenant.org
+
+For answers to common questions about this code of conduct, see the FAQ at
+https://www.contributor-covenant.org/faq. Translations are available at
+https://www.contributor-covenant.org/translations.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/rustc_codegen_clr/QUICKSTART.md===LINES===104
+# Building the project
+## Download the project
+Clone the repo using this command:
+```
+git clone git@github.com:FractalFir/rustc_codegen_clr.git
+===MID===
+
+# Using the project 
+
+The project is *relatively* simple to use. You will still have to do some setup to get `core` and `std` working, but it is a straigtforward process. 
+
+===END===
+By default, `cg_clr` will keep symbol(function) names more-or-less intact. However, those names may contain characters accepted by *most*, but not *all* compilers. 
+```
+_ZN54_$LT$$LP$A$C$B$RP$$u20$as$u20$fuzz100__PrintFDebug$GT$12printf_debug17h769fc7ecbdc54ca9E
+```
+In those cases, simply set `ASCI_IDENT` enviroment variable to ensure correct symbol names
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/rustc_codegen_clr/README.md===LINES===127
+# rustc_codegen_clr 
+
+> [!WARNING]
+> This project is still early in its developement. Bugs, crashes and miscompilations are expected. DO NOT USE IT FOR ANYTHING SERIOUS.
+
+===MID===
+## Supported C compilers
+
+Currently, the GCC and clang C compilers are supported, with partial support for `tcc` and `sdcc`.
+For obvious reasons, I am unable to add support for any C propietary compilers which are not free to use.
+However, if you have access to such a compiler, I can assist you in adding support for it.
+===END===
+**A**: *Currently, there are no .NET-specific versions of `std` or .NET specific target triples. This means that you will need separate .NET assemblies for each OS.*
+
+## Licensing
+
+`rustc_codegen_clr` is dual licensed under MIT license or Apache License, Version 2.0.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/rustc_codegen_clr/mycorrhiza/README.md===LINES===25
+# Mycorrhiza - Rust/.NET interop layer
+Mycorrhiza is a part of the `rustc_codegen_clr` project, and it is responsible for allowing Rust code to call .NET functions and facilitates interacting with managed objects. In the future, it will include an inter-op guide, and some safe abstractions, to help with development of Rust applications targeting .NET.
+It is heavily WIP, and not yet recommended for general use.
+# Examples:
+## Hello World using StringBuilder and Console:
+===MID===
+    sb.append_char('l');
+    sb.append_char('l');
+    sb.append_char('o');
+    sb.append_char(' ');
+    sb.append_char('W');
+===END===
+    sb.append_char('\r');
+
+    let mstr = sb.to_mstring();
+    mycorrhiza::system::console::Console::writeln_string(mstr);
+```
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/rustc_codegen_clr/target.md===LINES===37
+Hello! 
+
+I have a few questions about the process of adding some support for another target / target_os. 
+
+I am currently working on a Rust-to-.NET compiler backend, and I am coming closer and closre to a point at which the project will need some target specific std patches to progress.
+===MID===
+6. Rust uses a bit of a linker hack to get the command line arguments on GNU linux. Emulating this hack requires quite a bit of effort, and compicates the codebase singificantly. 
+7. Supporting thread local destructors would, once again, require emulating yet another POSIX APIs. If `std` .NET specific APIs(and .NET threads), I could make the process singificantly easier. 
+8. Supporting certain mutithreading APIs(particulary around thread names) is also currently a bit dificult, since I have to emulate the POSIX APIs.
+
+There are also some more issues steming from the lack of a proper .NET target. For example:
+===END===
+    3.2 Anything added to the Rust repository must be under the standard Rust license (MIT OR Apache-2.0). - No problem here, I my repo is licensed under `MIT OR Apache-2.0`.
+    3.3 The target must not cause the Rust tools or libraries built for any other host (even when supporting cross-compilation to the target) to depend on any new dependency less permissive than the Rust licensing policy. -
+        my backend depeds on the IL assembler, which is licensed under MIT, and running a compiled assembly requires a .NET runtime(also licensed under MIT). Is MIT alone(so no Apache) considered less premisive than "the Rust licensing policy"?
+    3.4 Compiling, linking, and emitting functional binaries, libraries, or other code for the target (whether hosted on the target itself or cross-compiling from another target) must not depend on proprietary (non-FOSS) libraries. - 
+        Once again, ===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/rustc_codegen_cranelift/Readme.md===LINES===125
+# Cranelift codegen backend for rust
+
+The goal of this project is to create an alternative codegen backend for the rust compiler based on [Cranelift](https://github.com/bytecodealliance/wasmtime/blob/main/cranelift).
+This has the potential to improve compilation times in debug mode.
+If your project doesn't use any of the things listed under "Not yet supported", it should work fine.
+===MID===
+```
+
+For more docs on how to build and test see [build_system/usage.txt](build_system/usage.txt) or the help message of `./y.sh`.
+
+## Platform support
+===END===
+### Contribution
+
+Unless you explicitly state otherwise, any contribution intentionally submitted
+for inclusion in the work by you shall be dual licensed as above, without any
+additional terms or conditions.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/rustc_codegen_cranelift/docs/dwarf.md===LINES===153
+# Line number information
+
+Line number information maps between machine code instructions and the source level location.
+
+## Encoding
+===MID===
+(15:38:40) bjorn3: thanks!
+(15:42:51) irker749: gdb: tdevries binutils-gdb.git:master * de82891ce5b / gdb/ChangeLog gdb/block.c gdb/block.h gdb/symtab.c gdb/testsuite/ChangeLog gdb/testsuite/gdb.base/decl-before-def-decl.c gdb/testsuite/gdb.base/decl-before-def-def.c gdb/testsuite/gdb.base/decl-before-def.exp: [gdb/symtab] Prefer def over decl (inter-CU case)
+(15:42:52) irker749: gdb: tdevries binutils-gdb.git:master * 70bc38f5138 / gdb/ChangeLog gdb/symtab.c gdb/testsuite/ChangeLog gdb/testsuite/gdb.base/decl-before-def.exp: [gdb/symtab] Prefer def over decl (inter-CU case, with context)
+(15:43:36) tromey: bjorn3: sorry, got distracted.  I have the file now
+(15:45:35) tromey: my first thing when investigating was to enable complaints
+===END===
+(16:08:32) bjorn3: tromey: it works!!!! thanks for all the help!
+(16:08:41) tromey: my pleasure bjorn3
+```
+
+</details>
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/rustc_codegen_cranelift/docs/rustc_testing.md===LINES===23
+# Building and testing with changes in rustc code
+
+This is useful when changing code in `rustc_codegen_cranelift` as part of changing [main Rust repository](https://github.com/rust-lang/rust/).
+This can happen, for example, when you are implementing a new compiler intrinsic.
+
+===MID===
+
+1. `cd $RustCheckoutDir`
+2. Run `python x.py setup` and choose option for compiler (`b`).
+3. Build compiler and necessary tools: `python x.py build --stage=2 compiler library/std src/tools/rustdoc src/tools/rustfmt`
+   * (Optional) You can also build cargo by adding `src/tools/cargo` to previous command.
+===END===
+  * `rustup run stage2 ./y.sh build`
+  * (Optional) run tests: `rustup run stage2 ./y.sh test`
+8. Now you can use your cg_clif build to compile other Rust programs, e.g. you can open any Rust crate and run commands like `$RustCheckoutDir/compiler/rustc_codegen_cranelift/dist/cargo-clif build --release`.
+
+You can also set `rust-analyzer.rustc.source` to your rust workspace to get rust-analyzer to understand your changes.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/rustc_codegen_cranelift/docs/usage.md===LINES===60
+# Usage
+
+rustc_codegen_cranelift can be used as a near-drop-in replacement for `cargo build` or `cargo run` for existing projects.
+
+Assuming `$cg_clif_dir` is the directory you cloned this repo into and you followed the instructions (`y.sh prepare` and `y.sh build` or `test.sh`).
+===MID===
+
+In jit mode cg_clif will immediately execute your code without creating an executable file.
+
+> This requires all dependencies to be available as dynamic library.
+> The jit mode will probably need cargo integration to make this possible.
+===END===
+
+function jit_calc() {
+    jit 'println!("0x{:x}", ' $@ ');';
+}
+```
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/rustc_codegen_cranelift/scripts/Readme.md===LINES===2
+This directory is for scripts that are either never directly invoked or are not used very often.
+Scripts that are frequently used should be kept at the project root.
+===MID===
+This directory is for scripts that are either never directly invoked or are not used very often.
+Scripts that are frequently used should be kept at the project root.
+===END===
+This directory is for scripts that are either never directly invoked or are not used very often.
+Scripts that are frequently used should be kept at the project root.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/rustc_codegen_jvm/Readme.md===LINES===207
+# rustc_codegen_jvm 🚀
+
+[![License: MIT/Apache-2.0](https://img.shields.io/badge/license-MIT%20%7C%20Apache--2.0-blue.svg)](https://opensource.org/licenses/MIT)  
+[![CI](https://github.com/IntegralPilot/rustc_codegen_jvm/actions/workflows/ci.yml/badge.svg)](https://github.com/IntegralPilot/rustc_codegen_jvm/actions)
+
+===MID===
+
+# Build all components using the build script.
+# This single command handles all dependencies and recompiles only what's necessary.
+
+# On Linux or macOS:
+===END===
+## 📄 License
+
+Dual‑licensed under **MIT** OR **Apache 2.0** at your option:
+<https://opensource.org/licenses/MIT>
+<https://www.apache.org/licenses/LICENSE-2.0>
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/rustc_plugin/README.md===LINES===66
+# rustc_plugin
+
+[![Tests](https://github.com/cognitive-engineering-lab/rustc_plugin/actions/workflows/tests.yaml/badge.svg)](https://github.com/cognitive-engineering-lab/rustc_plugin/actions/workflows/tests.yaml)
+[![docs](https://img.shields.io/badge/docs-built-blue)][docs]
+
+===MID===
+    * [`cargo-print-all-items.rs`](https://github.com/cognitive-engineering-lab/rustc_plugin/blob/main/crates/rustc_plugin/examples/print-all-items/src/bin/cargo-print-all-items.rs): the CLI binary run directly by the user, e.g. by invoking `cargo print-all-items`. 
+    * [`print-all-items-driver.rs`](https://github.com/cognitive-engineering-lab/rustc_plugin/blob/main/crates/rustc_plugin/examples/print-all-items/src/bin/print-all-items-driver.rs): the implementation binary used by the CLI.
+  * [`lib.rs`](https://github.com/cognitive-engineering-lab/rustc_plugin/blob/main/crates/rustc_plugin/examples/print-all-items/src/lib.rs): Your plugin implementation, which exports a data structure that implements the `RustcPlugin` trait.
+
+The `rustc_plugin` framework is responsible for marshalling arguments from the top-level CLI into the individual invocations of the driver. It handles issues like setting the sysroot (so the compiler can locate the Rust standard libraries) and finding the crate that contains a given file (if you only want to run on a specific file). It calls your plugin in a manner that integrates with Cargo, so it handles dependencies and such. Everything else is up to you!
+===END===
+[Clippy]: https://github.com/rust-lang/rust-clippy
+[example]: https://github.com/cognitive-engineering-lab/rustc_plugin/tree/main/crates/rustc_plugin/examples/print-all-items
+[docs]: https://cognitive-engineering-lab.github.io/rustc_plugin/v0.14.3-nightly-2025-08-20/rustc_plugin/
+[docs-utils]: https://cognitive-engineering-lab.github.io/rustc_plugin/v0.14.3-nightly-2025-08-20/rustc_utils/
+[msrv]: https://doc.rust-lang.org/cargo/reference/manifest.html#the-rust-version-field
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/rustc_plugin/crates/rustc_plugin/examples/print-all-items/README.md===LINES===21
+# Example: print-all-items
+
+This is an example Rustc plugin that prints all the item names in a given crate. Run the example like this:
+
+```bash
+===MID===
+cargo install --path . 
+
+# Run the binaries on an example crate
+cd test-crate
+cargo print-all-items
+===END===
+```text
+There is an item "std" of type "extern crate"
+There is an item of type "import"
+There is an item "add" of type "function"
+```
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/strategy/18-competitive-landscape.md===LINES===433
+# Competitive Landscape Analysis
+
+**Purpose:** Deep competitor profiles and differentiation strategy
+**Target:** 30+ tools analyzed
+
+===MID===
+│ - Type hierarchy                                                    │
+│ - Module structure                                                  │
+│ - NO advanced graph algorithms                                      │
+├─────────────────────────────────────────────────────────────────────┤
+│ OUR RELATIONSHIP                                                    │
+===END===
+║                                                                   ║
+║   Competition is weak on graphs. We win on graphs.                ║
+║                                                                   ║
+╚═══════════════════════════════════════════════════════════════════╝
+```
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/strategy/19-moat-building.md===LINES===445
+# Competitive Moat-Building Strategy for Parseltongue
+
+**Purpose:** Define how to create lasting, defensible competitive advantage
+**Target:** 5-year moat that competitors cannot easily replicate
+
+===MID===
+   - Clear value proposition
+
+2. **Build learning systems**
+   - Feedback loops
+   - Continuous improvement
+===END===
+║                                                                   ║
+║   COMPETITOR CATCH-UP TIME: 2-3 YEARS (if they start today)      ║
+║                                                                   ║
+╚═══════════════════════════════════════════════════════════════════╝
+```
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/strategy/20-research-agenda.md===LINES===598
+# Research Agenda for Parseltongue
+
+**Purpose:** 6-12 month forward-looking research plan
+**Target:** Maintain competitive edge through continued innovation
+
+===MID===
+
+Timeline: 6 weeks
+```
+
+### Expected Outcomes
+===END===
+2. "Graph Contrastive Learning" (2020)
+
+### Causal
+1. "Causal Inference in Graphs" (2018)
+2. "Counterfactual Reasoning" (2021)
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/thesis/2026-03-02-code-understanding-domain-thesis-design.md===LINES===236
+# Code-Understanding Domain Thesis - Design Document
+
+**Date:** 2026-03-02
+**Status:** Approved
+**Purpose:** Internal strategic guide for Parseltongue v2.0.0 roadmap and architecture decisions
+===MID===
+
+---
+
+### Phase 2: Synthesis
+**Goal:** Produce actionable strategic recommendations
+===END===
+- Blast radius analysis
+
+---
+
+*Design approved: 2026-03-02*
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/thesis/2026-03-02-code-understanding-domain-thesis.md===LINES===766
+# Code-Understanding Domain Thesis
+## The Definitive Strategic Guide for Parseltongue v2.0.0
+
+**Version:** 2.0.0 (INSURMOUNTABLE EDITION)
+**Date:** 2026-03-02
+===MID===
+        .collect();
+
+    // Add nodes until budget exhausted
+    for node in nodes {
+        let cost = token_cost(&node);
+===END===
+---
+
+*Thesis Version 2.0.0 completed: 2026-03-02*
+*This insurmountable edition contains comprehensive algorithmic knowledge for competitive differentiation*
+*For implementation details, see companion documents*
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/thesis/2026-03-02-exhaustive-research-journal.md===LINES===973
+# EXHAUSTIVE Research Journal: Code-Understanding Domain Thesis
+## 20-Agent Parallel Research Initiative - Parseltongue v2.0.0
+
+**Created:** 2026-03-02
+**Last Updated:** 2026-03-02 (Session Start)
+===MID===
+- [ ] Interdependent Network Cascading
+- [ ] Aspect-Aware Analysis
+
+**Key Findings:**
+*To be populated*
+===END===
+
+---
+
+*Journal initialized: 2026-03-02*
+*This tracking system enables seamless resumption of the 20-agent parallel research effort*
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/thesis/2026-03-02-research-implementation-plan.md===LINES===1186
+# Code-Understanding Domain Thesis - Implementation Plan
+
+## Overview
+
+This document provides a detailed, step-by-step implementation plan for conducting the Code-Understanding Domain Thesis research. The plan is designed to be executable by any general-purpose agent without additional context.
+===MID===
+**Reproducibility:**
+- Code available: [YES/NO]
+- Datasets used: [names]
+```
+
+===END===
+## Critical Files for Implementation
+
+- `/Users/amuldotexe/Desktop/notebook-gh/docs/plans/2026-03-02-code-understanding-domain-thesis-design.md` - Design document
+- `/Users/amuldotexe/Desktop/notebook-gh/docs/plans/2026-03-02-research-journal.md` - Research journal
+- `/Users/amuldotexe/Desktop/notebook-gh/docs/plans/2026-03-02-code-understanding-domain-thesis.md` - Final thesis document
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/thesis/2026-03-02-research-journal.md===LINES===452
+# Research Journal: Code-Understanding Domain Thesis
+## Parseltongue v2.0.0 Strategic Research
+
+**Created:** 2026-03-02
+**Last Updated:** 2026-03-02
+===MID===
+- **Graph matching** for code similarity
+- **Attention mechanisms** (GAT) for code understanding
+
+#### What Has Struggled
+- **Pure ML approaches** without structural information
+===END===
+```
+
+---
+
+*Journal completed: 2026-03-02*
+===DONE===
+===FILE===archived-docs/pre202602/skills/dependency-map-cli-tools/SKILL.md===LINES===110
+---
+name: dependency-map-cli-tools
+description: Build a rough codebase map and dependency graph without Parseltongue or a database. Use this when you need fast pointer-first context (file:start:end), lightweight import/include edges, and a pragmatic architecture overview from CLI tools.
+---
+
+===MID===
+```
+
+## Artifacts
+
+`build_rough_codebase_map.sh` writes:
+===END===
+- Scripts:
+  - `scripts/build_rough_codebase_map.sh`
+  - `scripts/read_code_span_pointer.sh`
+- Research context:
+  - `references/internet-precedents.md`
+===DONE===
+===FILE===archived-docs/pre202602/skills/dependency-map-cli-tools/references/internet-precedents.md===LINES===37
+# Internet Precedents: No-DB Codebase Mapping
+
+This skill is based on established tooling patterns in open-source code navigation.
+
+## 1) Pointer-first navigation is standard
+===MID===
+- Tree-sitter provides fast incremental parsing into concrete syntax trees.
+- ast-grep applies AST-based pattern search on top of tree-sitter, reducing regex-only noise.
+- Sources:
+  - [Tree-sitter docs](https://tree-sitter.github.io/tree-sitter/)
+  - [ast-grep docs](https://ast-grep.github.io/)
+===END===
+- Graphviz DOT and tools like dependency-cruiser show practical graph output workflows.
+- For rough maps, generating DOT/Mermaid from extracted edges is usually sufficient.
+- Sources:
+  - [Graphviz DOT language](https://graphviz.org/doc/info/lang.html)
+  - [dependency-cruiser](https://github.com/sverweij/dependency-cruiser)
+===DONE===
+===FILE===archived-docs/pre202602/v210-Reference/V210-Codemogger-Fuzzy-Candidate-Use-Case.md===LINES===52
+# V210-Codemogger-Fuzzy-Candidate-Use-Case
+Status: Reference draft
+Date: 2026-02-25
+Scope: V210 exploration (non-canonical, optional)
+
+===MID===
+## Hard Boundary Rule
+`codemogger` output is evidence, not truth.
+
+Promotion to canonical facts is allowed only when:
+1. Span maps unambiguously to a single canonical EntityKey
+===END===
+
+## Non-goals for V210 use
+1. Replacing Parseltongue canonical ingestion
+2. Replacing canonical EntityKey model
+3. Promoting fuzzy evidence directly into graph without validation
+===DONE===
+===FILE===archived-docs/research-glommer/cachebro/README.md===LINES===155
+<p align="center">
+  <img src="logo.svg" alt="cachebro" width="200" />
+</p>
+
+# cachebro
+===MID===
+| Tool | Description |
+|------|-------------|
+| `read_file` | Read a file with caching. Returns full content on first read, "unchanged" or diff on subsequent reads. Supports `offset`/`limit` for partial reads. |
+| `read_files` | Batch read multiple files with caching. |
+| `cache_status` | Show stats: files tracked, tokens saved. |
+===END===
+**Token estimation:** `ceil(characters * 0.75)`. Rough but directionally correct for code. Good enough for the "tokens saved" metric.
+
+## License
+
+MIT
+===DONE===
+===FILE===archived-docs/research-glommer/codemogger/CLAUDE.md===LINES===111
+---
+description: Use Bun instead of Node.js, npm, pnpm, or vite.
+globs: "*.ts, *.tsx, *.html, *.css, *.js, *.jsx, package.json"
+alwaysApply: false
+---
+===MID===
+      },
+    },
+  },
+  // optional websocket support
+  websocket: {
+===END===
+```sh
+bun --hot ./index.ts
+```
+
+For more information, read the Bun API docs in `node_modules/bun-types/docs/**.md`.
+===DONE===
+===FILE===archived-docs/research-glommer/codemogger/README.md===LINES===211
+<p align="center">
+  <img src="codemogger.png" alt="codemogger" width="200">
+</p>
+
+# codemogger
+===MID===
+
+# Index a directory
+codemogger index ./my-project
+
+# Search
+===END===
+- **Single DB file** stores multiple codebases with per-codebase FTS tables and global vector search
+
+## License
+
+MIT
+===DONE===
+===FILE===archived-docs/research-glommer/iggy-sample/CONTRIBUTING.md===LINES===118
+# Contributing to Apache Iggy
+
+## Issue First
+
+Every new PR that introduces new functionality must link to an approved issue.
+===MID===
+
+```bash
+cargo install typos-cli --locked
+typos
+typos --write-changes
+===END===
+- Inactivity for longer than 7 days
+
+## Questions?
+
+[Discussions](https://github.com/apache/iggy/discussions) or [Discord](https://discord.gg/apache-iggy)
+===DONE===
+===FILE===archived-docs/research-glommer/iggy-sample/DEPENDENCIES.md===LINES===1157
+# Dependencies
+
+actix-codec: 0.5.2, "Apache-2.0 OR MIT",
+actix-cors: 0.7.1, "Apache-2.0 OR MIT",
+actix-files: 0.6.10, "Apache-2.0 OR MIT",
+===MID===
+mockall: 0.14.0, "Apache-2.0 OR MIT",
+mockall_derive: 0.14.0, "Apache-2.0 OR MIT",
+moka: 0.12.14, "(Apache-2.0 OR MIT) AND Apache-2.0",
+mongocrypt: 0.3.2, "Apache-2.0",
+mongocrypt-sys: 0.1.5+1.15.1, "Apache-2.0",
+===END===
+zune-core: 0.4.12, "Apache-2.0 OR MIT OR Zlib",
+zune-core: 0.5.1, "Apache-2.0 OR MIT OR Zlib",
+zune-inflate: 0.2.54, "Apache-2.0 OR MIT OR Zlib",
+zune-jpeg: 0.4.21, "Apache-2.0 OR MIT OR Zlib",
+zune-jpeg: 0.5.12, "Apache-2.0 OR MIT OR Zlib",
+===DONE===
+===FILE===archived-docs/research-glommer/iggy-sample/PULL_REQUEST_TEMPLATE.md===LINES===60
+## Which issue does this PR close?
+
+<!--
+We generally require a GitHub issue to be filed for all bug fixes and enhancements. You can link an issue to this PR using the GitHub syntax. For example `Closes #123` indicates that this PR will close issue #123.
+-->
+===MID===
+GOOD:
+
+"When many small messages accumulate in the journal, the flush passes
+thousands of IO vectors to writev(), exceeding IOV_MAX (1024 on Linux)."
+
+===END===
+3. How did you verify the generated code works correctly?
+4. Can you explain every line of the code if asked?
+
+If no AI tools were used, write "None" or delete this section.
+-->
+===DONE===
+===FILE===archived-docs/research-glommer/iggy-sample/README.md===LINES===475
+# Apache Iggy (Incubating)
+
+<div align="center">
+
+[Website](https://iggy.apache.org) | [Getting started](https://iggy.apache.org/docs/introduction/getting-started/) | [Documentation](https://iggy.apache.org/docs/) | [Blog](https://iggy.apache.org/blogs/) | [Discord](https://discord.gg/C5Sux5NcRa) | [Crates](https://crates.io/crates/iggy)
+===MID===
+
+Iggy requires credentials to authenticate request to the server.
+You can set the root user **before** starting the server.
+
+(macOS/Linux)
+===END===
+---
+
+## Contributing
+
+Please see [Contributing](CONTRIBUTING.md)
+===DONE===
+===FILE===archived-docs/research-glommer/iggy-sample/bdd/README.md===LINES===103
+# Cross-SDK BDD Testing
+
+This directory contains cross-SDK Behavior-Driven Development (BDD) tests for Apache Iggy, designed to ensure consistency across different language SDKs.
+
+## Structure
+===MID===
+../scripts/run-bdd-tests.sh clean
+```
+
+### Requirements
+
+===END===
+The Java implementation is located in `java/src/test/`
+
+### Adding New Scenarios
+
+Add new `.feature` files to the `bdd/scenarios/` directory and implement the corresponding step definitions in each SDK's test directory.
+===DONE===
+===FILE===archived-docs/research-glommer/iggy-sample/core/ai/README.md===LINES===5
+# Apache Iggy AI
+
+This module contains the AI-related components of the Apache Iggy message streaming infrastructure.
+
+Please check the **[MCP Server](https://github.com/apache/iggy/tree/master/core/ai/mcp)** for the details about Iggy MCP (Model Context Protocol) server.
+===MID===
+# Apache Iggy AI
+
+This module contains the AI-related components of the Apache Iggy message streaming infrastructure.
+
+Please check the **[MCP Server](https://github.com/apache/iggy/tree/master/core/ai/mcp)** for the details about Iggy MCP (Model Context Protocol) server.
+===END===
+# Apache Iggy AI
+
+This module contains the AI-related components of the Apache Iggy message streaming infrastructure.
+
+Please check the **[MCP Server](https://github.com/apache/iggy/tree/master/core/ai/mcp)** for the details about Iggy MCP (Model Context Protocol) server.
+===DONE===
+===FILE===archived-docs/research-glommer/iggy-sample/core/ai/mcp/README.md===LINES===89
+# Apache Iggy MCP Server
+
+The [Model Context Protocol](https://modelcontextprotocol.io) (MCP) is an open protocol that standardizes how applications provide context to LLMs. The Apache Iggy MCP Server is an implementation of the MCP protocol for the message streaming infrastructure.
+
+To start the MCP server, simply run `cargo run --bin iggy-mcp`.
+===MID===
+key_file = "core/certs/iggy_key.pem"
+
+[permissions]
+create = true
+read = true
+===END===
+
+[telemetry.traces]
+transport = "grpc" # Options: "grpc", "http"
+endpoint = "http://localhost:4317"
+```
+===DONE===
+===FILE===archived-docs/research-glommer/iggy-sample/core/bench/README.md===LINES===7
+# Apache Iggy Bench CLI
+
+The interactive Bench CLI allows you to perform various benchmarking on the Apache Iggy server.
+
+Iggy Bench CLI can be installed with `cargo install iggy-bench` and then simply accessed by typing `iggy-bench` in your terminal.
+===MID===
+# Apache Iggy Bench CLI
+
+The interactive Bench CLI allows you to perform various benchmarking on the Apache Iggy server.
+
+Iggy Bench CLI can be installed with `cargo install iggy-bench` and then simply accessed by typing `iggy-bench` in your terminal.
+===END===
+The interactive Bench CLI allows you to perform various benchmarking on the Apache Iggy server.
+
+Iggy Bench CLI can be installed with `cargo install iggy-bench` and then simply accessed by typing `iggy-bench` in your terminal.
+
+![CLI](../../assets/bench.png)
+===DONE===
+===FILE===archived-docs/research-glommer/iggy-sample/core/bench/dashboard/README.md===LINES===287
+# Apache Iggy Benchmarks Dashboard
+
+A modern, high-performance benchmark results dashboard for Iggy, built with Rust. This application provides a responsive web interface for visualizing and analyzing benchmark results.
+
+## Features
+===MID===
+
+   ```bash
+   git clone <repository-url>
+   ```
+
+===END===
+- `RUST_BACKTRACE`: Enable backtraces (1 = enabled, full = full backtraces)
+
+## License
+
+Apache-2.0
+===DONE===
+===FILE===archived-docs/research-glommer/iggy-sample/core/cli/README.md===LINES===11
+# Apache Iggy CLI
+
+The interactive CLI allows you to interact with the Apache Iggy server from the command line.
+
+This is a great addition to the Web UI, especially for all the developers who prefer using the console tools.
+===MID===
+The interactive CLI allows you to interact with the Apache Iggy server from the command line.
+
+This is a great addition to the Web UI, especially for all the developers who prefer using the console tools.
+
+Iggy CLI can be installed with `cargo install iggy-cli` and then simply accessed by typing `iggy` in your terminal.
+===END===
+Iggy CLI can be installed with `cargo install iggy-cli` and then simply accessed by typing `iggy` in your terminal.
+
+![CLI](../../assets/cli.png)
+
+For more details please visit [Apache Iggy](https://iggy.apache.org) and its [GitHub repository](https://github.com/apache/iggy).
+===DONE===
+===FILE===archived-docs/research-glommer/iggy-sample/core/connectors/README.md===LINES===107
+# Apache Iggy Connectors
+
+The highly performant and modular runtime for statically typed, yet dynamically loaded connectors. Ingest the data from the external sources and push it further to the Iggy streams, or fetch the data from the Iggy streams and push it further to the external sources. Create your own Rust plugins by simply implementing either the `Source` or `Sink` trait and build custom pipelines for the data processing.
+
+The [docker image](https://hub.docker.com/r/apache/iggy-connect) is available, and can be fetched via `docker pull apache/iggy-connect`.
+===MID===
+
+3. **Relative paths** — searched in order, returning the first match:
+   - the literal relative path (from working directory)
+   - directory of the runtime binary (filename only)
+   - current working directory (filename only)
+===END===
+## Transformations
+
+Field transformations (depending on the supported payload formats) can be applied to the messages either before they are sent to the specified topic (e.g. when produced by the source connectors), or before consumed by the sink connectors. To add the new transformation, simply implement the `Transform` trait and extend the existing `load` function. Each transform may have its own, custom configuration.
+
+To find out more about the transforms, stream decoders or encoders, please refer to the **[SDK documentation](https://github.com/apache/iggy/tree/master/core/connectors/sdk)**.
+===DONE===
+===FILE===archived-docs/research-glommer/iggy-sample/core/connectors/runtime/README.md===LINES===258
+# Apache Iggy Connectors - Runtime
+
+Runtime is responsible for managing the lifecycle of the connectors and providing the necessary infrastructure for the connectors to run.
+
+The runtime uses a shared [Tokio runtime](https://tokio.rs) to manage the asynchronous tasks and events across all connectors. Additionally, it has built-in support for logging via [tracing](https://docs.rs/tracing/latest/tracing/) crate.
+===MID===
+
+[http.cors] # Optional CORS configuration for HTTP API
+enabled = false
+allowed_methods = ["GET", "POST", "PUT", "DELETE"]
+allowed_origins = ["*"]
+===END===
+      "errors": 0
+    }
+  ]
+}
+```
+===DONE===
+===FILE===archived-docs/research-glommer/iggy-sample/core/connectors/sdk/README.md===LINES===197
+# Apache Iggy Connectors - SDK
+
+SDK provides the commonly used structs and traits such as `Sink` and `Source`, along with the `sink_connector!` and `source_connector!` macros to be used when developing connectors.
+
+The macros automatically export the connector's version (from `CARGO_PKG_VERSION`) via FFI, allowing the runtime to report per-connector version information in the `/stats` endpoint.
+===MID===
+#### Source Configuration
+
+- **`schema_path`**: Path to the `.proto` file containing message definitions
+- **`message_type`**: Fully qualified name of the protobuf message type to use
+- **`use_any_wrapper`**: Whether to wrap messages in `google.protobuf.Any` for type safety
+===END===
+- **Immutable Design**: Converters are created with fixed configuration - create new instances for different schemas
+- When `use_any_wrapper` is enabled, messages are wrapped in `google.protobuf.Any` for better type safety
+- The `proto_convert` transform can be used to convert protobuf messages to JSON for easier processing
+- Field mappings allow you to rename fields during format conversion
+- Protocol Buffers provide efficient binary serialization compared to JSON
+===DONE===
+===FILE===archived-docs/research-glommer/iggy-sample/core/connectors/sinks/README.md===LINES===250
+# Apache Iggy Connectors - Sink
+
+## Overview
+
+Sink connectors are responsible for writing data from Iggy streams to external systems or destinations. They provide a way to integrate Apache Iggy with various data sources and destinations, enabling seamless data flow and processing.
+===MID===
+Let's start by defining the internal state and the public sink connector along with its own configuration.
+
+```rust
+#[derive(Debug)]
+struct State {
+===END===
+Eventually, compile the source code and create a separate connector configuration file in the connectors directory (as specified in the main runtime `config.toml`).  Make sure that `path` points to the existing plugin.
+
+And that's all, enjoy using the sink connector!
+
+On a side note, if you'd like to produce the messages to the Iggy stream instead, you can implement your own **[Source connector](https://github.com/apache/iggy/tree/master/core/connectors/sources)** too :)
+===DONE===
+===FILE===archived-docs/research-glommer/iggy-sample/core/connectors/sinks/elasticsearch_sink/README.md===LINES===21
+# Elasticsearch Sink Connector
+
+A sink connector that consumes messages from Iggy streams and indexes them to Elasticsearch.
+
+## Configuration
+===MID===
+- `index`: Target index name
+- `username/password`: Optional authentication credentials
+- `batch_size`: Bulk indexing batch size (default: 100)
+- `timeout_seconds`: Request timeout (default: 30s)
+- `create_index_if_not_exists`: Automatically create index (default: true)
+===END===
+- Bulk indexing optimization
+- Automatic index creation
+- Error handling and retry mechanisms
+- Metadata field injection
+- Support for multiple data formats
+===DONE===
+===FILE===archived-docs/research-glommer/iggy-sample/core/connectors/sinks/iceberg_sink/README.md===LINES===82
+# Iceberg Sink Connector
+
+The Iceberg Sink Connector allows you to consume messages from Iggy topics and store them in Iceberg tables.
+
+## Features
+===MID===
+- **store_access_key_id**: The access key ID of the object storage.
+- **store_secret_access_key**: The secret key used to upload data to the object storage.
+- **store_region**: The region of the object storage, if applicable.
+- **store_class**: The storage class to use. **Currently, only S3-compatible storage is supported.**
+
+===END===
+**Note:** The value in the message field **must** contain both the namespace and the table name, separated by a dot (`.`).
+Example:
+
+- Namespace: `nyc`
+- Table name: `users`
+===DONE===
+===FILE===archived-docs/research-glommer/iggy-sample/core/connectors/sinks/mongodb_sink/README.md===LINES===146
+# MongoDB Sink Connector
+
+Consumes messages from Iggy streams and stores them in a MongoDB collection.
+
+## Try It
+===MID===
+{ "payload": { "hello": "mongodb" }, "iggy_offset": 0, "iggy_stream": "demo_stream" }
+```
+
+Cleanup: `docker rm -f mongo-test && rm -rf /tmp/mdb-sink-test`
+
+===END===
+
+### Known Limitations
+
+- On network timeout during insert, retry may cause duplicate key error
+- Sink does not upsert on duplicate (future improvement)
+===DONE===
+===FILE===archived-docs/research-glommer/iggy-sample/core/connectors/sinks/postgres_sink/README.md===LINES===228
+# PostgreSQL Sink Connector
+
+The PostgreSQL sink connector consumes messages from Iggy topics and stores them in PostgreSQL databases. Supports multiple payload storage formats including BYTEA, JSONB, and TEXT.
+
+## Features
+===MID===
+CREATE TABLE iggy_messages (
+    id DECIMAL(39, 0) PRIMARY KEY,
+    iggy_offset BIGINT,
+    iggy_timestamp TIMESTAMP WITH TIME ZONE,
+    iggy_stream TEXT,
+===END===
+
+For JSON data:
+
+1. **Sink** with `payload_format = "json"` stores as JSONB
+2. **Source** with `payload_column = "data"` and `payload_format = "json_direct"` reads JSONB directly
+===DONE===
+===FILE===archived-docs/research-glommer/iggy-sample/core/connectors/sinks/quickwit_sink/README.md===LINES===62
+# Quickwit Sink
+
+The Quickwit connector allows you to send data to the Quickwit API using HTTP. This sink will ensure that the index exists (create it if it doesn't) and will append the data to the index using the same batch size as specified in the Iggy configuration.
+
+## Configuration
+===MID===
+      type: text
+      tokenizer: raw
+      fast: true
+    - name: random_id
+      type: text
+===END===
+retention:
+  period: 7 days
+  schedule: daily
+"""
+```
+===DONE===
+===FILE===archived-docs/research-glommer/iggy-sample/core/connectors/sinks/stdout_sink/README.md===LINES===12
+# Stdout Sink
+
+The Stdout sink allows you to print the data to the standard output (stdout). It can be used for debugging or testing purposes.
+
+## Configuration
+===MID===
+
+## Configuration
+
+- `print_payload`: A boolean value indicating whether to print the payload or not. Defaults to `false`.
+
+===END===
+
+```toml
+[plugin_config]
+print_payload = false
+```
+===DONE===
+===FILE===archived-docs/research-glommer/iggy-sample/core/connectors/sources/README.md===LINES===273
+# Apache Iggy Connectors - Source
+
+## Overview
+
+Source connectors are responsible for ingesting data from external sources into Apache Iggy. They provide a way to integrate Apache Iggy with various data sources, such as databases, message queues, or file systems.
+===MID===
+
+```rust
+#[derive(Debug, Serialize, Deserialize)]
+pub struct RandomSourceConfig {
+    messages_count: Option<u32>,
+===END===
+```
+
+And that's all, enjoy using the source connector!
+
+On a side note, if you'd like to process the messages consumed from the Iggy stream instead, you can implement your own **[Sink connector](https://github.com/apache/iggy/tree/master/core/connectors/sinks)** too :)
+===DONE===
+===FILE===archived-docs/research-glommer/iggy-sample/core/connectors/sources/elasticsearch_source/README.md===LINES===275
+# Elasticsearch Source Connector with State Management
+
+This Elasticsearch source connector provides comprehensive state management capabilities to track processing progress and enable fault-tolerant data ingestion.
+
+## Features
+===MID===
+## Usage Examples
+
+### Basic Usage with State Management
+
+```rust
+===END===
+
+1. Export state from current storage
+2. Update storage configuration
+3. Import state to new storage
+4. Restart connector
+===DONE===
+===FILE===archived-docs/research-glommer/iggy-sample/core/connectors/sources/postgres_source/README.md===LINES===374
+# PostgreSQL Source Connector
+
+The PostgreSQL source connector fetches data from PostgreSQL databases and streams it to Iggy topics. It supports table polling and Change Data Capture (CDC) modes with flexible payload extraction.
+
+## Features
+===MID===
+tracking_column = "id"
+payload_column = "data"
+payload_format = "json_direct"
+```
+
+===END===
+
+### JSON Pass-through
+
+1. **Sink** with `payload_format = "json"` stores messages as JSONB
+2. **Source** with `payload_column = "payload"` and `payload_format = "json_direct"` reads JSONB directly
+===DONE===
+===FILE===archived-docs/research-glommer/iggy-sample/core/connectors/sources/random_source/README.md===LINES===18
+# Random Source
+
+The Random Source connector generates random data and sends it to the specified stream(s).
+
+## Configuration
+===MID===
+- `interval`: A string representing the interval at which the connector generates random data. Defaults to `"1s"`.
+- `max_count`: An integer representing the maximum number of messages to generate. Defaults to none.
+- `messages_range`: An array of two integers representing the range of amount of messages to generate. Defaults to `[10, 50]`.
+- `payload_size`: An integer representing the size in bytes of the `text` field payload to generate. Defaults to `100`.
+
+===END===
+interval = "100ms"
+max_count = 1000
+messages_range = [10, 50]
+payload_size = 200
+```
+===DONE===
+===FILE===archived-docs/research-glommer/iggy-sample/core/server/README.md===LINES===9
+# Apache Iggy Server
+
+This is the core server component of Apache Iggy. You can run it directly with `cargo run --bin iggy-server --release` or use the Docker image `apache/iggy:latest` (the `edge` tag is for the latest development version).
+
+The configuration file is located at [core/server/config.toml](https://github.com/apache/iggy/blob/master/core/server/config.toml). You can customize the server settings by modifying this file or by using environment variables e.g. `IGGY_TCP_ADDRESS=0.0.0.0:8090`.
+===MID===
+
+This is the core server component of Apache Iggy. You can run it directly with `cargo run --bin iggy-server --release` or use the Docker image `apache/iggy:latest` (the `edge` tag is for the latest development version).
+
+The configuration file is located at [core/server/config.toml](https://github.com/apache/iggy/blob/master/core/server/config.toml). You can customize the server settings by modifying this file or by using environment variables e.g. `IGGY_TCP_ADDRESS=0.0.0.0:8090`.
+
+===END===
+The configuration file is located at [core/server/config.toml](https://github.com/apache/iggy/blob/master/core/server/config.toml). You can customize the server settings by modifying this file or by using environment variables e.g. `IGGY_TCP_ADDRESS=0.0.0.0:8090`.
+
+![Server](../../assets/server.png)
+
+![Architecture](../../assets/iggy_architecture.png)
+===DONE===
+===FILE===archived-docs/research-glommer/iggy-sample/examples/README.md===LINES===5
+# Apache Iggy Examples
+
+Here you can find the examples of how to use Apache Iggy with the different programming languages. Please note that the features available in each language may vary.
+
+![Sample](../assets/sample.png)
+===MID===
+# Apache Iggy Examples
+
+Here you can find the examples of how to use Apache Iggy with the different programming languages. Please note that the features available in each language may vary.
+
+![Sample](../assets/sample.png)
+===END===
+# Apache Iggy Examples
+
+Here you can find the examples of how to use Apache Iggy with the different programming languages. Please note that the features available in each language may vary.
+
+![Sample](../assets/sample.png)
+===DONE===
+===FILE===archived-docs/research-glommer/iggy-sample/examples/csharp/README.md===LINES===93
+# Iggy Examples
+
+This directory contains comprehensive sample applications that showcase various usage patterns of the Iggy client SDK. To learn more about building applications with Iggy, please refer to the [getting started](https://iggy.apache.org/docs/introduction/getting-started) guide.
+
+## Running Examples
+===MID===
+Demonstrates fundamental client connection, authentication, batch message sending, and polling with support for TCP/QUIC/HTTP protocols.
+
+## Message Pattern Examples
+
+### Message Headers
+===END===
+3. **Check source code**
+
+These examples use IggyClient with TCP transport and demonstrate automatic stream/topic creation with basic message handling.
+
+The examples are automatically tested via `scripts/run-examples-from-readme.sh --language csharp` to ensure they remain functional and up-to-date with the latest API changes.
+===DONE===
+===FILE===archived-docs/research-glommer/iggy-sample/examples/go/README.md===LINES===56
+# Iggy Examples
+
+This directory contains comprehensive sample applications that showcase various usage patterns of the Iggy client SDK, from basic operations to advanced multi-tenant scenarios. To learn more about building applications with Iggy, please refer to the [getting started](https://iggy.apache.org/docs/introduction/getting-started) guide.
+
+## Running Examples
+===MID===
+## Basic Examples
+
+### Getting Started
+
+Perfect introduction for newcomers to Iggy:
+===END===
+3. **Check source code**: Examples include detailed comments explaining concepts and usage patterns
+
+These examples use IggyClient with TCP transport and demonstrate automatic stream/topic creation with basic message handling.
+
+The examples are automatically tested via `scripts/run-examples-from-readme.sh --language go` to ensure they remain functional and up-to-date with the latest API changes.
+===DONE===
+===FILE===archived-docs/research-glommer/iggy-sample/examples/java/README.md===LINES===256
+# Iggy Java Examples
+
+This directory contains comprehensive sample applications that showcase various usage patterns of the Iggy java client SDK, from basic operations to advanced multi-tenant scenarios.
+
+Java 17 and Gradle 9.2.1 are recommended for running the examples.
+===MID===
+
+Building streams with advanced configuration:
+
+```bash
+./gradlew runStreamBasic
+===END===
+client.messages().pollMessages(...)
+    .thenAcceptAsync(polled -> {
+        saveToDatabase(polled);  // runs on processingPool
+    }, processingPool);
+```
+===DONE===
+===FILE===archived-docs/research-glommer/iggy-sample/examples/node/README.md===LINES===131
+# Iggy Examples
+
+This directory contains comprehensive sample applications that showcase various usage patterns of the Iggy client SDK for Node.js, from basic operations to advanced scenarios. To learn more about building applications with Iggy, please refer to the [getting started](https://iggy.apache.org/docs/introduction/getting-started) guide.
+
+## Running Examples
+===MID===
+npm run test:message-envelope:producer
+npm run test:message-envelope:consumer
+```
+
+Demonstrates how to create and handle message envelopes with custom metadata and headers.
+===END===
+IGGY_TCP_TLS_KEY_FILE=core/certs/iggy_key.pem \
+cargo r --bin iggy-server
+```
+
+Demonstrates how to configure the client with `transport: 'TLS'` and a custom CA certificate for secure communication.
+===DONE===
+===FILE===archived-docs/research-glommer/iggy-sample/examples/python/README.md===LINES===81
+# Iggy Examples
+
+This directory contains comprehensive sample applications that showcase various usage patterns of the Iggy client SDK for Python, from basic operations to advanced multi-tenant scenarios. To learn more about building applications with Iggy, please refer to the [getting started](https://iggy.apache.org/docs/introduction/getting-started) guide.
+
+## Running Examples
+===MID===
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+## Basic Examples
+===END===
+
+```bash
+uv run getting-started/producer.py --tcp-server-address localhost:8090 --tls --tls-ca-file ../../core/certs/iggy_ca_cert.pem
+uv run getting-started/consumer.py --tcp-server-address localhost:8090 --tls --tls-ca-file ../../core/certs/iggy_ca_cert.pem
+```
+===DONE===
+===FILE===archived-docs/research-glommer/iggy-sample/examples/rust/README.md===LINES===225
+# Iggy Examples
+
+This directory contains comprehensive sample applications that showcase various usage patterns of the Iggy client SDK, from basic operations to advanced multi-tenant scenarios. To learn more about building applications with Iggy, please refer to the [getting started](https://iggy.apache.org/docs/introduction/getting-started) guide.
+
+## Running Examples
+===MID===
+cargo run --example message-headers-compression-consumer
+```
+
+Demonstrates typed header keys and values with various data types (strings, integers, floats, booleans, raw bytes):
+
+===END===
+- Message generation utilities
+- Common argument parsing
+- Client setup helpers
+
+The examples are automatically tested via `scripts/run-examples-from-readme.sh --language rust` to ensure they remain functional and up-to-date with the latest API changes.
+===DONE===
+===FILE===archived-docs/research-glommer/iggy-sample/examples/rust/src/message-headers/message-compression/README.md===LINES===282
+# An Example on Message Compression in Transit
+
+This example illustrates how (with some minor additional implementation) the Iggy SDK can be used to compress and decompress messages in transit.
+
+## Running the Example
+===MID===
+
+The other two methods implement the compression and decompression logic, which is specific to the actual Codec instance, dependent on the enum's variant.
+The example Codec implements two. *None*, where data is not compressed and *Lz4* (using the lz4_flex crate).
+Note, that this can be easily extended to more algorithms.
+It might be reasonable to limit the number of bytes that can be decompressed to avoid large memory footprints, or even crashing the consumer.
+===END===
+    Ok(())
+}
+```
+
+When executing the program, the consumed and decompressed messages will be printed to console.
+===DONE===
+===FILE===archived-docs/research-glommer/iggy-sample/foreign/cpp/README.md===LINES===10
+# Iggy C++ Client
+
+Currently, the bazel build system relies on the system-provided cargo toolchain, so concurrent runs can race and lead to data corruption if executed remotely
+
+Running the example:
+===MID===
+Currently, the bazel build system relies on the system-provided cargo toolchain, so concurrent runs can race and lead to data corruption if executed remotely
+
+Running the example:
+
+```bash
+===END===
+
+```bash
+bazel build //:iggy-cpp
+bazel test //:iggy-cpp-test
+```
+===DONE===
+===FILE===archived-docs/research-glommer/iggy-sample/foreign/csharp/DEPENDENCIES.md===LINES===17
+# Dependencies
+
+FluentAssertions: "6.12.0", "Apache-2.0",
+Microsoft.Extensions.Logging: "8.0.0", "MIT",
+Microsoft.Extensions.Logging.Console: "8.0.0", "MIT",
+===MID===
+Microsoft.NET.Test.Sdk: "18.0.1", "MIT",
+Microsoft.SourceLink.GitHub: "10.0.102", "MIT",
+Microsoft.Testing.Extensions.CodeCoverage: "18.3.2", "MIT",
+Microsoft.Testing.Extensions.TrxReport: "2.0.2", "MIT",
+Moq: "4.20.72", "BSD-3-Clause",
+===END===
+System.IO.Hashing: "8.0.0", "MIT",
+Testcontainers: "4.10.0", "MIT",
+TUnit: "1.12.15", "MIT",
+xunit.v3.mtp-v2: "3.2.2", "Apache-2.0",
+xunit.runner.visualstudio: "3.1.5", "Apache-2.0",
+===DONE===
+===FILE===archived-docs/research-glommer/iggy-sample/foreign/csharp/Iggy_SDK.Tests.BDD/README.md===LINES===27
+﻿# csharp bdd test
+
+Scenario are located at [/bdd/scenarios](../../../bdd/scenarios)
+
+## env var
+===MID===
+see [/bdd/README.md](../../../bdd/README.md)
+
+## Run locally
+
+note: bdd test expect an iggy-server at tcp://127.0.0.1:8090
+===END===
+## Troubleshooting
+
+Sometimes tests might be run twice or have errors during build.
+It's because link to .feature files and problem with generated code.
+To fix it, run `dotnet clean`
+===DONE===
+===FILE===archived-docs/research-glommer/iggy-sample/foreign/csharp/README.md===LINES===711
+# C# SDK for [Iggy](https://github.com/apache/iggy) [![Nuget (with prereleases)](https://img.shields.io/nuget/v/Apache.Iggy)](https://www.nuget.org/packages/Apache.Iggy)
+
+## Overview
+
+The Apache Iggy C# SDK provides a comprehensive client library for interacting with Iggy message streaming servers. It
+===MID===
+PollingStrategy.Last()
+
+// Start from the next unread message
+PollingStrategy.Next()
+```
+===END===
+
+## ROADMAP - TODO
+
+- [ ] Error handling with status codes and descriptions
+- [ ] Add support for `ASP.NET Core` Dependency Injection
+===DONE===
+===FILE===archived-docs/research-glommer/iggy-sample/foreign/go/README.md===LINES===13
+# Go SDK for Iggy
+
+Official Go client SDK for [Apache Iggy](https://iggy.apache.org) message streaming.
+
+The client currently supports TCP protocols with blocking implementation.
+===MID===
+
+The client currently supports TCP protocols with blocking implementation.
+
+## Contributing
+
+===END===
+Before creating a pull request, please run [golangci-lint](https://golangci-lint.run/welcome/quick-start/) and fix any reported lint issues:
+
+```shell
+golangci-lint run
+```
+===DONE===
+===FILE===archived-docs/research-glommer/iggy-sample/foreign/go/samples/README.md===LINES===6
+# Samples
+
+Check out our sample projects below:
+
+- <a href="https://github.com/apache/iggy/blob/dev/samples/consumer/README.md">Consumer</a> - simple message consumer implementation.
+===MID===
+# Samples
+
+Check out our sample projects below:
+
+- <a href="https://github.com/apache/iggy/blob/dev/samples/consumer/README.md">Consumer</a> - simple message consumer implementation.
+===END===
+
+Check out our sample projects below:
+
+- <a href="https://github.com/apache/iggy/blob/dev/samples/consumer/README.md">Consumer</a> - simple message consumer implementation.
+- <a href="https://github.com/apache/iggy/blob/dev/samples/producer/README.md">Producer</a> - simple message producer implementation.
+===DONE===
+===FILE===archived-docs/research-glommer/iggy-sample/foreign/go/samples/consumer/README.md===LINES===52
+# Consumer Sample
+
+## About The Project
+
+Sample message consumer written using the `iggy-go` sdk.
+===MID===
+    git clone https://github.com/apache/iggy.git
+    cd iggy
+    cargo run --bin iggy-server -r
+    ```
+
+===END===
+    Messages will be polled from stream '1', topic '1', partition '1' with interval 1000 ms.
+    Handling message type: order_rejected at offset: 0 with message Id: 55ca2b5f-7a7d-48f3-95ab-7d41c702fef2 {Id:1 Timestamp:37314 Reason:Other}
+    Handling message type: order_confirmed at offset: 1 with message Id: 2b5906c7-9a41-4f86-86de-8cceca023dc1 {Id:1 Price:215 Timestamp:28024}
+    Received 0 messages.
+    ```
+===DONE===
+===FILE===archived-docs/research-glommer/iggy-sample/foreign/go/samples/producer/README.md===LINES===51
+# Producer Sample
+
+## About The Project
+
+Sample message producer written using the `iggy-go` sdk.
+===MID===
+    ```sh
+    git clone https://github.com/apache/iggy.git
+    cd iggy
+    cargo run --bin iggy-server -r
+    ```
+===END===
+    Topic with ID: 1 exists.
+    Messages will be sent to stream '1', topic '1', partition '1' with interval 1000 ms.
+    Sent messages: {"message_type":"order_rejected","payload":"{\"id\":1,\"timestamp\":37314,\"reason\":\"Other\"}"}
+    Sent messages: {"message_type":"order_confirmed","payload":"{\"id\":1,\"price\":215,\"timestamp\":28024}"}
+    ```
+===DONE===
+===FILE===archived-docs/research-glommer/iggy-sample/foreign/java/BUILD_AND_TEST.md===LINES===293
+# Apache Iggy Java SDK - Build and Test Guide
+
+## Overview
+
+This document provides comprehensive instructions for building and testing the
+===MID===
+```java
+// Correct: 4-byte little-endian encoding
+payload.writeIntLE(partitionId.orElse(0L).intValue());
+```
+
+===END===
+- ✅ Connection recovery mechanisms
+- ✅ Comprehensive test coverage
+- ✅ All polling strategies working
+
+For questions or issues, refer to the test output and debug messages for detailed diagnostics.
+===DONE===
+===FILE===archived-docs/research-glommer/iggy-sample/foreign/java/README.md===LINES===239
+# Java SDK for Apache Iggy
+
+Official Java client SDK for [Apache Iggy](https://iggy.apache.org) message streaming.
+
+> This is part of the Apache Iggy monorepo. For the main project, see the [root repository](https://github.com/apache/iggy).
+===MID===
+```java
+import org.apache.iggy.Iggy;
+
+// Using URL
+var httpClient = Iggy.httpClientBuilder()
+===END===
+1. **Format code:** `./gradlew spotlessApply`
+2. **Validate build:** `./gradlew check`
+3. **Use AssertJ for assertions:** Tests should use [AssertJ](https://assertj.github.io/doc/) (`assertThat(...)`) instead of JUnit assertions.
+
+This ensures code style compliance and that all tests and checkstyle validations pass.
+===DONE===
+===FILE===archived-docs/research-glommer/iggy-sample/foreign/java/external-processors/iggy-connector-flink/iggy-connector-library/README.md===LINES===72
+# Apache Iggy Connector Library
+
+Core connector library for integrating Apache Iggy with stream processing engines.
+
+## Overview
+===MID===
+- Interface-based for extensibility
+- Serializable for distributed execution
+- Well-documented for external use
+
+### Flink Integration
+===END===
+See [connector_library_placement_deliberation](https://github.com/apache/iggy/discussions/2236#discussioncomment-14702253) for architectural decisions.
+
+## License
+
+Apache License 2.0 - See LICENSE file for details.
+===DONE===
+===FILE===archived-docs/research-glommer/iggy-sample/foreign/java/external-processors/iggy-connector-flink/iggy-flink-examples/data-population-explanation.md===LINES===279
+# Break Down Iggy HTTP API Message Payload
+
+## Example curl Command
+
+```bash
+===MID===
+3. **Consistency**: Same API works for text, binary data, images, etc.
+
+## How to Create Payloads
+
+### For text messages
+===END===
+```bash
+./encode-message.sh "hello world"
+```
+
+Shows you the base64 and complete curl command.
+===DONE===
+===FILE===archived-docs/research-glommer/iggy-sample/foreign/java/external-processors/iggy-connector-flink/iggy-flink-examples/deploy-and-run-word-count-job.md===LINES===258
+# Here's a complete step-by-step guide to redeploy, test, and monitor the WordCountJob
+
+1. Build the Project
+
+   ```bash
+===MID===
+   ```bash
+   docker exec flink-jobmanager flink list
+   ```
+
+   View JobManager logs:
+===END===
+chmod +x test-word-count.sh
+./test-word-count.sh
+```
+
+<!-- markdownlint-enable MD034 -->
+===DONE===
+===FILE===archived-docs/research-glommer/iggy-sample/foreign/node/CHANGELOG.md===LINES===95
+# Changelog
+
+## [1.0.6](https://github.com/iggy-rs/iggy-node-client/compare/v1.0.5...v1.0.6) (2025-01-14)
+
+### Bug Fixes
+===MID===
+* correctly destroy socket when destroy function is called on TCPClient ([76f7d07](https://github.com/iggy-rs/iggy-node-client/commit/76f7d07a96e44f6701998bb9fb2dab8fa4d75489))
+* enforce check on message id to be either uuid string or 0 ([d05b898](https://github.com/iggy-rs/iggy-node-client/commit/d05b898d62b097ca9770cdab289707546c2fe6aa))
+* fix client auth quirks, add handleResponse & deserializePollMessage as transform stream ([0458d57](https://github.com/iggy-rs/iggy-node-client/commit/0458d579de45605588fff7b7d01119c9625364da))
+* fix consumer group commands ([a33094f](https://github.com/iggy-rs/iggy-node-client/commit/a33094f66eb2e433b2fc8cc6adf7f6a122b0f365))
+* fix createtopic, add new compressionAlgorithm param ([f93a444](https://github.com/iggy-rs/iggy-node-client/commit/f93a4441f4bcd790763d982ead981c4ac86b33c5))
+===END===
+* reorganize client declaration ([7cb1bd8](https://github.com/iggy-rs/iggy-node-client/commit/7cb1bd857c5d1050ab6b8d2b0e6b70908b3bc105))
+* start low level command api and base tcp client ([7bb8b32](https://github.com/iggy-rs/iggy-node-client/commit/7bb8b32ec809e53d665295f9e0c069d535b88cae))
+* start unit test on serialization ([2082b71](https://github.com/iggy-rs/iggy-node-client/commit/2082b713a37d59a3d0482669a3a544a6a922ae41))
+* update modified commands for v0.3.0 server release (createTopic, updateTopic, login, createToken) ([cb4f0d1](https://github.com/iggy-rs/iggy-node-client/commit/cb4f0d17c61967e95a6b5502c70d6e8b8569e9c7))
+* wraps command to higher level api, starts client ([60f9466](https://github.com/iggy-rs/iggy-node-client/commit/60f9466cf92965f3bf4ff5918e50876e5bb9aa84))
+===DONE===
+===FILE===archived-docs/research-glommer/iggy-sample/foreign/node/README.md===LINES===81
+# Apache Iggy Node.js Client
+
+Apache Iggy Node.js client written in typescript, it currently only supports tcp & tls transports.
+
+diclaimer: although all iggy commands & basic client/stream are implemented this is still a WIP, provided as is, and has still a long way to go to be considered "battle tested".
+===MID===
+npm ci
+```
+
+### build
+
+===END===
+### lint
+
+```bash
+npm run lint
+```
+===DONE===
+===FILE===archived-docs/research-glommer/iggy-sample/foreign/node/src/bdd/README.md===LINES===24
+
+# Node.js bdd test
+
+Node.js bdd test are run via cucumber-js.
+scenario are located at [/bdd/scenarios](../../../../bdd/scenarios)
+===MID===
+
+## Run via docker
+
+see [/bdd/README.md](../../../../bdd/README.md)
+
+===END===
+
+```bash
+npm ci # if not already done
+npm run test:bdd
+```
+===DONE===
+===FILE===archived-docs/research-glommer/iggy-sample/foreign/python/README.md===LINES===57
+# apache-iggy
+
+[![discord-badge](https://img.shields.io/discord/1144142576266530928)](https://discord.gg/C5Sux5NcRa)
+
+Apache Iggy is the persistent message streaming platform written in Rust, supporting QUIC, TCP and HTTP transport protocols, capable of processing millions of messages per second.
+===MID===
+
+```bash
+# Start server for testing using docker
+docker compose -f docker-compose.test.yml up --build
+
+===END===
+See [CONTRIBUTING.md](https://github.com/apache/iggy/blob/master/foreign/python/CONTRIBUTING.md) for development setup and guidelines.
+
+## License
+
+Licensed under the Apache License 2.0. See [LICENSE](https://github.com/apache/iggy/blob/master/foreign/python/LICENSE) for details.
+===DONE===
+===FILE===archived-docs/research-glommer/iggy-sample/helm/charts/iggy/README.md===LINES===194
+# iggy
+
+A Helm chart for [Apache Iggy](https://github.com/apache/iggy) server and web-ui.
+
+## Prerequisites
+===MID===
+
+### Security Configuration
+
+| Key | Type | Default | Description |
+| --- | ---- | ------- | ----------- |
+===END===
+```
+
+## Values
+
+See [values.yaml](values.yaml) for the full list of configurable values.
+===DONE===
+===FILE===archived-docs/research-glommer/iggy-sample/web/README.md===LINES===77
+# Apache Iggy Web UI
+
+This project hosts the web user interface for Apache Iggy. The web UI is built using SvelteKit.
+
+![Web](../assets/web_ui.png)
+===MID===
+   ```
+
+4. **Run the project:**
+
+   ```sh
+===END===
+- [x] Publish to Dockerhub as separate Image
+
+## Contributing
+
+Feel free to contribute to the project. Your feedback and contributions are highly appreciated!
+===DONE===
+===FILE===archived-docs/research-glommer/memelord/README.md===LINES===198
+<p align="center">
+  <img src="logo.svg" width="200" alt="memelord logo">
+</p>
+
+# memelord
+===MID===
+
+`memelord init` also configures:
+- `.codex/config.toml` for [Codex](https://github.com/openai/codex)
+- `opencode.json` for [OpenCode](https://github.com/opencode-ai/opencode)
+- `config/mcporter.json` for [OpenClaw](https://github.com/openclaw/openclaw) (via [mcporter](https://mcporter.dev))
+===END===
+- **Bun workspaces**: `memelord` (SDK) and `memelord-cli` (CLI + MCP server) are separate packages.
+
+## License
+
+MIT
+===DONE===
+===FILE===archived-docs/spec20260320.md===LINES===306
+# Executable Spec: Complete Parseltongue v300
+
+**Date:** 2026-03-20  
+**Source PRD:** [PRD-v300.md](/Users/amuldotexe/Desktop/parseltongue-rust-LLM-companion/PRD-v300.md)  
+**Scope:** Finish the remaining implementation work needed to make the v300 PRD true in code, runtime behavior, and test coverage.
+===MID===
+**AND** SHALL make the resulting codebase queryable by PT08
+**SHALL** record ingestion errors in a durable report when individual files fail
+
+### REQ-V300-013.0: Coverage Reporting Is Honest
+
+===END===
+
+1. Should `pt09` be a default workspace member for stable users, or should it be gated behind a feature flag plus nightly CI job?
+2. Do we want `/query` to remain a single endpoint with `cluster=<n>`, or do we want separate preview/deep-dive endpoints before release?
+3. Should `pt10` update workspace counts directly from libSQL after ingest, or should PT08 remain the single source of truth for workspace metrics?
+4. What exact coverage threshold is acceptable for v300 release on this repository: current observed behavior is far below the PRD’s idealized 100% word-count ambition.
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/agents/parseltongue-ultrathink-isg-explorer.md===LINES===10
+---
+name: parseltongue-ultrathink-isg-explorer
+description: |
+  Parseltongue ISG Explorer - Placeholder for future agent configuration
+system_prompt: |
+===MID===
+description: |
+  Parseltongue ISG Explorer - Placeholder for future agent configuration
+system_prompt: |
+  # Parseltongue ISG Explorer
+
+===END===
+  # Parseltongue ISG Explorer
+
+  Agent configuration archived. See zzArchive/parseltongue-ultrathink-isg-explorer-archived.md for historical version.
+model: inherit
+---
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/archive-p1/00-overview.md===LINES===146
+# Parseltongue Architecture Overview
+
+## What is Parseltongue?
+
+**Parseltongue** is like a librarian for your code. Instead of reading thousands of files one by one, Parseltongue:
+===MID===
+        D[parseltongue-core<br/>Shared Types & Storage]
+    end
+
+    A --> B
+    A --> C
+===END===
+
+- **[01-crate-structure.md](01-crate-structure.md)** - Detailed breakdown of each crate
+- **[02-control-flow.md](02-control-flow.md)** - How execution flows through the system
+- **[03-data-flow.md](03-data-flow.md)** - How data is transformed
+- **[04-api-guide.md](04-api-guide.md)** - Complete API reference with examples
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/archive-p1/01-crate-structure.md===LINES===346
+# Crate Structure Deep Dive
+
+## Directory Layout
+
+```
+===MID===
+- Creates `parseltongue{TIMESTAMP}/analysis.db`
+- Prints statistics (files processed, entities created, errors)
+
+### 4. pt08-http-code-query-server (Tool Crate)
+
+===END===
+```
+
+## Next: Control Flow
+
+See [02-control-flow.md](02-control-flow.md) for execution flow diagrams.
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/archive-p1/02-control-flow.md===LINES===402
+# Control Flow Analysis
+
+This document shows **how execution flows** through Parseltongue - where the program starts, what functions call what, and how the different parts work together.
+
+## Top-Level Flow
+===MID===
+
+    ENTITY_Q --> BUILD_EXTRACTOR[Create QueryBasedExtractor]
+    DEP_Q --> BUILD_EXTRACTOR
+
+    BUILD_EXTRACTOR --> RETURN([Return extractor])
+===END===
+```
+
+## Next: Data Flow
+
+See [03-data-flow.md](03-data-flow.md) to understand how data is transformed through the system.
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/archive-p1/03-data-flow.md===LINES===545
+# Data Flow Analysis
+
+This document shows **how data is transformed** as it flows through Parseltongue - from source code to database to JSON responses.
+
+## End-to-End Data Transformation
+===MID===
+    style A fill:#e1f5ff
+    style F fill:#fff4e1
+    style G fill:#c8e6c9
+```
+
+===END===
+| Output | HTTP JSON | `{ "success": true, "data": {...} }` |
+
+## Next: API Usage Guide
+
+See [04-api-guide.md](04-api-guide.md) for complete API documentation and usage examples.
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/archive-p1/04-api-guide.md===LINES===900
+# Complete API Guide (ELI5)
+
+## Quick Start
+
+### Step 1: Download Parseltongue
+===MID===
+**Response:**
+```json
+{
+  "success": true,
+  "endpoint": "/blast-radius-impact-analysis",
+===END===
+- **[03-data-flow.md](03-data-flow.md)** - Data transformations
+
+## Questions?
+
+File issues at: https://github.com/that-in-rust/parseltongue-dependency-graph-generator/issues
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/archive-p1/CPP-Comprehensive-Research-2024-12-02.md===LINES===364
+# Comprehensive C++ Parsing Research Report
+
+**Date**: 2024-12-02
+**Version**: v1.2.1
+**Status**: Research Complete - Actionable Findings
+===MID===
+(class_specifier
+  name: (type_identifier) @class-name
+  (base_class_clause
+    (type_identifier) @base-class))
+```
+===END===
+
+---
+
+*Research completed: 2024-12-02 by 4 parallel agents*
+*Recommendation: Fix query syntax, stay with tree-sitter*
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/archive-p1/CPP-Query-Failure-Research-2024-12-02.md===LINES===252
+# CPP Query Extraction Failure Analysis
+
+**Date**: 2024-12-02
+**Version**: v1.2.0
+**Status**: Bug Confirmed
+===MID===
+
+---
+
+## Test Evidence
+
+===END===
+3. **Explore Agent**: Traced error propagation from Query::new() to graceful degradation
+
+---
+
+*Research conducted: 2024-12-02*
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/archive-p1/E2E_TESTING_DOCUMENTATION.md===LINES===725
+# Parseltongue E2E Testing Documentation
+
+**Date**: 2026-01-29
+**Version**: 1.4.1
+**Author**: Claude Code (Automated Testing)
+===MID===
+| Cache Miss | <500ms | 26ms | PASS |
+
+---
+
+## Phase 6: Delta Capture Testing
+===END===
+---
+
+*Document generated by Claude Code E2E Testing Framework*
+*Last Updated: 2026-01-29 21:30 IST*
+*Part 2 Verification Completed: 2026-01-29*
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/archive-p1/ENDPOINT-STATUS-REPORT-2026-01-31.md===LINES===566
+# Parseltongue v1.4.2 Endpoint Status Report
+
+**Test Date**: January 31, 2026
+**Database**: `rocksdb:parseltongue20260131154912/analysis.db`
+**Entities**: 233 total
+===MID===
+
+**Response Structure**:
+```json
+{
+  "success": true,
+===END===
+---
+
+**Report Generated**: January 31, 2026
+**Tester**: Claude Code
+**Database**: parseltongue20260131154912/analysis.db (233 entities, 3867 edges)
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/archive-p1/GIT-HISTORY-ANALYSIS.md===LINES===430
+# Git History Analysis: What Exists Where
+
+**Analysis Date**: January 31, 2026
+**Method**: `git diff main apwbd20260122`
+**Finding**: **apwbd branch has 7+ additional features not in main**
+===MID===
+
+### Removed from apwbd:
+1. `/incremental-reindex-file-update` - Existed in main v1.4.1, removed
+2. `/file-watcher-status-check` - Existed in main v1.4.1, removed
+
+===END===
+---
+
+**Analysis Complete**: ✅ All features documented
+**Key Finding**: apwbd has production-ready code that should be in main
+**Next Action**: Update PRD and create merge plan
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/archive-p1/INCREMENTAL_INDEXING_EXECUTABLE_SPECS.md===LINES===1578
+# Incremental Indexing Feature - Executable Specifications
+
+> **Document Version**: 1.0.0
+> **Created**: 2026-01-29
+> **Status**: Specification Phase (Pre-Implementation)
+===MID===
+
+**WHEN** a file's hash differs from cached value (deletion completed)
+**THEN** the system SHALL parse the file using `FileParser::parse_file_to_entities()`
+**AND** SHALL convert ParsedEntity to CodeEntity using entity conversion utility
+**AND** SHALL insert new entities to CodeGraph table
+===END===
+| `parseltongue-core/tests/entity_conversion_tests.rs` | NEW | Conversion unit tests |
+
+---
+
+*Document generated following TDD-First methodology and WHEN...THEN...SHALL contract format.*
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/archive-p1/PRD-v142-Parseltongue.md===LINES===1077
+# Product Requirements Document: Parseltongue
+
+**Version**: 1.4.2
+**Date**: January 31, 2026
+**Status**: Verified against live codebase via Parseltongue API
+===MID===
+### Feature 4: Dependency Graph
+
+**Edge Structure** (Verified):
+```json
+{
+===END===
+
+**PRD Status**: ✅ Verified Against Running System
+**Methodology**: All features verified via Parseltongue's own API
+**Last Updated**: January 31, 2026
+**Next Review**: After v1.5.0 release
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/archive-p1/PRD-v143-Parseltongue.md===LINES===420
+# PRD: Parseltongue v1.4.3 - Three Core Requirements
+
+**Version**: 1.4.3
+**Status**: Draft
+**Created**: 2026-01-31
+===MID===
+| `/server-health-check-status` | ✅ Working | None |
+| `/codebase-statistics-overview-summary` | ❌ BROKEN | Returns null counts |
+| `/code-entities-search-fuzzy` | ⚠️ Inconsistent | Works for "handle", fails for "main" |
+| `/reverse-callers-query-graph` | ✅ Working | None |
+| `/blast-radius-impact-analysis` | ✅ Working | None |
+===END===
+---
+
+**Status**: Ready for Implementation
+**Next Step**: Add `notify-debouncer-full` dependency and fix file watcher
+**Target Release**: February 2, 2026
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/archive-p1/README.md===LINES===324
+# Parseltongue Documentation
+
+Complete documentation for understanding and using Parseltongue - a code analysis toolkit that turns your codebase into a queryable graph database.
+
+## Documentation Structure
+===MID===
+### Installation
+
+```bash
+curl -L https://github.com/that-in-rust/parseltongue-dependency-graph-generator/releases/download/v1.4.2/parseltongue -o parseltongue
+chmod +x parseltongue
+===END===
+Documentation for Parseltongue v1.4.2 (HTTP-only architecture with always-on file watching)
+
+---
+
+**Next:** Start with [00-overview.md](00-overview.md) to understand what Parseltongue does!
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/archive-p1/S01-README-MOSTIMP.md===LINES===115
+# Codebase Wisdom 101
+Constantly do cargo clean etc so that unnecessary files do not messs up your context or space
+
+# Technical Design101: TDD-First Architecture Principles
+
+===MID===
+parseltongue pt01 . --db "rocksdb:db.db"
+parseltongue pt02-level00 --where-clause "ALL" --output edges.json --db "rocksdb:db.db"
+parseltongue pt07 entity-count --db "rocksdb:db.db"
+```
+
+===END===
+**Proven architectures over theoretical abstractions**
+
+## IMPORTANT FOR VISUALS AND DIAGRAMS
+
+ALL DIAGRAMS WILL BE IN MERMAID ONLY TO ENSURE EASE WITH GITHUB - DO NOT SKIP THAT - use MermaidSteering.md file for that - it must be somewhere - use it
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/archive-p1/S02-visual-summary-terminal-guide.md===LINES===1744
+# Post-Ingestion Analytics & Terminal Visualization
+
+**Document Version:** 1.0
+**Date:** 2025-11-05
+**Purpose:** Quick visual feedback after codebase ingestion using Unicode & emoji-based terminal graphics
+===MID===
+
+---
+
+## Query Category: Test Coverage
+
+===END===
+# Export
+parseltongue analytics export --format json > metrics.json
+```
+
+---
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/archive-p1/S05-tone-style-guide.md===LINES===143
+# Tone & Style Guide
+
+This document defines the voice and communication style for Parseltongue project, based on @amuldotexe's low-drama, understated approach.
+
+## CRITICAL: FOUR-WORD NAMING CONVENTION
+===MID===
+- **Revolutionary** performance guarantees
+```
+
+### After (Low Drama)
+```
+===END===
+3. Are there unnecessary superlatives or dramatic words?
+4. Does this sound like something @amuldotexe would write?
+5. Is the focus on utility rather than excitement?
+
+Remember: Let the results speak for themselves. The tool's capabilities should be impressive on their own, without needing dramatic language to sell them.===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/archive-p1/S06-design101-tdd-architecture-principles.md===LINES===971
+# Design101: TDD-First Architecture Principles
+
+## CRITICAL: FOUR-WORD NAMING CONVENTION (LLM Optimization)
+
+**ALL function names: EXACTLY 4 words** (underscores separate)
+===MID===
+pub struct FileProcessor {
+    files: Vec<File>, // Never closed
+}
+```
+
+===END===
+```
+
+These principles ensure architectures are testable, maintainable, performant, and production-ready from the start. They transform the traditional requirements → design → tasks workflow into an executable, verifiable process that eliminates ambiguity and reduces bugs through systematic application of proven patterns.
+
+The comprehensive patterns above represent the "vital 20%" that enable writing 99% of production Rust code with minimal bugs, maximum performance, and compile-first success.===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/archive-p1/S44ReleaseCheckList.md===LINES===903
+# S44: Release Checklist - Complete Process
+
+Based on v0.9.6 release experience. Covers edge cases, binary naming, verification, and cleanup.
+
+---
+===MID===
+EOF
+)"
+```
+
+**Verify release created**:
+===END===
+- **Future releases**: Update this section with learnings
+
+---
+
+**Remember**: A release is only done when verification in a clean environment succeeds. No shortcuts.
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/archive-p1/S77-IdiomaticRustPatterns.md===LINES===2326
+========================================
+IDIOMATIC RUST PATTERNS
+========================================
+
+
+===MID===
+```
+
+A.136 Thread Naming and Join Discipline
+- Use when: spawning OS threads that must be tracked and debuggable.
+- Context: prefer capturing `JoinHandle` and calling `join()`; use `thread::Builder::name` for observability; avoid truly detached threads.
+===END===
+41.8. Builder pattern design
+41.9. Extension trait design
+41.10. Conditional compilation
+
+Each of these patterns represents advanced techniques commonly used in building production-grade async Rust libraries like Tokio and Axum. They focus on performance, safety, and maintainability while providing powerful abstractions for users.
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/archive-p1/THESIS-PRD-v143-File-Watching.md===LINES===1896
+# THESIS: PRD-v143 - Accurate File Watching by Default
+
+**Document Version**: 1.0
+**Created**: 2026-01-31
+**Status**: Root Cause Analysis Complete
+===MID===
+
+**Changes**:
+1. Log when debounce timer starts
+2. Log when debounce timer expires (processing event)
+3. Log when event is superseded by newer event (skipped)
+===END===
+If all above pass, v1.4.3 is ready to ship.
+
+---
+
+**END OF THESIS**
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/archive-p1/V143-ENDPOINT-VERIFICATION.md===LINES===66
+# v1.4.3 Endpoint Verification - Simple WORKS/BROKEN
+
+**Test Date**: January 31, 2026
+**Database**: parseltongue20260131154912/analysis.db
+
+===MID===
+## Critical Finding: File Watcher Reports 0 Events
+
+**Endpoint #15** (`/file-watcher-status-check`) WORKS but reports:
+```json
+{
+===END===
+- Field name aliases for backward compatibility
+
+---
+
+**Conclusion**: All endpoints work. File watcher is the only broken feature.
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/archive-p1/V143-IMPLEMENTATION-JOURNAL.md===LINES===578
+# v1.4.3 File Watcher Implementation Journal
+
+**Date**: January 31, 2026
+**Status**: ✅ COMPLETE - Ready for Release
+**Implementation Time**: ~4.5 hours (target: 6 hours)
+===MID===
+cargo test -p pt08-http-code-query-server --test file_watcher_language_coverage_tests
+# Result: 3 tests passing
+```
+
+**Result**: ✅ All tests still passing after refactoring
+===END===
+
+**Implemented by**: Claude Code + rust-coder-01 agent
+**Architecture by**: notes01-agent
+**Date**: January 31, 2026
+**Version**: 1.4.3
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/archive-p1/parseltongue-ultrathink-isg-explorer-archived.md===LINES===506
+---
+name: parseltongue-ultrathink-isg-explorer
+description: |
+  **Essence**: Each request = Fresh timestamped workspace with database + exports + analysis.
+
+===MID===
+  ```
+  Top 5 Hub Entities (by in-degree)
+  ╔════════════════════════════════════════════════╗
+  ║ 1. Config              [████████████]  47 deps ║
+  ║ 2. DatabaseConnection  [████████░░░░]  32 deps ║
+===END===
+
+  **Your mantra**: Isolate → Parse once → Query forever → Visualize insights → Preserve everything.
+
+model: inherit
+---
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/archive-p2/04_DATA_STRUCTURES.md===LINES===732
+# Data Structures: Single Source of Truth
+
+> Canonical TypeScript interfaces and Rust structs for diff visualization system
+> All other documents reference this file for data shapes.
+
+===MID===
+  created_at: string;         // ISO 8601 timestamp
+  last_accessed: string;      // ISO 8601 timestamp
+  watching: boolean;          // Currently watching for changes
+}
+
+===END===
+
+---
+
+*This is the single source of truth for data structures.*
+*All other documents should reference this file.*
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/archive-p2/07_RUST_INTERFACE_DEFINITIONS.md===LINES===855
+# 07: Rust Interface Definitions for Diff Visualization System
+
+> **Status**: Proposed (TDD RED Phase - Test Stubs Only)
+> **Date**: 2026-01-23
+> **Related**: ADR_001_KEY_NORMALIZATION.md, 04_DATA_STRUCTURES.md
+===MID===
+/// Trait for transforming diff results into visualization-ready format.
+///
+/// # Contract
+/// - MUST assign visual status to all nodes
+/// - MUST preserve entity relationships
+===END===
+| 1.0 | 2026-01-23 | Initial creation with trait/struct definitions and test stubs |
+
+---
+
+*This document follows TDD RED phase - all tests are stubs awaiting implementation.*
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/archive-p2/A01Journal.md===LINES===8
+
+# Stable folder synchronized across all branches for PRs Architecture & Design docs
+``` bash
+git add .stable/ && git commit -m "Update stable folder" && git stash push -u -m "backup_with_untracked" && git checkout main && git add .stable/ && git commit --allow-empty -m "Update stable folder" && git push origin main && git checkout - && git merge main --no-ff -m "Sync stable from main" && git stash pop                   ```
+
+===MID===
+# Stable folder synchronized across all branches for PRs Architecture & Design docs
+``` bash
+git add .stable/ && git commit -m "Update stable folder" && git stash push -u -m "backup_with_untracked" && git checkout main && git add .stable/ && git commit --allow-empty -m "Update stable folder" && git push origin main && git checkout - && git merge main --no-ff -m "Sync stable from main" && git stash pop                   ```
+
+Your .stable folder becomes permanently synchronized across all branches
+===END===
+git add .stable/ && git commit -m "Update stable folder" && git stash push -u -m "backup_with_untracked" && git checkout main && git add .stable/ && git commit --allow-empty -m "Update stable folder" && git push origin main && git checkout - && git merge main --no-ff -m "Sync stable from main" && git stash pop                   ```
+
+Your .stable folder becomes permanently synchronized across all branches
+- any changes you make to stable files are automatically committed to both your current branch AND the main branch
+- while preserving all your other work, creating a universal configuration folder that never gets lost when switching between projects
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/archive-p2/A02ShreyasIdeation20260124.md===LINES===162
+# Start
+``` text
+So how would Shreyas think about this?
+
+Who is the user segment?
+===MID===
+    - lack of a good interface to use it
+    - lack of live querying, especially when code is evolving so fast
+- We want to get jobs in Rust
+- Rust is almost a functional langauge, which most Full Stack languages are NOT
+- Highest paid jobs are in Rust
+===END===
+
+
+
+
+
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/archive-p2/A03IdealWorkflows20260124.md===LINES===1135
+# Overall Workflow for Rust-coding
+
+
+
+
+===MID===
+✅ RIGHT:
+```rust
+async fn process_data() {
+    tokio::time::sleep(Duration::from_secs(1)).await; // Yields
+}
+===END===
+---
+
+*Document Version: 1.0*
+*Last Updated: 2025-01-18*
+*Total Patterns Documented: 45+ meta-patterns + 2,500+ system design patterns*===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/archive-p2/ADR_001_KEY_NORMALIZATION.md===LINES===365
+# ADR-001: Entity Key Normalization for Diff Stability
+
+> **Status**: Proposed
+> **Date**: 2026-01-22
+> **Decision**: Use stable identity extraction for entity matching
+===MID===
+    let mut diff = EntityDiff::default();
+
+    for stable_id in all_ids {
+        match classify_entity_change(&base_normalized, &live_normalized, stable_id) {
+            EntityChangeType::Added => {
+===END===
+- ADR-003 (future): Rename detection heuristics
+
+---
+
+*ADR-001 authored: 2026-01-22*
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/archive-p2/ARCHITECTURE_API_GROUNDED_20260122233900.md===LINES===451
+# Parseltongue Diff Visualization: API-Grounded Architecture
+
+> Architecture validated against live Parseltongue API queries
+
+---
+===MID===
+
+## 6. Frontend Data Flow
+
+### From API to Three.js
+
+===END===
+
+---
+
+*Architecture validated and corrected against live API queries on 2026-01-22*
+*Field corrections applied from rubber duck debugging session*
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/archive-p2/D01_UserJourneys.md===LINES===440
+# Parseltongue User Journeys
+
+> "When code changes, what else might break and why?"
+
+## User Segments Overview
+===MID===
+
+      - name: Fail if high risk
+        if: steps.blast.outputs.risk == 'high'
+        run: exit 1
+```
+===END===
+        LLMS[LLMs/Agents] --> HTTP
+        CLAUDE[Claude Code] --> MCP
+        HUMANS[Developers] --> TAURI
+    end
+```
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/archive-p2/D02_MCP_Explained.md===LINES===567
+# How MCP Actually Works: An ELI15 Guide for Developers
+
+> For developers who want to understand MCP (Model Context Protocol) in practice, specifically with Claude Code. No marketing fluff.
+
+**Last Updated**: 2026-01-23
+===MID===
+│  Note: WebSocket is for HUMANS (VS Code extension, etc.)   │
+│        MCP is for CLAUDE CODE (pull model)                 │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+===END===
+- [Build MCP in Rust Tutorial](https://www.shuttle.dev/blog/2025/07/18/how-to-build-a-stdio-mcp-server-in-rust)
+
+---
+
+**Questions?** The MCP protocol is well-documented, and the Rust SDK makes it straightforward to wrap existing HTTP APIs.
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/archive-p2/D03_MCP_Industry_Research.md===LINES===1644
+# Model Context Protocol (MCP) Industry Research Report
+## MCP Support Across Top 10 Agentic IDEs and AI Coding Assistants
+
+**Research Date:** January 2025
+**Purpose:** Design document research for Parseltongue MCP server development
+===MID===
+- Treat MCP servers with care
+- Vet third-party servers thoroughly
+- Use OAuth when available
+- Implement proper authentication
+- Regular security audits
+===END===
+
+### IDE Comparisons
+- [Cursor vs Windsurf vs VS Code with Copilot | Medium](https://medium.com/@shadetreeit/cursor-vs-windsurf-vs-vs-code-with-copilot-where-to-put-your-money-e381f9ae281e)
+- [Cursor MCP vs. Windsurf MCP using Composio MCP Server](https://dev.to/composiodev/cursor-mcp-vs-windsurf-mcp-using-composio-mcp-server-1748)
+- [Cursor vs. Windsurf: The best AI-powered IDE (MCP Edition) - Composio](https://composio.dev/blog/cursor-vs-windsurf)
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/archive-p2/D04_Incremental_Indexing_Architecture.md===LINES===1307
+# Incremental Indexing Architecture
+
+> **Document ID**: D04
+> **Status**: Design Complete
+> **Last Updated**: 2026-01-26
+===MID===
+    NAME --> BUILD
+    PARENT --> BUILD
+    FILE --> BUILD
+    BUILD --> LOOKUP
+    BIRTH --> LOOKUP
+===END===
+
+| Version | Date | Author | Changes |
+|---------|------|--------|---------|
+| 1.0 | 2026-01-26 | Claude Code Analysis | Initial comprehensive document |
+| 1.1 | 2026-01-26 | Claude Code Analysis | Added ISGL1 v2 design with birth timestamp identity, entity matching algorithm, 6 simulation scenarios, philosophical acceptance of identical duplicate limitation |
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/archive-p2/D05_Rust_Product_Manager_Interview.md===LINES===2702
+# Rust Product Manager Interview Questions
+
+> **Document ID**: D05
+> **Role Level**: Product Manager (Technical PM for Rust Products)
+> **Total Questions**: 100
+===MID===
+
+### Q52. How do you handle Rust-specific technical debt conversations?
+**Probability**: 70
+
+```mermaid
+===END===
+
+*Generated with Parseltongue + Claude Code*
+*Codebase: parseltongue-dependency-graph-generator*
+*Entities Analyzed: 291*
+*Dependency Edges: 5,275*
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/archive-p2/D06_Entry_Level_Rust_Engineer_Interview.md===LINES===3033
+# Entry Level Rust Engineer Interview Questions
+
+> **Document ID**: D06
+> **Role Level**: Entry Level / Junior Rust Engineer (0-2 years)
+> **Total Questions**: 100
+===MID===
+
+### Q52. What is `anyhow` and when do you use it?
+**Probability**: 70
+
+```mermaid
+===END===
+
+*Generated with Parseltongue + Claude Code*
+*Codebase: parseltongue-dependency-graph-generator*
+*Entities Analyzed: 291*
+*Dependency Edges: 5,275*
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/archive-p2/D07_Senior_Rust_Engineer_Interview.md===LINES===3329
+# Senior Rust Engineer Interview Questions
+
+> **Document ID**: D07
+> **Role Level**: Senior Rust Engineer (3-7 years experience)
+> **Total Questions**: 100
+===MID===
+
+### Q51. How do you reduce compilation times?
+**Probability**: 88
+
+```mermaid
+===END===
+
+*Generated with Parseltongue + Claude Code*
+*Codebase: parseltongue-dependency-graph-generator*
+*Entities Analyzed: 291*
+*Dependency Edges: 5,275*
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/archive-p2/D08_Principal_Rust_Engineer_Interview.md===LINES===3690
+# D08: Principal Rust Engineer Interview Questions
+
+> 100 Questions for Principal/Staff Rust Engineer (8+ years experience)
+> Focus: Language internals, architecture at scale, technical leadership, ecosystem strategy
+
+===MID===
+
+### Q50. How do you evaluate engineering candidates for Rust roles?
+**Probability**: 78
+
+```mermaid
+===END===
+| D05 PM | Business, strategy, ecosystem | None - unique perspective |
+| D06 Entry | Syntax, basics, tooling | Foundation for D07/D08 |
+| D07 Senior | Patterns, async, unsafe | Builds on D06, precedes D08 |
+| D08 Principal | Architecture, leadership, deep internals | Assumes D06/D07 knowledge |
+
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/archive-p2/D09_Parseltongue_Core_Architecture.md===LINES===290
+# D09: Parseltongue Core Architecture & Storage Interview Questions
+
+> 100 interview questions for the creator of parseltongue about storage architecture, database design, entity/edge schema, and core system decisions.
+
+---
+===MID===
+| 54 | What happens when you want to "reset" the baseline to current state? | 3 | Medium | `reset`, `workflow` |
+| 55 | How do you handle the case where base.db and live.db are on different git branches? | 4 | Deep | `git`, `branches` |
+| 56 | What's the disk space overhead of maintaining two separate databases? | 2 | Surface | `storage`, `overhead` |
+| 57 | How do you synchronize access between base and live databases during diff? | 4 | Deep | `concurrency`, `synchronization` |
+| 58 | Can you have multiple live.db files for different "what-if" scenarios? | 3 | Medium | `scenarios`, `branching` |
+===END===
+| Circular Dependencies | 0 |
+
+---
+
+*Generated for parseltongue-dependency-graph-generator architecture interview preparation*
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/archive-p2/D10_Parseltongue_Parsing_Languages.md===LINES===298
+# D10: Parseltongue Parsing & Language Support Interview Questions
+
+> 100 interview questions for the creator of parseltongue about tree-sitter integration, multi-language support, entity extraction, and parsing architecture.
+
+---
+===MID===
+| 59 | How do you extract entity signatures for method overloading differentiation? | 4 | Deep | `signatures`, `overloading` |
+| 60 | What metadata beyond name and type is extracted for each entity? | 3 | Medium | `metadata`, `attributes` |
+
+### Entity Classification
+
+===END===
+| Swift | tree-sitter-swift | func, class, struct, protocol | calls, imports | Low |
+
+---
+
+*Generated for parseltongue-dependency-graph-generator parsing interview preparation*
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/archive-p2/D11_Parseltongue_Algorithms_Analysis.md===LINES===321
+# D11: Parseltongue Algorithms & Analysis Interview Questions
+
+> 100 interview questions for the creator of parseltongue about blast radius calculation, cycle detection, smart context selection, clustering, and other graph algorithms.
+
+---
+===MID===
+| 61 | How do direct callers score (1.0) compared to callees (0.95)? | 4 | Deep | `scoring`, `weights` |
+| 62 | What's the transitive depth scoring formula: 0.7 - (0.1 * N)? | 4 | Deep | `scoring`, `transitive` |
+| 63 | Why do callers score higher than callees in relevance? | 4 | Medium | `rationale`, `semantics` |
+| 64 | How do you handle entities with multiple relationship paths? | 4 | Deep | `paths`, `scoring` |
+| 65 | Should entity type (function vs struct) affect relevance scoring? | 3 | Medium | `entity-types`, `weighting` |
+===END===
+| Entity/Cluster Ratio | 3.1 |
+
+---
+
+*Generated for parseltongue-dependency-graph-generator algorithm interview preparation*
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/archive-p2/D12_Parseltongue_API_System_Design.md===LINES===342
+# D12: Parseltongue API & System Design Interview Questions
+
+> 100 interview questions for the creator of parseltongue about HTTP API design, 4-word naming convention, WebSocket streaming, CLI architecture, and deployment.
+
+---
+===MID===
+### Integration
+
+| # | Question | Prob | Depth | Tags |
+|---|----------|------|-------|------|
+| 71 | How does the Tauri desktop app connect to the WebSocket? | 4 | Deep | `tauri`, `integration` |
+===END===
+| `pt08-http-code-query-server` | HTTP API server | ~4000 |
+
+---
+
+*Generated for parseltongue-dependency-graph-generator API/system interview preparation*
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/archive-p2/Journal2026-01-27-v140-release-verification.md===LINES===159
+# Parseltongue v1.4.0 Release Verification Journal
+
+**Date**: 2026-01-27
+**Version**: 1.4.0
+**Status**: RELEASE READY
+===MID===
+| Endpoint | Status | Response |
+|----------|--------|----------|
+| `/server-health-check-status` | ✅ OK | `{"success":true,"status":"ok","server_uptime_seconds_count":961}` |
+| `/codebase-statistics-overview-summary` | ✅ OK | `{"success":true,"data":{"code_entities_total_count":0,...}}` |
+| `/api-reference-documentation-help` | ✅ OK | `{"success":true,"data":{"api_version":"1.4.0",...}}` |
+===END===
+- Zero warnings
+- All tests passing
+- All 14 endpoints functional (all real implementations)
+- Smart port selection working
+- Version consistency across all files
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/archive-p2/MCP_EXPLAINED_FOR_DEVELOPERS.md===LINES===567
+# How MCP Actually Works: An ELI15 Guide for Developers
+
+> For developers who want to understand MCP (Model Context Protocol) in practice, specifically with Claude Code. No marketing fluff.
+
+**Last Updated**: 2026-01-23
+===MID===
+│  Note: WebSocket is for HUMANS (VS Code extension, etc.)   │
+│        MCP is for CLAUDE CODE (pull model)                 │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+===END===
+- [Build MCP in Rust Tutorial](https://www.shuttle.dev/blog/2025/07/18/how-to-build-a-stdio-mcp-server-in-rust)
+
+---
+
+**Questions?** The MCP protocol is well-documented, and the Rust SDK makes it straightforward to wrap existing HTTP APIs.
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/archive-p2/PHASE-2-ARCHITECTURE.md===LINES===833
+# Parseltongue Phase 2: Real-Time Diff Visualization Architecture
+
+> **Version**: 2.0.0 (2026-01-23)
+> **Status**: PLANNING
+> **Dependencies**: Phase 1 Complete (244 tests passing)
+===MID===
+
+### Frontend (Node.js/React)
+
+| Dependency | Version | Purpose |
+|------------|---------|---------|
+===END===
+
+---
+
+*Architecture document created 2026-01-23*
+*Phase 1 baseline: 244 tests passing*
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/archive-p2/PRD-2026-01-28-Live-Tracking-Incremental-Indexing.md===LINES===239
+# PRD: Live Tracking / Incremental Indexing for Parseltongue
+
+**Document ID**: PRD-2026-01-28
+**Version**: 1.0.0
+**Date**: 2026-01-28
+===MID===
+3. If unchanged, return early with `hash_changed: false`
+4. Query existing entities WHERE `file_path == requested_path`
+5. Delete those entities and their outgoing edges
+6. Re-parse file using `Isgl1KeyGeneratorImpl::parse_source()`
+7. Insert new entities and edges
+===END===
+| **Total** | **3 days** |
+
+---
+
+*PRD created 2026-01-28 from notes01-agent analysis, local-exec-specs specifications, and Explore agent investigation.*
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/archive-p2/PRD-ARCH-UNIFIED.md===LINES===246
+# Parseltongue Diff Visualization System: Unified PRD & Architecture
+
+> **Version**: 1.0.0 (2026-01-23)
+> **Status**: IMPLEMENTED - All phases complete
+> **Mantra**: "DIFF IS THE PRODUCT"
+===MID===
+```bash
+parseltongue diff --base rocksdb:base.db --live rocksdb:live.db [--json] [--max-hops N]
+```
+
+| Argument | Description | Default |
+===END===
+
+| Date | Version | Changes |
+|------|---------|---------|
+| 2026-01-23 | 1.0.0 | Initial unified PRD-ARCH document |
+| 2026-01-23 | 1.0.0 | All 7 phases implemented and tested |
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/archive-p2/RCA-2026-01-28-jq-null-field-error.md===LINES===215
+# Root Cause Analysis: jq "null and string cannot have containment checked" Error
+
+**Date**: 2026-01-28
+**Severity**: User Experience / Documentation
+**Status**: RESOLVED
+===MID===
+  jq '[.data.edges[] | select(.to_key | contains("useAuthStore"))]'
+
+# Find all edges FROM a specific file
+curl -s "http://localhost:7777/dependency-edges-list-all" | \
+  jq '[.data.edges[] | select(.from_key | contains("controller"))]'
+===END===
+... | jq '[.data.edges[].edge_type] | unique'
+
+# Count edges per type
+... | jq '.data.edges | group_by(.edge_type) | map({type: .[0].edge_type, count: length})'
+```
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/archive-p2/README.md===LINES===14
+# Stable Folder
+
+This folder is designed to remain constant across all branches and commits.
+
+## Purpose
+===MID===
+## Purpose
+- Contains stable configuration files
+- Holds shared resources that should not change between branches
+- Provides a consistent location for cross-branch utilities
+
+===END===
+## Usage
+Files in this folder should only be modified when absolutely necessary and should be committed to the main branch.
+
+## Last Updated
+2026-01-24 - Initial creation
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/archive-p2/RELEASE_v1.4.1_SUMMARY.md===LINES===117
+# Parseltongue v1.4.1 Release Summary
+
+**Status**: GREEN - Ready for Release
+**Date**: 2026-01-29
+**Type**: Minor Feature Addition
+===MID===
+Changes:
+- Added -w, --watch flag to pt08-http-code-query-server
+- Added --watch-dir <PATH> flag (requires --watch)
+- Added test_cli_watch_argument_parsing() unit test
+- All 16 HTTP endpoints verified with watch enabled
+===END===
+---
+
+**Ready to Release**: YES
+**Blocking Issues**: None
+**Next Action**: Execute release commands above
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/archive-p2/TDD_PROGRESS_TRACKER.md===LINES===293
+# TDD Progress Tracker: Incremental Reindex Feature
+
+**Last Updated**: 2026-01-28 (Session Start)
+**Current Phase**: STUB → RED (Ready to write tests)
+
+===MID===
+```
+Test Layer           Implementation Layer
+───────────          ────────────────────
+
+Test 1 ─────────────► get_entities_by_file_path()
+===END===
+5. **Performance Target**: < 500ms end-to-end (measure in Test 12)
+
+---
+
+**Quick Status**: ████░░░░░░░░░░░░░░░░ 20% | Next: Write Test 1 (5 min)
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/archive-p2/TDD_RELEASE_STATE_v1.4.1.md===LINES===584
+# TDD Session State: Parseltongue v1.4.1 Release
+
+**Date**: 2026-01-29
+**Time**: Evening IST
+**Status**: GREEN (Ready for Release)
+===MID===
+   - Made `--watch-dir` require `--watch` to prevent confusion
+   - Default watch directory is current directory (sensible default)
+
+2. **Test Strategy**:
+   - Unit test for CLI parsing only
+===END===
+
+---
+
+*TDD Session State documented by Claude Code (TDD Context Retention Specialist)*
+*Parseltongue v1.4.1 Release Ready*
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/archive-p2/TDD_SESSION_STATE.md===LINES===715
+# TDD Session State: Live Tracking / Incremental Indexing Feature
+
+**Session Started**: 2026-01-28
+**Last Updated**: 2026-01-29
+**Feature**: `/incremental-reindex-file-update` HTTP endpoint
+===MID===
+---
+
+### Phase 3: Integration Tests (RED Phase)
+
+**Location**: `/Users/amuldotexe/Desktop/OSS202601/parseltongue-dependency-graph-generator/crates/pt08-http-code-query-server/tests/incremental_reindex_integration_tests.rs`
+===END===
+---
+
+**END OF TDD SESSION STATE**
+
+*This document is the single source of truth for the incremental reindex feature development. Update this file after every RED/GREEN/REFACTOR cycle.*
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/archive-p2/UserJourneys01.md===LINES===440
+# Parseltongue User Journeys
+
+> "When code changes, what else might break and why?"
+
+## User Segments Overview
+===MID===
+
+      - name: Fail if high risk
+        if: steps.blast.outputs.risk == 'high'
+        run: exit 1
+```
+===END===
+        LLMS[LLMs/Agents] --> HTTP
+        CLAUDE[Claude Code] --> MCP
+        HUMANS[Developers] --> TAURI
+    end
+```
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/experiments/dogfood-experiment-001-20251201.md===LINES===478
+# Dogfooding Experiment #001 - Parseltongue on Parseltongue
+
+**Experiment ID**: `dogfood-001`
+**Date**: 2025-12-01 05:21:04 UTC
+**Codebase**: parseltongue-dependency-graph-generator (self-analysis)
+===MID===
+**Status**: BROKEN due to key format mismatch
+
+---
+
+### 3.4 Analysis Endpoints
+===END===
+
+---
+
+*Experiment completed: 2025-12-01 05:35 UTC*
+*Total experiment duration: ~14 minutes*
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/experiments/dogfood-research-001-improvements.md===LINES===366
+# Research Document: Parseltongue Improvement Analysis
+
+**Experiment ID**: `dogfood-001`
+**Date**: 2025-12-01
+**Source**: Dogfooding Experiment Results + Claude Code Visual Patterns Analysis
+===MID===
+### 3.1 `/codebase-statistics-overview-summary`
+
+**Issue**: `languages_detected_list: []`
+
+**Fix**: Track language during entity creation:
+===END===
+
+---
+
+*Research document completed: 2025-12-01*
+*Next action: Implement P0 fixes (key format mismatch)*
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/experiments/dogfooding_experiment_001.md===LINES===317
+# Dogfooding Experiment #001
+
+**Date**: 2025-12-01
+**Version**: v1.0.3
+**Target Codebase**: parseltongue-dependency-graph-generator (self-analysis)
+===MID===
+
+#### 10. `/blast-radius-impact-analysis?entity=X&hops=N`
+**Status**: FAIL (Bug)
+```json
+{
+===END===
+5. Implement language detection population
+
+---
+
+*Experiment conducted using Claude Code. DO NOT DELETE - Will be used for cross-LLM improvement analysis.*
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/experiments/real-world-exp01.md===LINES===463
+# Real-World Experiment 01: Parseltongue Self-Analysis
+
+**Date**: 2025-12-01
+**Version**: v1.1.0
+**Objective**: Dogfood Parseltongue by analyzing its own codebase via HTTP API
+===MID===
+### 5.1 Analyze Edge Distribution by Source Entity
+```bash
+curl -s "http://localhost:7777/dependency-edges-list-all" | \
+  jq -r '.data.edges[].from_key' | sort | uniq -c | sort -rn | head -10
+```
+===END===
+The tool is ready for production use in LLM-assisted code exploration workflows.
+
+---
+
+*Generated by Claude Code during Parseltongue v1.1.0 dogfooding session*
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/experiments/research_improvements_001.md===LINES===362
+# Research Document: Parseltongue Improvement Analysis
+
+**Based on**: Dogfooding Experiment #001
+**Date**: 2025-12-01
+**Version**: v1.0.3
+===MID===
+  "budget_remaining": 153,
+  "selection_strategy": "callers_first",
+  "entities": [
+    {"key": "...", "tokens": 450, "priority": 1},
+    {"key": "...", "tokens": 320, "priority": 2}
+===END===
+**Estimated Effort**: 2-3 focused development sessions
+
+---
+
+*This research document is designed for cross-LLM analysis. Feed to other models for alternative improvement suggestions.*
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/refDocsClaudeCode/RD01_ARCHITECTURE.md===LINES===663
+# Claude Code: Complete Architectural Deconstruction
+
+## Executive Summary
+
+Claude Code is a sophisticated agentic CLI system built on a **hierarchical multi-agent architecture** with event-driven automation. This document represents a complete atomic deconstruction of the system.
+===MID===
+```
+
+---
+
+## 5. Plugin System Architecture
+===END===
+
+---
+
+*Generated by architectural analysis on 2025-11-30*
+*Claude Code v2.0.55*
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/refDocsClaudeCode/RD02_DEEP_DIVE_RESEARCH.md===LINES===1446
+# Claude Code: Deep-Dive Research Document
+## Atomic-Level Deconstruction of cli.js (10.9MB)
+
+**Version:** 2.0.55
+**Bundle Size:** 10,862,686 bytes (10.9MB)
+===MID===
+  let iteration = 0;
+  const MAX_ITERATIONS = 100;
+
+  while (iteration < MAX_ITERATIONS) {
+    iteration++;
+===END===
+
+---
+
+*Generated by atomic-level analysis using general-purpose, Explore, and Plan agents*
+*Claude Code v2.0.55 - 2025-11-30*
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/refDocsClaudeCode/RD03_EXHAUSTIVE_FUNCTION_REFERENCE.md===LINES===651
+# Claude Code CLI.js: Exhaustive Function Reference
+## Complete Atomic Deconstruction - Every Function, Class, and Component
+
+**File:** `/Users/neetipatni/priori-incantatem/claude-code-deconstruct/package/cli.js`
+**Version:** 2.0.55
+===MID===
+| `InternalStdinContext` | Raw mode stdin |
+| `InternalFocusContext` | Keyboard nav |
+| `ThemeContext` | Color schemes |
+| `TerminalSizeContext` | Dimensions |
+| `Ink2Context` | Legacy mode |
+===END===
+
+---
+
+*Generated by exhaustive analysis using general-purpose, Explore, and Plan agents*
+*Claude Code v2.0.55 - 2025-11-30*
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/refDocsClaudeCode/RD04_HOOK_SYSTEM_ANALYSIS.md===LINES===720
+# Claude Code Hook System - Deep Analysis
+
+## Executive Summary
+
+The Claude Code CLI contains a sophisticated **Hook System** that allows users to intercept and modify the application's behavior at critical execution points. Hooks can execute shell commands, run prompts through the AI model, delegate to subagents, or execute JavaScript callbacks.
+===MID===
+
+### Matcher Fields by Event
+
+- **PreToolUse/PostToolUse**: `tool_name`
+- **Notification**: `notification_type`
+===END===
+6. **Both persistent and ephemeral** hook registration
+7. **Async execution** for background operations
+8. **Full programmatic access** via session hooks
+
+This system transforms Claude Code from a simple AI assistant into a **programmable development environment** where every action can be intercepted, validated, modified, or augmented.
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/refDocsClaudeCode/RD05_API_CLIENT_AND_MESSAGE_HANDLING.md===LINES===1071
+# DEMINIFIED API CLIENT AND MESSAGE HANDLING ARCHITECTURE
+
+## Complete API Interaction Flow Analysis from cli.js
+
+---
+===MID===
+
+---
+
+## 6. ERROR HANDLING AND RETRIES
+
+===END===
+5. **Request Signing**: Authentication headers validation
+
+---
+
+**Analysis Complete**: This architecture represents a production-grade streaming API client with comprehensive error handling, tool execution, and state management capabilities.
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/refDocsClaudeCode/RD08_EXPERT_HLD_LLD_ANALYSIS.md===LINES===834
+# Claude Code: Expert HLD/LLD Analysis with Architectural Diagrams
+
+## Superintelligent Deep-Dive into Claude Code's Architecture
+
+**Analysis Date:** December 2024
+===MID===
+        end
+    end
+
+    Sub-->>Task: Final result
+    Task-->>Main: tool_result
+===END===
+3. **Streaming is Essential**: Async generators provide real-time feedback and early cancellation
+4. **Isolation Prevents Bugs**: Forked state per agent eliminates race conditions
+5. **Explicit > Implicit**: Clear context boundaries improve model focus
+
+The minified code reveals a system refined through production usage, where every pattern solves a concrete problem encountered in real-world agent deployment.
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/web-ui/API_CHANGES_2025-01-11.md===LINES===132
+# API Changes Summary
+
+**Date**: 2025-01-11 11:00 America/Los_Angeles
+**Purpose**: Enable 3D CodeCity visualization by adding missing data and browser support
+
+===MID===
+**Note**: Uses `Any` for development convenience. For production, should restrict to specific origins.
+
+---
+
+### 3. Updated API Documentation
+===END===
+
+1. Run existing tests to ensure no regressions
+2. Create web-ui-poc with updated API types
+3. Verify LOC values are accurate for various languages
+4. Consider adding additional metrics (complexity, nesting depth)
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/web-ui/ARCHITECTURE.md===LINES===625
+# Web UI Architecture
+
+**Document**: Architecture specification for Parseltongue 3D CodeCity Web UI
+
+**Created**: 2025-01-11 09:40 America/Los_Angeles
+===MID===
+│     - Returns clicked mesh              │
+│     - Retrieves entity key from userData│
+└─────────────────────────────────────────┘
+         │
+         ▼
+===END===
+- Parseltongue README: `S01-README-MOSTIMP.md`
+- TDD Principles: `S06-design101-tdd-architecture-principles.md`
+- pt08 API Documentation: `crates/pt08-http-code-query-server/src/http_endpoint_handler_modules/api_reference_documentation_handler.rs`
+- Three.js Best Practices: `docs/web-ui/THREE_JS_BEST_PRACTICES.md`
+- TDD Test Plan: `docs/web-ui/TDD_TEST_PLAN.md`
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/web-ui/DESIGN_OPTIONS_FOR_PARSELTONGUE_VISUALIZATION.md===LINES===568
+# Design Options for Parseltongue Visualization
+
+**Applying 20 Years of Design Thinking to Code Dependency Visualization**
+
+**Date**: 2025-01-13
+===MID===
+│  │  District   │  │  District   │  │  District   │        │
+│  │   ( teal )  │  │  (amber )   │  │ (emerald)   │        │
+│  └─────────────┘  └─────────────┘  └─────────────┘        │
+└─────────────────────────────────────────────────────────────┘
+```
+===END===
+
+**Document Version**: 1.0
+**Generated**: 2025-01-13
+**Agent**: Claude Opus 4.5 + Plan Agent + Explore Agent
+**Total Options**: 4 distinct visualization approaches
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/web-ui/EIGHT_NEW_USER_JOURNEYS_VERSION_THREE.md===LINES===786
+# Eight NEW User Journeys for Parseltongue Visualization (Version 3)
+
+**Data Flow, Infrastructure Topology, and Async Patterns**
+
+**Date**: 2025-01-14
+===MID===
+- **Work-in-progress** = resources processed
+- **Parallel tracks** = parallelization opportunities
+- **Bottleneck highlights** = slow steps
+
+**Key Interactions**:
+===END===
+**Branch**: `research/visualization-improvements-20260110-1914`
+
+---
+
+*Version 1: Code. Version 2: Runtime. Version 3: Systems. Together: Complete understanding.*
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/web-ui/EIGHT_NEW_USER_JOURNEYS_VERSION_TWO.md===LINES===1131
+# Eight NEW User Journeys for Parseltongue Visualization (Version 2)
+
+**Complementary Research Distinct from Version 1**
+
+**Date**: 2026-01-14
+===MID===
+- Select failing component → auto-generate cascade tree
+- "Time to Failure" annotation (estimated downtime per component)
+- "Fix Priority" ranking (critical user features first)
+- Single-point-of-failure detection (nodes whose failure affects many)
+- Export incident summary with blast radius
+===END===
+**Branch**: `research/visualization-improvements-20260110-1914`
+
+---
+
+*Version 1 focuses on what every developer needs. Version 2 focuses on what specialists need. Together, they provide comprehensive coverage of the modern software development lifecycle.*
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/web-ui/EIGHT_USER_JOURNEYS_FOR_PARSELTONGUE_VISUALIZATION.md===LINES===880
+# Eight User Journeys for Parseltongue Visualization
+
+**A Comprehensive Design Document Applying 20 Years of Design Thinking to Code Dependency Visualization**
+
+**Date**: 2025-01-14
+===MID===
+- "District Density" indicator for >50 entities
+
+**Parseltongue Endpoints**:
+- `/codebase-statistics-overview-summary`
+- `/code-entities-list-all`
+===END===
+**Branch**: `research/visualization-improvements-20260110-1914`
+
+---
+
+*Each visualization mode is purpose-built for a specific developer journey. No single view serves all needs. The power of Parseltongue lies in offering the right visualization for the right question.*
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/web-ui/INTERFACE_SIGNATURE_GRAPH_THESIS.md===LINES===471
+# Interface Signature Graph Visualization: A Design Thesis
+
+**Date**: 2025-01-13
+**Status**: Design Research
+**Context**: Parseltongue Dependency Graph Generator v1.2.0
+===MID===
+- Requires new trait-specific endpoint or filtering `/code-entities-list-all` for `entity_type=trait`
+- Uses `/forward-callees-query-graph` to show trait method calls
+- Uses `/reverse-callers-query-graph` to show where trait bounds are required
+
+**Implementation Considerations**:
+===END===
+
+**Generated**: 2025-01-13
+**Author**: Claude Opus 4.5
+**Context**: Parseltongue Dependency Graph Generator v1.2.0
+**Branch**: `research/visualization-improvements-20260110-1914`
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/web-ui/MULTI_REPOSITORY_PORT_MANAGEMENT.md===LINES===389
+# Multi-Repository Port Management: Research & Solution
+
+**Date**: 2025-01-18
+**Status**: Research Complete, Implementation Proposed
+**Context**: Parseltongue HTTP Server - Multi-codebase workflow support
+===MID===
+            }
+        }
+    }
+
+    anyhow::bail!("No available ports in range {}-{}", start, start + max_attempts)
+===END===
+**Generated**: 2025-01-18
+**Agent**: Claude Opus 4.5
+**Related Documents**:
+- `/docs/web-ui/THREE_JS_INNOVATION_RESEARCH.md`
+- `/docs/web-ui/DESIGN_OPTIONS_FOR_PARSELTONGUE_VISUALIZATION.md`
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/web-ui/PORT_SELECTION_ARCHITECTURE.md===LINES===740
+# Port Selection Architecture: Smart Multi-Instance Support
+
+**Version**: 1.0.0
+**Status**: Architecture Complete
+**Context**: Parseltongue HTTP Server - Multi-codebase workflow support
+===MID===
+    async fn test_concurrent_port_selection() {
+        // Given: 10 tasks simultaneously selecting ports
+        // When: All run concurrently
+        // Then: Each gets a unique port
+        let mut tasks = tokio::task::JoinSet::new();
+===END===
+**Agent**: Claude Opus 4.5
+**References**:
+- `/docs/web-ui/MULTI_REPOSITORY_PORT_MANAGEMENT.md` (Research document)
+- `/docs/web-ui/PORT_SELECTION_ARCHITECTURE.md` (This document)
+- `/.claude/.parseltongue/S06-design101-tdd-architecture-principles.md` (Design principles)
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/web-ui/RESEARCH_Visualization_Improvements_20260110.md===LINES===397
+# Parseltongue Visualization Research Thesis
+
+> **Research Branch**: `research/visualization-improvements-20260110-1914`  
+> **Date**: 2026-01-10  
+> **Author**: AI Research Assistant
+===MID===
+|-----------|------------|-----------|
+| Framework | **Svelte** or **SolidJS** | Lightweight, fast reactivity |
+| Graph Library | **D3.js** | Maximum customization |
+| 3D Option | **Three.js** | CodeCity-style 3D view |
+| State | **Zustand** | Simple, no boilerplate |
+===END===
+This can be done in **~3 days** and would immediately demonstrate the value of visualization.
+
+---
+
+*End of Research Document*
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/web-ui/RUBBER_DUCK_ANALYSIS.md===LINES===455
+# Rubber Duck Analysis: Web UI Architecture
+
+**Document**: Critical review of web-ui plans, identifying gaps, problems, and overlooked issues
+
+**Created**: 2025-01-11 09:45 America/Los_Angeles
+===MID===
+- Browser switches tabs
+- GPU driver crashes
+- Computer goes to sleep
+
+Application will **freeze** and never recover.
+===END===
+---
+
+**Generated by**: Rubber Duck Analysis Session
+**Agent**: General-purpose (Claude Opus 4.5)
+**Date**: 2025-01-11 09:45 America/Los_Angeles
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/web-ui/SMART_PORT_SELECTION_TEST_JOURNAL.md===LINES===246
+# Smart Port Selection - Test Journal
+
+**Date**: 2025-01-18
+**Branch**: `exp20260118`
+**Binary**: `target/release/parseltongue` v1.2.0 (with smart port selection)
+===MID===
+
+| Endpoint | Status | Response |
+|----------|--------|----------|
+| `/code-entities-list-all` | PASSED | HTTP 200, returned 216 entities |
+| `/code-entities-list-all?entity_type=function` | PASSED | HTTP 200, filtered by type |
+===END===
+---
+
+**Generated**: 2025-01-18
+**Tested by**: Claude Opus 4.5
+**Commit suggestion**: `feat: implement smart port selection for multi-repository workflows`
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/web-ui/TDD_TEST_PLAN.md===LINES===447
+# Web UI TDD Test Plan
+
+**Document**: Test-Driven Development plan for Parseltongue 3D CodeCity Web UI
+
+**Created**: 2025-01-11 09:35 America/Los_Angeles
+===MID===
+
+---
+
+## Part 5: Test Execution Commands
+
+===END===
+
+- Parseltongue TDD Principles: `S06-design101-tdd-architecture-principles.md`
+- Vitest Documentation: https://vitest.dev/
+- Playwright Documentation: https://playwright.dev/
+- MSW Documentation: https://mswjs.io/
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/web-ui/THREE_JS_BEST_PRACTICES.md===LINES===453
+# Three.js & CodeCity Visualization Best Practices
+
+**Research Document**: Industry best practices for building a 3D CodeCity visualization using Three.js and TypeScript.
+
+**Created**: 2025-01-11 09:30 America/Los_Angeles
+===MID===
+// Type guards
+function isCodeBuilding(obj: THREE.Object3D): obj is THREE.Mesh & {
+  userData: { entityKey: string; entityType: EntityType }
+} {
+  return 'entityKey' in obj.userData;
+===END===
+- [Three.js TypeScript Boilerplate](https://discourse.threejs.org/t/three-js-typescript-boilerplate/12502)
+
+### Testing
+- [Vitest Visual Regression](https://vitest.dev/guide/browser/visual-regression-testing)
+- [Three.js Unit Testing Discussion](https://discourse.threejs.org/t/how-to-unit-test-three-js/57736)
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/web-ui/THREE_JS_INNOVATION_RESEARCH.md===LINES===238
+# Three.js Innovation Research: Visualization Techniques & Inspiration
+
+**Date**: 2025-01-13
+**Status**: Research Complete
+**Context**: Parseltongue Dependency Graph Generator - Next-generation visualization research
+===MID===
+
+### Scientific Visualization
+- **3Dmol.js**: Molecular visualization (atoms = entities, bonds = deps)
+- **Cosmic Web Visualization**: Large-scale 3D data
+- **Immersive Analytics**: VR/AR for complex data
+===END===
+---
+
+**Generated**: 2025-01-13
+**Agent**: Claude Opus 4.5 + General-Purpose Research Agent
+**Branch**: `research/visualization-improvements-20260110-1914`
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/web-ui/VERIFICATION_REPORT.md===LINES===269
+# Verification Report: Web UI POC
+
+**Date**: 2025-01-11 14:52 America/Los_Angeles
+**Updated**: 2025-01-11 23:10 America/Los_Angeles
+**Status**: ✅ GREEN PHASE COMPLETE - All tests passing
+===MID===
+## Files Modified During Verification
+
+| File | Change | Reason |
+|------|--------|--------|
+| `parseltongue_api_client_test.ts` | Removed unused import | TypeScript error |
+===END===
+
+**Generated**: 2025-01-11 14:55 America/Los_Angeles
+**Updated**: 2025-01-11 23:10 America/Los_Angeles
+**Agent**: Claude Opus 4.5
+**Branch**: research/visualization-improvements-20260110-1914
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/web-ui/VISUALIZATION_IMPROVEMENTS.md===LINES===101
+# 3D CodeCity Visualization Improvements
+
+**Date**: 2025-01-12
+**Status**: First implementation complete
+**Branch**: `research/visualization-improvements-20260110-1914`
+===MID===
+- **Arc height**: y=8 at ends, y=18 at peak
+- **Opacity**: 1.0 (solid) for maximum visibility
+- **Scene background**: Dark blue-gray (`#1a1a2e`)
+- **Ground**: Dark blue (`#16213e`)
+
+===END===
+
+---
+
+**Generated**: 2025-01-12
+**Agent**: Claude Opus 4.5
+===DONE===
+===FILE===archived-docs/stable/archive-docs-v2/web-ui/influential-design-voices-2005-2025.md===LINES===1259
+# Influential Voices in Design: 2005-2025
+
+**A Comprehensive Research Document on the Most Influential Figures in Design Over the Past Two Decades**
+
+---
+===MID===
+- Growth strategies
+- Case studies from top tech companies
+- Career advice for PMs
+
+**Links:**
+===END===
+**Categories:** Product Design, UX/UI, Design Systems, Design Thinking, Interaction Design, Visual Design, Design Leadership
+
+---
+
+*End of Document*
+===DONE===
+===FILE===archived-docs/stable/archive-journal/2026-01-23-repo-cleanup-and-e2e-testing.md===LINES===215
+# Development Journal: 2026-01-23
+
+## Repository Cleanup and E2E Testing
+
+### Session Goals
+===MID===
+- `use_config()` - unchanged
+- `main_api_function()` - unchanged
+
+### Test Script: `run_e2e_test.sh`
+
+===END===
+| Design E2E test | ✅ |
+| Implement E2E test | ✅ |
+| Document in journal | ✅ |
+
+**"DIFF IS THE PRODUCT"** - System fully operational with CLI, HTTP, and E2E test coverage.
+===DONE===
+===FILE===archived-docs/stable/archive-research/GAP_ANALYSIS_METHODOLOGY_EVOLUTION_20260122.md===LINES===636
+# Gap Analysis and Methodology Evolution
+> Systematic review of diff visualization documentation (2026-01-22)
+
+---
+
+===MID===
+
+**Location**: UNIFIED_SERVER_DESIGN_RESEARCH (lines 264-267)
+
+**The Problem**: "Click Update Base" is mentioned but:
+- What exactly happens?
+===END===
+*Analysis completed: 2026-01-22*
+*Documents reviewed: 4*
+*Gaps identified: 12*
+*Inconsistencies found: 8*
+*Recommendations: 15*
+===DONE===
+===FILE===archived-docs/stable/archive-research/RUBBER_DUCK_DEBUG_REPORT_20260122235000.md===LINES===339
+# Rubber Duck Debug Report: API Validation
+
+> Validating research documents against live Parseltongue API (2026-01-22)
+
+---
+===MID===
+  "data": object,          // Actual payload (when success=true)
+  "error": string,         // Error message (when success=false)
+  "tokens": number         // Token estimation for LLM context
+}
+```
+===END===
+The core approach (diff by key, use existing APIs, add 4 new endpoints) remains valid.
+
+---
+
+*Validated against Parseltongue API v1.0.2 running on port 7777*
+===DONE===
+===FILE===archived-docs/stable/archive-research/UNIFIED_SERVER_DESIGN_RESEARCH_20260122233900.md===LINES===579
+# Parseltongue Unified Server: Design Research Document
+
+> Single binary, live diff watching, git state awareness
+
+---
+===MID===
+   → Indexes current working directory → live.db
+   → Shows diff: "+15 entities, -3 removed"
+
+5. Developer sees: "Oh, I committed 3 times since base, should update"
+   → Clicks [Update Base to HEAD]
+===END===
+- `pt10-diff-graph-calculator`: Entity diff, edge diff, blast radius
+
+---
+
+*MVP: Watch AI agents edit code, see dependency graph diff in real-time, understand blast radius before committing.*
+===DONE===
+===FILE===archived-docs/stable/archive-research/VISUALIZATION_RESEARCH_20260122233900.md===LINES===271
+# Parseltongue 3D Visualization Research
+
+> Research findings on visualizing large dependency graphs in 3D
+
+---
+===MID===
+```
+
+---
+
+## 5. Animation Design
+===END===
+- [Level of Detail for Large Diagrams](https://www.yworks.com/pages/level-of-detail-for-large-diagrams)
+
+### Tutorials
+- [WebGL Performance Optimization](https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/WebGL_best_practices)
+- [Three.js InstancedMesh](https://threejs.org/docs/#api/en/objects/InstancedMesh)
+===DONE===
+===FILE===archived-docs/stable/archive-root/CLAUDE.md===LINES===142
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Project Overview
+===MID===
+| Entity | `/code-entities-search-fuzzy?q=pattern` | Fuzzy search |
+| Graph | `/dependency-edges-list-all` | All edges |
+| Graph | `/reverse-callers-query-graph?entity=X` | Who calls X? |
+| Graph | `/forward-callees-query-graph?entity=X` | What does X call? |
+| Analysis | `/blast-radius-impact-analysis?entity=X&hops=N` | Impact analysis |
+===END===
+--db "rocksdb:parseltongue20251201/analysis.db"    # Good
+--db "parseltongue20251201/analysis.db"            # Bad - missing prefix
+```
+
+Note: `pt01-folder-to-cozodb-streamer` auto-creates the database - just copy the path it prints.
+===DONE===
+===FILE===archived-docs/stable/archive-root/parseltongue-ultrathink-isg-explorer-archived.md===LINES===506
+---
+name: parseltongue-ultrathink-isg-explorer
+description: |
+  **Essence**: Each request = Fresh timestamped workspace with database + exports + analysis.
+
+===MID===
+  ```
+  Top 5 Hub Entities (by in-degree)
+  ╔════════════════════════════════════════════════╗
+  ║ 1. Config              [████████████]  47 deps ║
+  ║ 2. DatabaseConnection  [████████░░░░]  32 deps ║
+===END===
+
+  **Your mantra**: Isolate → Parse once → Query forever → Visualize insights → Preserve everything.
+
+model: inherit
+---
+===DONE===
+===FILE===archived-docs/stable/archive-specs/05_EXECUTABLE_SPECS_DIFF_SYSTEM.md===LINES===994
+# Executable Specifications: Diff Visualization System
+
+> **Document Type**: Executable Specifications (WHEN...THEN...SHALL contracts)
+> **Date**: 2026-01-23
+> **Status**: Draft
+===MID===
+SPECIFICATION: Compute Dependency Edge Diff
+
+GIVEN:
+  - base_edges: Vec<Edge> from base.db (2880 edges typical)
+  - live_edges: Vec<Edge> from live.db
+===END===
+
+*Document Version: 1.0*
+*Created: 2026-01-23*
+*Specifications Count: 18*
+*Test Cases Implied: 50+*
+===DONE===
+===FILE===archived-docs/stable/archive-specs/EXECUTABLE_SPECS_diff_command.md===LINES===1068
+# Executable Specifications: Diff Command Execution Module
+
+> "DIFF IS THE PRODUCT" - Visualizing what changed in dependency graphs when AI agents edit code.
+
+This document contains executable specifications for the `parseltongue diff` command in WHEN...THEN...SHALL contract format. Each specification is designed to be directly convertible to test cases.
+===MID===
+      "blast_radius": BlastRadiusResultPayload,
+      "visualization": VisualizationGraphDataPayload
+    }
+  AND SHALL use serde_json::to_string_pretty for formatting
+  AND SHALL print to stdout
+===END===
+    ModifiedInCodebase,
+    RelocatedInCodebase,
+    UnchangedInCodebase,
+}
+```
+===DONE===
+===FILE===archived-docs/stable/archive-specs/REQ-APP-INTEGRATION.md===LINES===1222
+# REQ-APP-INTEGRATION: App.tsx Integration Specification
+
+## Document Metadata
+
+| Field | Value |
+===MID===
+AND SHALL show reconnection attempt count (e.g., "Reconnecting... (attempt 2/5)")
+
+WHEN WebSocket receives 'error' event
+THEN SHALL log error to console
+AND SHALL display error message to user (toast or inline)
+===END===
+## 12. Document History
+
+| Version | Date | Author | Changes |
+|---------|------|--------|---------|
+| 1.0.0 | 2026-01-23 | Executable Specs Agent | Initial specification |
+===DONE===
+===FILE===archived-docs/stable/archive-specs/REQ-ENTITY-DETAIL-DIFF-SUMMARY.md===LINES===1037
+# Entity Detail Panel and Diff Summary Stats Specification
+
+## Phase 2.4 - Additional React Components
+
+**Document Version**: 1.0.0
+===MID===
+```
+
+#### REQ-SUMMARY-001.8: Responsive Layout
+
+```
+===END===
+---
+
+*Specification created: 2026-01-23*
+*Parent specification: REQ-REACT-FRONTEND-VISUALIZATION*
+*Target: 30 testable requirements for EntityDetailPanel and DiffSummaryStats*
+===DONE===
+===FILE===archived-docs/stable/archive-specs/REQ-FILE-WATCHER-SERVICE.md===LINES===2503
+# File Watcher Service Specification
+
+## REQ-FILE-WATCHER: Real-Time File System Monitoring Service
+
+**Document Version**: 1.0.0
+===MID===
+
+        // THEN debounced event has path only once
+        let event = debounced_rx.recv().await.unwrap();
+        assert_eq!(event.changed_file_paths.len(), 1);
+        assert_eq!(event.raw_event_count_value, 5);
+===END===
+*Specification document created 2026-01-23*
+*Phase 2.2 target: File Watcher Service*
+*Test target: ~40 new tests across 30 requirements*
+*Depends on: Phase 2.1 (Workspace Management) - Complete*
+*Integrates with: WebSocket Streaming (REQ-WEBSOCKET-*)*
+===DONE===
+===FILE===archived-docs/stable/archive-specs/REQ-HTTP-DIFF-ANALYSIS-COMPARE-SNAPSHOTS.md===LINES===1426
+# HTTP Endpoint Specification: `/diff-analysis-compare-snapshots`
+
+## Phase 7 - Diff Visualization System HTTP Endpoint
+
+**Document Version**: 1.0.0
+===MID===
+        assert_eq!(response.status(), StatusCode::OK);
+
+        let body = axum::body::to_bytes(response.into_body(), usize::MAX).await.unwrap();
+        let json: Value = serde_json::from_slice(&body).unwrap();
+
+===END===
+- [ ] Acceptance criteria are binary (pass/fail)
+- [ ] No ambiguous language remains
+- [ ] 4-word naming convention is followed
+- [ ] Token estimation is included in response
+- [ ] Handler follows existing patterns in codebase
+===DONE===
+===FILE===archived-docs/stable/archive-specs/REQ-REACT-FRONTEND-VISUALIZATION.md===LINES===2106
+# React Frontend Visualization Specification
+
+## Phase 2.3-2.4 - React + react-force-graph-3d Frontend
+
+**Document Version**: 1.0.0
+===MID===
+    expect(screen.getByText('~42')).toHaveClass('text-amber-500');
+    expect(screen.getByText('Blast radius: 89')).toBeInTheDocument();
+  });
+
+  // REQ-VIZ-005.3
+===END===
+---
+
+*Specification created: 2026-01-23*
+*Phase 2.1-2.2 baseline: Backend complete*
+*Target: 52 testable requirements for React frontend*
+===DONE===
+===FILE===archived-docs/stable/archive-specs/REQ-RUST-EMBED-FRONTEND.md===LINES===1162
+# REQ-RUST-EMBED-FRONTEND: Static Frontend Embedding Specification
+
+## Document Metadata
+
+| Field | Value |
+===MID===
+    - GET  /forward-callees-query-graph?entity={key}
+
+  Analysis Endpoints:
+    - GET  /blast-radius-impact-analysis?entity={key}&hops={n}
+    - GET  /circular-dependency-detection-scan
+===END===
+// WebSocket
+GET  /websocket-diff-stream
+```
+
+Each endpoint must return JSON with `Content-Type: application/json` and must NOT be affected by the SPA fallback.
+===DONE===
+===FILE===archived-docs/stable/archive-specs/REQ-WEBSOCKET-DIFF-STREAMING.md===LINES===2097
+# WebSocket Endpoint Specification: Real-Time Diff Streaming
+
+## Phase 2.2 - WebSocket Streaming System
+
+**Document Version**: 1.0.0
+===MID===
+  1. entity_removed events (alphabetically by entity_key)
+  2. entity_added events (alphabetically by entity_key)
+  3. entity_modified events (alphabetically by entity_key)
+  AND SHALL maintain order consistency across clients
+```
+===END===
+
+*Specification document created 2026-01-23*
+*Phase 2.2 target: WebSocket Streaming Backend*
+*Test target: 41 new tests*
+*Depends on: Phase 2.1 (Workspace Management) - Complete*
+===DONE===
+===FILE===archived-docs/stable/archive-specs/REQ-WORKSPACE-MANAGEMENT-ENDPOINTS.md===LINES===1898
+# HTTP Endpoint Specification: Workspace Management Endpoints
+
+## Phase 2.1 - Workspace Management System
+
+**Document Version**: 1.0.0
+===MID===
+
+### Problem Statement
+
+Clients need to retrieve a list of all registered workspaces to display in UI or for programmatic workspace selection. The list should include metadata for each workspace.
+
+===END===
+---
+
+*Specification document created 2026-01-23*
+*Phase 2.1 target: Workspace Management Backend*
+*Test target: 30+ new tests*
+===DONE===
+===FILE===archived-docs/stable/archive-specs/REQ-WORKSPACE-WATCH-TOGGLE-IMPL.md===LINES===759
+# Implementation Specification: Workspace Watch Toggle Endpoint
+
+## REQ-WATCH-TOGGLE-IMPL: Watch Toggle Handler and Route Registration
+
+**Document Version**: 1.0.0
+===MID===
+```rust
+/// Validate watch toggle request body fields
+///
+/// # 4-Word Name: validate_watch_toggle_request
+///
+===END===
+---
+
+*Implementation specification created 2026-01-23*
+*Target: Remove all 12 #[ignore] attributes, implement 7 functions, register 3 routes*
+*Test target: 15 tests for watch-toggle + route registration verification*
+===DONE===
+===FILE===archived-docs/stable/archive-tdd/06_TEST_STRATEGY_AND_FIXTURES.md===LINES===796
+# Diff Visualization Test Strategy and Fixtures
+
+> **Version**: 1.0.0
+> **Date**: 2026-01-23
+> **Based On**: Real API data from Parseltongue HTTP server (localhost:7777)
+===MID===
+
+### 4.1 Scenario: Entity Added
+
+```typescript
+export const SCENARIO_ENTITY_ADDED = {
+===END===
+```
+
+---
+
+*Document generated from live Parseltongue API data on 2026-01-23*
+===DONE===
+===FILE===archived-docs/stable/archive-tdd/PHASE-2.3-2.4-TDD-STATE.md===LINES===296
+# TDD Session State: Phase 2 - CRITICAL BUILD BLOCKER IDENTIFIED
+
+## Document Version: 5.0.0
+## Session Date: 2026-01-23
+## Status: BLOCKED - TypeScript Build Errors Prevent Production Build
+===MID===
+```typescript
+// BEFORE (line 161)
+type SomeType = Record<string | null, ...>
+
+// AFTER
+===END===
+
+---
+
+*TDD State captured by @tdd-task-progress-context-retainer*
+*Last Updated: 2026-01-23T15:55:00Z*
+===DONE===
+===FILE===archived-docs/stable/archive-tdd/TDD-plan-20260123000800.md===LINES===1112
+# TDD Progress Journal: Diff Visualization System
+
+> **Document Type**: TDD Progress Tracking (Source of Truth)
+> **Created**: 2026-01-23 00:08:00
+> **Last Updated**: 2026-01-23 (PROJECT COMPLETE)
+===MID===
+parseltongue-core:                 130 tests passing (unit)
+parseltongue-core doc tests:        26 tests passing
+pt01-folder-to-cozodb-streamer:     13 tests passing
+pt08-http-code-query-server:        48 tests passing (unit)
+pt08 integration tests:             21 tests passing
+===END===
+- Comprehensive TDD progress journal
+
+**Document Version**: 2.0.0 (FINAL)
+**Last Updated**: 2026-01-23 (PROJECT COMPLETE)
+**Status**: Archived - All phases complete
+===DONE===
+===FILE===archived-docs/stable/archive-web-ui/API_CHANGES_2025-01-11.md===LINES===132
+# API Changes Summary
+
+**Date**: 2025-01-11 11:00 America/Los_Angeles
+**Purpose**: Enable 3D CodeCity visualization by adding missing data and browser support
+
+===MID===
+**Note**: Uses `Any` for development convenience. For production, should restrict to specific origins.
+
+---
+
+### 3. Updated API Documentation
+===END===
+
+1. Run existing tests to ensure no regressions
+2. Create web-ui-poc with updated API types
+3. Verify LOC values are accurate for various languages
+4. Consider adding additional metrics (complexity, nesting depth)
+===DONE===
+===FILE===archived-docs/stable/archive-web-ui/ARCHITECTURE.md===LINES===625
+# Web UI Architecture
+
+**Document**: Architecture specification for Parseltongue 3D CodeCity Web UI
+
+**Created**: 2025-01-11 09:40 America/Los_Angeles
+===MID===
+│     - Returns clicked mesh              │
+│     - Retrieves entity key from userData│
+└─────────────────────────────────────────┘
+         │
+         ▼
+===END===
+- Parseltongue README: `S01-README-MOSTIMP.md`
+- TDD Principles: `S06-design101-tdd-architecture-principles.md`
+- pt08 API Documentation: `crates/pt08-http-code-query-server/src/http_endpoint_handler_modules/api_reference_documentation_handler.rs`
+- Three.js Best Practices: `docs/web-ui/THREE_JS_BEST_PRACTICES.md`
+- TDD Test Plan: `docs/web-ui/TDD_TEST_PLAN.md`
+===DONE===
+===FILE===archived-docs/stable/archive-web-ui/DESIGN_OPTIONS_FOR_PARSELTONGUE_VISUALIZATION.md===LINES===568
+# Design Options for Parseltongue Visualization
+
+**Applying 20 Years of Design Thinking to Code Dependency Visualization**
+
+**Date**: 2025-01-13
+===MID===
+│  │  District   │  │  District   │  │  District   │        │
+│  │   ( teal )  │  │  (amber )   │  │ (emerald)   │        │
+│  └─────────────┘  └─────────────┘  └─────────────┘        │
+└─────────────────────────────────────────────────────────────┘
+```
+===END===
+
+**Document Version**: 1.0
+**Generated**: 2025-01-13
+**Agent**: Claude Opus 4.5 + Plan Agent + Explore Agent
+**Total Options**: 4 distinct visualization approaches
+===DONE===
+===FILE===archived-docs/stable/archive-web-ui/EIGHT_NEW_USER_JOURNEYS_VERSION_THREE.md===LINES===786
+# Eight NEW User Journeys for Parseltongue Visualization (Version 3)
+
+**Data Flow, Infrastructure Topology, and Async Patterns**
+
+**Date**: 2025-01-14
+===MID===
+- **Work-in-progress** = resources processed
+- **Parallel tracks** = parallelization opportunities
+- **Bottleneck highlights** = slow steps
+
+**Key Interactions**:
+===END===
+**Branch**: `research/visualization-improvements-20260110-1914`
+
+---
+
+*Version 1: Code. Version 2: Runtime. Version 3: Systems. Together: Complete understanding.*
+===DONE===
+===FILE===archived-docs/stable/archive-web-ui/EIGHT_NEW_USER_JOURNEYS_VERSION_TWO.md===LINES===1131
+# Eight NEW User Journeys for Parseltongue Visualization (Version 2)
+
+**Complementary Research Distinct from Version 1**
+
+**Date**: 2026-01-14
+===MID===
+- Select failing component → auto-generate cascade tree
+- "Time to Failure" annotation (estimated downtime per component)
+- "Fix Priority" ranking (critical user features first)
+- Single-point-of-failure detection (nodes whose failure affects many)
+- Export incident summary with blast radius
+===END===
+**Branch**: `research/visualization-improvements-20260110-1914`
+
+---
+
+*Version 1 focuses on what every developer needs. Version 2 focuses on what specialists need. Together, they provide comprehensive coverage of the modern software development lifecycle.*
+===DONE===
+===FILE===archived-docs/stable/archive-web-ui/EIGHT_USER_JOURNEYS_FOR_PARSELTONGUE_VISUALIZATION.md===LINES===880
+# Eight User Journeys for Parseltongue Visualization
+
+**A Comprehensive Design Document Applying 20 Years of Design Thinking to Code Dependency Visualization**
+
+**Date**: 2025-01-14
+===MID===
+- "District Density" indicator for >50 entities
+
+**Parseltongue Endpoints**:
+- `/codebase-statistics-overview-summary`
+- `/code-entities-list-all`
+===END===
+**Branch**: `research/visualization-improvements-20260110-1914`
+
+---
+
+*Each visualization mode is purpose-built for a specific developer journey. No single view serves all needs. The power of Parseltongue lies in offering the right visualization for the right question.*
+===DONE===
+===FILE===archived-docs/stable/archive-web-ui/INTERFACE_SIGNATURE_GRAPH_THESIS.md===LINES===471
+# Interface Signature Graph Visualization: A Design Thesis
+
+**Date**: 2025-01-13
+**Status**: Design Research
+**Context**: Parseltongue Dependency Graph Generator v1.2.0
+===MID===
+- Requires new trait-specific endpoint or filtering `/code-entities-list-all` for `entity_type=trait`
+- Uses `/forward-callees-query-graph` to show trait method calls
+- Uses `/reverse-callers-query-graph` to show where trait bounds are required
+
+**Implementation Considerations**:
+===END===
+
+**Generated**: 2025-01-13
+**Author**: Claude Opus 4.5
+**Context**: Parseltongue Dependency Graph Generator v1.2.0
+**Branch**: `research/visualization-improvements-20260110-1914`
+===DONE===
+===FILE===archived-docs/stable/archive-web-ui/MULTI_REPOSITORY_PORT_MANAGEMENT.md===LINES===389
+# Multi-Repository Port Management: Research & Solution
+
+**Date**: 2025-01-18
+**Status**: Research Complete, Implementation Proposed
+**Context**: Parseltongue HTTP Server - Multi-codebase workflow support
+===MID===
+            }
+        }
+    }
+
+    anyhow::bail!("No available ports in range {}-{}", start, start + max_attempts)
+===END===
+**Generated**: 2025-01-18
+**Agent**: Claude Opus 4.5
+**Related Documents**:
+- `/docs/web-ui/THREE_JS_INNOVATION_RESEARCH.md`
+- `/docs/web-ui/DESIGN_OPTIONS_FOR_PARSELTONGUE_VISUALIZATION.md`
+===DONE===
+===FILE===archived-docs/stable/archive-web-ui/PORT_SELECTION_ARCHITECTURE.md===LINES===740
+# Port Selection Architecture: Smart Multi-Instance Support
+
+**Version**: 1.0.0
+**Status**: Architecture Complete
+**Context**: Parseltongue HTTP Server - Multi-codebase workflow support
+===MID===
+    async fn test_concurrent_port_selection() {
+        // Given: 10 tasks simultaneously selecting ports
+        // When: All run concurrently
+        // Then: Each gets a unique port
+        let mut tasks = tokio::task::JoinSet::new();
+===END===
+**Agent**: Claude Opus 4.5
+**References**:
+- `/docs/web-ui/MULTI_REPOSITORY_PORT_MANAGEMENT.md` (Research document)
+- `/docs/web-ui/PORT_SELECTION_ARCHITECTURE.md` (This document)
+- `/.claude/.parseltongue/S06-design101-tdd-architecture-principles.md` (Design principles)
+===DONE===
+===FILE===archived-docs/stable/archive-web-ui/RESEARCH_Visualization_Improvements_20260110.md===LINES===397
+# Parseltongue Visualization Research Thesis
+
+> **Research Branch**: `research/visualization-improvements-20260110-1914`  
+> **Date**: 2026-01-10  
+> **Author**: AI Research Assistant
+===MID===
+|-----------|------------|-----------|
+| Framework | **Svelte** or **SolidJS** | Lightweight, fast reactivity |
+| Graph Library | **D3.js** | Maximum customization |
+| 3D Option | **Three.js** | CodeCity-style 3D view |
+| State | **Zustand** | Simple, no boilerplate |
+===END===
+This can be done in **~3 days** and would immediately demonstrate the value of visualization.
+
+---
+
+*End of Research Document*
+===DONE===
+===FILE===archived-docs/stable/archive-web-ui/RUBBER_DUCK_ANALYSIS.md===LINES===455
+# Rubber Duck Analysis: Web UI Architecture
+
+**Document**: Critical review of web-ui plans, identifying gaps, problems, and overlooked issues
+
+**Created**: 2025-01-11 09:45 America/Los_Angeles
+===MID===
+- Browser switches tabs
+- GPU driver crashes
+- Computer goes to sleep
+
+Application will **freeze** and never recover.
+===END===
+---
+
+**Generated by**: Rubber Duck Analysis Session
+**Agent**: General-purpose (Claude Opus 4.5)
+**Date**: 2025-01-11 09:45 America/Los_Angeles
+===DONE===
+===FILE===archived-docs/stable/archive-web-ui/SMART_PORT_SELECTION_TEST_JOURNAL.md===LINES===246
+# Smart Port Selection - Test Journal
+
+**Date**: 2025-01-18
+**Branch**: `exp20260118`
+**Binary**: `target/release/parseltongue` v1.2.0 (with smart port selection)
+===MID===
+
+| Endpoint | Status | Response |
+|----------|--------|----------|
+| `/code-entities-list-all` | PASSED | HTTP 200, returned 216 entities |
+| `/code-entities-list-all?entity_type=function` | PASSED | HTTP 200, filtered by type |
+===END===
+---
+
+**Generated**: 2025-01-18
+**Tested by**: Claude Opus 4.5
+**Commit suggestion**: `feat: implement smart port selection for multi-repository workflows`
+===DONE===
+===FILE===archived-docs/stable/archive-web-ui/TDD_TEST_PLAN.md===LINES===447
+# Web UI TDD Test Plan
+
+**Document**: Test-Driven Development plan for Parseltongue 3D CodeCity Web UI
+
+**Created**: 2025-01-11 09:35 America/Los_Angeles
+===MID===
+
+---
+
+## Part 5: Test Execution Commands
+
+===END===
+
+- Parseltongue TDD Principles: `S06-design101-tdd-architecture-principles.md`
+- Vitest Documentation: https://vitest.dev/
+- Playwright Documentation: https://playwright.dev/
+- MSW Documentation: https://mswjs.io/
+===DONE===
+===FILE===archived-docs/stable/archive-web-ui/THREE_JS_BEST_PRACTICES.md===LINES===453
+# Three.js & CodeCity Visualization Best Practices
+
+**Research Document**: Industry best practices for building a 3D CodeCity visualization using Three.js and TypeScript.
+
+**Created**: 2025-01-11 09:30 America/Los_Angeles
+===MID===
+// Type guards
+function isCodeBuilding(obj: THREE.Object3D): obj is THREE.Mesh & {
+  userData: { entityKey: string; entityType: EntityType }
+} {
+  return 'entityKey' in obj.userData;
+===END===
+- [Three.js TypeScript Boilerplate](https://discourse.threejs.org/t/three-js-typescript-boilerplate/12502)
+
+### Testing
+- [Vitest Visual Regression](https://vitest.dev/guide/browser/visual-regression-testing)
+- [Three.js Unit Testing Discussion](https://discourse.threejs.org/t/how-to-unit-test-three-js/57736)
+===DONE===
+===FILE===archived-docs/stable/archive-web-ui/THREE_JS_INNOVATION_RESEARCH.md===LINES===238
+# Three.js Innovation Research: Visualization Techniques & Inspiration
+
+**Date**: 2025-01-13
+**Status**: Research Complete
+**Context**: Parseltongue Dependency Graph Generator - Next-generation visualization research
+===MID===
+
+### Scientific Visualization
+- **3Dmol.js**: Molecular visualization (atoms = entities, bonds = deps)
+- **Cosmic Web Visualization**: Large-scale 3D data
+- **Immersive Analytics**: VR/AR for complex data
+===END===
+---
+
+**Generated**: 2025-01-13
+**Agent**: Claude Opus 4.5 + General-Purpose Research Agent
+**Branch**: `research/visualization-improvements-20260110-1914`
+===DONE===
+===FILE===archived-docs/stable/archive-web-ui/VERIFICATION_REPORT.md===LINES===269
+# Verification Report: Web UI POC
+
+**Date**: 2025-01-11 14:52 America/Los_Angeles
+**Updated**: 2025-01-11 23:10 America/Los_Angeles
+**Status**: ✅ GREEN PHASE COMPLETE - All tests passing
+===MID===
+## Files Modified During Verification
+
+| File | Change | Reason |
+|------|--------|--------|
+| `parseltongue_api_client_test.ts` | Removed unused import | TypeScript error |
+===END===
+
+**Generated**: 2025-01-11 14:55 America/Los_Angeles
+**Updated**: 2025-01-11 23:10 America/Los_Angeles
+**Agent**: Claude Opus 4.5
+**Branch**: research/visualization-improvements-20260110-1914
+===DONE===
+===FILE===archived-docs/stable/archive-web-ui/VISUALIZATION_IMPROVEMENTS.md===LINES===101
+# 3D CodeCity Visualization Improvements
+
+**Date**: 2025-01-12
+**Status**: First implementation complete
+**Branch**: `research/visualization-improvements-20260110-1914`
+===MID===
+- **Arc height**: y=8 at ends, y=18 at peak
+- **Opacity**: 1.0 (solid) for maximum visibility
+- **Scene background**: Dark blue-gray (`#1a1a2e`)
+- **Ground**: Dark blue (`#16213e`)
+
+===END===
+
+---
+
+**Generated**: 2025-01-12
+**Agent**: Claude Opus 4.5
+===DONE===
+===FILE===archived-docs/stable/archive-web-ui/influential-design-voices-2005-2025.md===LINES===1259
+# Influential Voices in Design: 2005-2025
+
+**A Comprehensive Research Document on the Most Influential Figures in Design Over the Past Two Decades**
+
+---
+===MID===
+- Growth strategies
+- Case studies from top tech companies
+- Career advice for PMs
+
+**Links:**
+===END===
+**Categories:** Product Design, UX/UI, Design Systems, Design Thinking, Interaction Design, Visual Design, Design Leadership
+
+---
+
+*End of Document*
+===DONE===
+===FILE===archived-docs/tauri-research/README.md===LINES===147
+# Tauri Research Project
+
+## 📁 Project Structure
+
+```
+===MID===
+cd my-macbook-app
+npm run tauri dev
+```
+
+### 2. Study Best Practices
+===END===
+---
+
+**Status**: Research phase complete, ready for development  
+**Created**: 2026-03-12  
+**Estimated Development**: 6 weeks to launch
+===DONE===
+===FILE===archived-docs/tauri-research/RESEARCH_SUMMARY.md===LINES===366
+# 🎯 Tauri Research - Complete Summary
+
+## Mission Accomplished
+
+**Objective**: Research Tauri best practices to build world-class MacBook desktop applications  
+===MID===
+
+### 4. Performance Optimizations
+
+**Bundle Size**: Use Svelte + lazy loading
+```typescript
+===END===
+---
+
+*Created: 2026-03-12*  
+*Version: 1.0*  
+*Status: Ready for Implementation* 🚀
+===DONE===
+===FILE===archived-docs/tauri-research/authentication/README.md===LINES===50
+# Authentication Patterns
+
+This directory contains authentication patterns and implementation strategies, with a focus on Google Auth integration.
+
+## Purpose
+===MID===
+
+## Implementation Considerations
+
+- Security best practices
+- Token storage (secure local storage)
+===END===
+- Use secure token storage mechanisms
+- Implement proper token expiration
+- Handle token refresh securely
+- Follow OAuth 2.0 security guidelines
+- Consider macOS Keychain integration for token storage
+===DONE===
+===FILE===archived-docs/tauri-research/best-practices/README.md===LINES===40
+# Tauri Best Practices
+
+This directory contains extracted and curated best practices for Tauri application development.
+
+## Purpose
+===MID===
+- Communication between frontend and backend
+- Security considerations
+- Performance optimization
+- Cross-platform compatibility
+- Testing strategies
+===END===
+Best practices are documented as:
+- Markdown files with explanations
+- Code examples
+- Architectural diagrams
+- Checklists and guidelines
+===DONE===
+===FILE===archived-docs/tauri-research/docs/README.md===LINES===46
+# Generated Documentation
+
+This directory contains generated documentation and research summaries.
+
+## Purpose
+===MID===
+- API reference documentation
+- Configuration guides
+- Troubleshooting guides
+- Best practice compilations
+- Tutorial materials
+===END===
+- Structured guides and tutorials
+
+## Maintenance
+
+This folder serves as the output destination for research work. Source materials are maintained in other subdirectories (clones, patterns, best-practices, etc.).
+===DONE===
+===FILE===archived-docs/tauri-research/docs/TAURI_BEST_PRACTICES.md===LINES===551
+# Tauri Best Practices Guide
+
+## 🎯 Mission: Build World-Class MacBook Apps with Tauri
+
+**Target**: Production-quality MacBook desktop applications
+===MID===
+// Keep Rust code minimal
+// Do heavy work in TypeScript
+
+// ✅ Good: IPC interface
+#[tauri::command]
+===END===
+---
+
+**Version**: 1.0  
+**Created**: 2026-03-12  
+**Status**: Ready for implementation
+===DONE===
+===FILE===archived-docs/tauri-research/docs/TWEET_SCROLLS_TAURI_PLAN.md===LINES===602
+# Tweet Scrolls MacBook App - Tauri Implementation Plan
+
+## 🎯 Vision
+
+**Build**: World-class MacBook desktop application for tweet archive management  
+===MID===
+  const filePath = await invoke('save_file_dialog', {
+    defaultPath: `tweet-scrolls-export.${format}`,
+    filters: [{ name: format.toUpperCase(), extensions: [format] }]
+  });
+  
+===END===
+
+**Version**: 1.0  
+**Created**: 2026-03-12  
+**Status**: Ready for development  
+**Estimated Timeline**: 6 weeks to launch
+===DONE===
+===FILE===archived-docs/tauri-research/macbook-optimization/README.md===LINES===42
+# MacBook Optimization for Tauri
+
+This directory contains macOS-specific optimization guidance and best practices for Tauri applications on MacBook hardware.
+
+## Purpose
+===MID===
+- File system permissions
+- macOS notification handling
+- Spotlight integration
+- Accessibility support
+- macOS sandboxing and entitlements
+===END===
+
+- Apple Human Interface Guidelines
+- Tauri macOS documentation
+- macOS developer resources
+- Performance profiling tools and techniques
+===DONE===
+===FILE===archived-docs/tauri-research/patterns/README.md===LINES===40
+# Tauri Code Patterns
+
+This directory contains idiomatic code patterns for Tauri application development.
+
+## Purpose
+===MID===
+- Window management
+- File system operations
+- System integration
+- State management
+- Error handling
+===END===
+- Description and use case
+- Code examples
+- Explanation of key concepts
+- Variations and alternatives
+- When to use (and when not to use)
+===DONE===
+===FILE===archived-docs/v300/algorithm_endpoint_journey_matrix_202603091430.md===LINES===321
+# Algorithm → Endpoint → Journey → Phase Matrix
+
+**Version:** v300.0.0
+**Date:** 2026-03-09
+**Purpose:** Unified reference mapping algorithms to endpoints, user journeys, and computation phases
+===MID===
+| RRF Fusion | Search | Multi-retriever result combination |
+| Fuzzy Match | Search | Trigram index scan |
+| Exact Match | Search | Symbol trie lookup |
+
+## Category 2: Centrality (Pre-Computed)
+===END===
+**Document Version:** 1.0.0
+**Generated:** 2026-03-09
+**Total Algorithms Documented:** 70+
+**Total Endpoints Mapped:** 22
+**Total User Journeys Mapped:** 11
+===DONE===
+===FILE===archived-docs/v300/minimal_v200_architecture_decisions_202603091545.md===LINES===583
+# Minimal V200 Architecture Decisions - Complete Record
+
+**Version:** v300.0.0
+**Date:** 2026-03-09
+**Status:** Compiled from conversation analysis
+===MID===
+
+---
+
+## Decision 06: Compiler Truth Storage
+
+===END===
+
+**Document Version:** 1.0.0
+**Generated:** 2026-03-09
+**Total Decisions Documented:** 9
+**Total Stories:** 5
+===DONE===
+===FILE===archived-docs/v300/rustc_private_stability_rationale_202603091530.md===LINES===216
+# Why rustc_private Instability Is a Solved Problem
+
+**Version:** v300.0.0
+**Date:** 2026-03-09
+**Purpose:** Document why rustc_private version pinning eliminates stability concerns
+===MID===
+---
+
+## The Pragmatic Workflow
+
+```
+===END===
+
+---
+
+**Document Version:** 1.0.0
+**Generated:** 2026-03-09
+===DONE===

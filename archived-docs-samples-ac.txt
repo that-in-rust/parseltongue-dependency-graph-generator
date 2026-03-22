@@ -1,0 +1,4161 @@
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/representation_of_types/mutable_borrows.md===LINES===93
+# Mutable borrows
+
+In Creusot, mutable borrows are handled via **prophecies**. A mutable borrow `&mut T` contains:
+
+- The current value (of type `T`) written in the borrow.
+===MID===
+It even handles reborrowing of fields:
+
+```rust
+let mut pair = (1, 2);
+let mut borrow = &mut pair;
+===END===
+    proof_assert! { **evil == !**evil };
+}
+```
+
+If borrows are only a pair of current value/prophecy, the above code can be proven, and in particular it proves `**evil == !**evil`, a false assertion.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/snapshots.md===LINES===47
+# Snapshots
+
+A useful tool to have in proofs is the `Snapshot<T>` type (`creusot_std::Snapshot`). `Snapshot<T>` is:
+
+- a zero-sized-type
+===MID===
+    #[invariant(...)]
+    for i in 1..n {
+        let mut j = i;
+        #[invariant(original@.permutation_of(array@))]
+        #[invariant(...)]
+===END===
+#[logic]
+fn is_sorted(s: Seq<i32>) -> bool {
+    // ...
+}
+```
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/termination.md===LINES===119
+# Termination
+
+By default, Creusot does not require that program functions terminate, which may lead to surprising situations:
+
+```rust
+===MID===
+  ```
+
+## Mutual recursion through traits
+
+Traits complicate the recursion analysis. Indeed, if we have a function like
+===END===
+    fn f() {
+        g::<i32>(); // Error !
+    }
+}
+```
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/trusted.md===LINES===14
+# Trusted
+
+The `trusted` marker lets Creusot trust the implementation and specs.
+More specifically, you can put `#[trusted]` on a function like the following:
+
+===MID===
+
+```rust
+#[trusted]
+#[ensures(result == 42u32)]
+fn the_answer() -> u32 {
+===END===
+    trusted_super_oracle("the answer to life, the universe and everything")
+}
+```
+
+TODO: trusted traits
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/tutorial.md===LINES===434
+# Tutorial
+
+This tutorial is an introduction to deductive verification with Creusot.
+After introducing basic concepts, we will walk through the steps to verify a function with Creusot.
+
+===MID===
+
+A loop invariant looks like this:
+
+```rust
+    #[invariant(i@ <= n@)]
+===END===
+
+In this tutorial, we've got a glimpse of the workflow of verifying a Rust program in Creusot.
+
+We have only scratched the surface. Creusot offers many more features for verifying Rust code at large.
+You can read about them in the rest of this user guide.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/tutorial/gnome_sort.md===LINES===142
+# Gnome sort
+
+> [!IMPORTANT]
+> Get the starting code for this tutorial in the [creusot-rs/tutorial repository](https://github.com/creusot-rs/tutorial).
+>
+===MID===
+
+To be able to refer to the *old slice*, **take a snapshot of `v` before entering the loop**:
+
+```rust
+let old_v = snapshot!{ v };
+===END===
+
+We have proved the functional correctness of Gnome sort.
+Then we generalized it to sort elements of arbitrary ordered types.
+
+Bonus challenge (non-trivial!): prove the termination of `gnome_sort`. See the [Termination](../termination.md) chapter for more information.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/tutorial/linked_list.md===LINES===348
+# Linked list
+
+> [!IMPORTANT]
+> Get the starting code for this tutorial in the [creusot-rs/tutorial repository](https://github.com/creusot-rs/tutorial).
+>
+===MID===
+> - The body of `#[logic]` functions should be wrapped in the `pearlite!` macro.
+
+[seq-map]: https://creusot-rs.github.io/creusot/doc/creusot_std/logic/seq/struct.Seq.html#method.map
+
+<details>
+===END===
+## Conclusion
+
+We now have a verified implementation of linked lists.
+This data structure makes use of unsafe primitives, and Creusot formally
+verifies that their safety conditions are satisfied.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/type_invariants.md===LINES===111
+# Type Invariants
+
+## Overview
+
+Defining a type invariant allows you to constrain a data type's set of valid values with a logical predicate that all values must satisfy.
+===MID===
+Here is an example:
+
+```rust
+fn swap() {
+    let mut s = SumTo10 { a: 3, b: 7 }
+===END===
+
+```rust
+#[ensures(x.a@ + x.b@ == 10)]
+fn inv_in_program(x: SumTo10) {}
+```
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/creusot/guide/src/view.md===LINES===37
+# Views as models of types
+
+It is generally convenient to map a Rust type to its logical model.
+This logical model is the type that specifications and clients then use to describe values of this type in the logic.
+
+===MID===
+}
+
+impl<T, U> View for MyPair<T, U> {
+    type ViewTy = (T, U);
+
+===END===
+<!-- TODO:
+- View for base types
+- explain DeepModel
+- talk about sizedness issues and give a workaround (&'static)
+ -->
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/creusot/why3/README.md===LINES===8
+# Why3 
+
+A Rust library furnishing the Why3 AST used by the Creusot verifier, and its associated pretty printer. 
+The library supports two input formats to why3: WhyML (`.mlw`), [Coma](https://coma.paulpatault.fr/) (`.coma`).
+
+===MID===
+
+A Rust library furnishing the Why3 AST used by the Creusot verifier, and its associated pretty printer. 
+The library supports two input formats to why3: WhyML (`.mlw`), [Coma](https://coma.paulpatault.fr/) (`.coma`).
+
+As it stands the core Why3 `Exp` type is heavily burdened with tech debt associated to its evolution as an offsprout of creusot. 
+===END===
+The library supports two input formats to why3: WhyML (`.mlw`), [Coma](https://coma.paulpatault.fr/) (`.coma`).
+
+As it stands the core Why3 `Exp` type is heavily burdened with tech debt associated to its evolution as an offsprout of creusot. 
+I hope to clean this up incrementally, but if you are planning on using `why3` in a project, please contact me so I can reprioritize. 
+
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/dylint/CHANGELOG.md===LINES===410
+# Changelog
+
+This file records user-facing changes to packages `cargo_dylint`, `dylint`, `dylint_driver`, `dylint-link`, `dylint_linting`, and `dylint_testing`. If a change to one of those packages is missing, please [open an issue](https://github.com/trailofbits/dylint/issues).
+
+## 5.0.0
+===MID===
+- Treat unknown workspace metadata keys as errors ([95b4bbc](https://github.com/trailofbits/dylint/commit/95b4bbc09c621c28042a0eb4b71e15107ca7052c))
+- Fix a bug causing false "invalid pattern" errors on Windows ([49e0353](https://github.com/trailofbits/dylint/commit/49e0353b3a590554d0ee79ff1f86f5ed24e1039c))
+- Don't treat unbuilt libraries as errors when listing libraries ([75190fb](https://github.com/trailofbits/dylint/commit/75190fbdc39cc29b152737a32959d00c17980b2e))
+
+## 2.1.7
+===END===
+- Fetch remote `dylint_driver` in `dylint_testing` by default ([#15](https://github.com/trailofbits/dylint/pull/15))
+
+## 0.1.0
+
+- Initial release
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/dylint/CONTRIBUTING.md===LINES===18
+WIP
+
+- Please prefix all non-rustdoc comments with your GitHub username.
+
+  Examples:
+===MID===
+  ```rust
+  /// This is a rustdoc comment, so no username is required.
+  fn foo() {}
+
+  // smoelius: This is a non-rustdoc comment.
+===END===
+
+  ```sh
+  #! /bin/bash
+  # smoelius: This is a Bash comment, and therefore non-rustdoc.
+  ```
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/dylint/README.md===LINES===283
+# Dylint
+
+Run Rust lints from dynamic libraries (EuroRust 2024 [slides] and [video])
+
+```sh
+===MID===
+#[allow(unknown_lints)]
+#[allow(PRE_EXPANSION_LINT_NAME)]
+```
+
+For an example involving [`abs_home_path`], see [internal/src/examples.rs] in this repository.
+===END===
+[rust-analyzer]: https://github.com/rust-analyzer/rust-analyzer
+[slides]: ./docs/2024-10-11%20Linting%20with%20Dylint%20(EuroRust).pdf
+[toml table]: https://toml.io/en/v1.0.0#table
+[video]: https://www.youtube.com/watch?v=MjlPUA7sAmA
+[workspace metadata]: #workspace-metadata
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/dylint/cargo-dylint/README.md===LINES===283
+# Dylint
+
+Run Rust lints from dynamic libraries (EuroRust 2024 [slides] and [video])
+
+```sh
+===MID===
+#[allow(unknown_lints)]
+#[allow(PRE_EXPANSION_LINT_NAME)]
+```
+
+For an example involving [`abs_home_path`], see [internal/src/examples.rs] in this repository.
+===END===
+[rust-analyzer]: https://github.com/rust-analyzer/rust-analyzer
+[slides]: ../docs/2024-10-11%20Linting%20with%20Dylint%20(EuroRust).pdf
+[toml table]: https://toml.io/en/v1.0.0#table
+[video]: https://www.youtube.com/watch?v=MjlPUA7sAmA
+[workspace metadata]: #workspace-metadata
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/dylint/docs/how_dylint_works.md===LINES===92
+# How Dylint works
+
+**Contents**
+
+- [How libraries are found]
+===MID===
+   libquestion_mark_in_expression@nightly-2021-04-08-x86_64-unknown-linux-gnu.so
+   ```
+
+   The filename components are as follows:
+   - `DLL_PREFIX` and `DLL_SUFFIX` are OS-specific strings. For example, on Linux, they are `lib` and `.so`, respectively.
+===END===
+[`dylint_library!`]: ../utils/linting
+[`register_lints`]: https://doc.rust-lang.org/nightly/nightly-rustc/rustc_interface/interface/struct.Config.html#structfield.register_lints
+[here]: https://doc.rust-lang.org/nightly/nightly-rustc/rustc_interface/interface/struct.Config.html#structfield.register_lints
+[utilities]: ../README.md#utilities
+[workspace metadata]: ../README.md#workspace-metadata
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/dylint/driver/README.md===LINES===5
+# dylint_driver
+
+The package is used by [Dylint] drivers. Users should not need to refer to this package directly.
+
+[Dylint]: ..
+===MID===
+# dylint_driver
+
+The package is used by [Dylint] drivers. Users should not need to refer to this package directly.
+
+[Dylint]: ..
+===END===
+# dylint_driver
+
+The package is used by [Dylint] drivers. Users should not need to refer to this package directly.
+
+[Dylint]: ..
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/dylint/dylint-link/README.md===LINES===29
+# dylint-link
+
+`dylint-link` is a wrapper around Rust's default linker (`cc`) to help create [Dylint] libraries.
+
+When you link a dynamic library with the same name as your package, `dylint-link` creates a copy of your library with a filename that Dylint recognizes, i.e.:
+===MID===
+
+```sh
+cargo-install dylint-link
+```
+
+===END===
+
+[Dylint]: ..
+[`dylint_library!`]: ../utils/linting
+[`register_lints`]: https://doc.rust-lang.org/nightly/nightly-rustc/rustc_interface/interface/struct.Config.html#structfield.register_lints
+[examples]: ../examples
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/dylint/dylint/README.md===LINES===283
+# Dylint
+
+Run Rust lints from dynamic libraries (EuroRust 2024 [slides] and [video])
+
+```sh
+===MID===
+#[allow(unknown_lints)]
+#[allow(PRE_EXPANSION_LINT_NAME)]
+```
+
+For an example involving [`abs_home_path`], see [internal/src/examples.rs] in this repository.
+===END===
+[rust-analyzer]: https://github.com/rust-analyzer/rust-analyzer
+[slides]: ../docs/2024-10-11%20Linting%20with%20Dylint%20(EuroRust).pdf
+[toml table]: https://toml.io/en/v1.0.0#table
+[video]: https://www.youtube.com/watch?v=MjlPUA7sAmA
+[workspace metadata]: #workspace-metadata
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/README.md===LINES===87
+# Example Dylint libraries
+
+The example libraries are separated into the following three categories:
+
+- [general] - significant concerns; may produce false positives
+===MID===
+
+| Example                                                                                                      | Description/check                                                                     |
+| ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------- |
+| [`assert_eq_arg_misordering`](./restriction/assert_eq_arg_misordering)                                       | `assert_eq!(actual, expected)`                                                        |
+| [`collapsible_unwrap`](./restriction/collapsible_unwrap)                                                     | An `unwrap` that could be combined with an `expect` or `unwrap` using `and_then`      |
+===END===
+[experimental]: #experimental
+[general]: #general
+[restriction]: #restriction
+[supplementary]: #supplementary
+[testing]: #testing
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/experimental/README.md===LINES===1
+# Experimental lints
+===MID===
+# Experimental lints
+===END===
+# Experimental lints
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/experimental/derive_opportunity/README.md===LINES===43
+# derive_opportunity
+
+### What it does
+
+Checks for data structures that could derive additional traits.
+===MID===
+
+```rust
+#[derive(Default)]
+struct S;
+
+===END===
+- `at_least_one_field: bool` (default `false`): If set to `true`, the lint suggests to
+  derive a trait only when there is at least one field that implements (or could derive) the
+  trait.
+- `ignore: Vec<String>` (default `[]`): A list of macro paths the lint should not suggest to
+  derive.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/experimental/missing_doc_comment_llm/README.md===LINES===81
+# missing_doc_comment_llm
+
+⚠️ DO NOT RUN THIS LINT ON PRIVATE SOURCE CODE ⚠️
+
+### What it does
+===MID===
+````ignore
+```rust
+<function declaration>
+```
+An elaborate, high quality rustdoc comment for the above function:
+===END===
+[`dylint.toml` file]: https://github.com/trailofbits/dylint#configurable-libraries
+[`stop` parameter]: https://platform.openai.com/docs/api-reference/chat/create#chat-create-stop
+[`temperature` documentation]: https://platform.openai.com/docs/api-reference/chat/create#chat-create-temperature
+[doc comments]: https://doc.rust-lang.org/rust-by-example/meta/doc.html#doc-comments
+[litellm-rs]: https://docs.rs/litellm-rs/
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/general/README.md===LINES===40
+# General-purpose lints
+
+## Use of `dylint_linting`'s `constituent` feature
+
+The general-purpose lints use `dylint_linting`'s [`constituent` feature]. This allows the lints to be built in either of the following two configurations:
+===MID===
+For each lint subdirectory:
+
+- The following files do not appear, even though they would be created by `cargo dylint new`:
+  - .cargo/config.toml
+  - .gitignore
+===END===
+  [features]
+  rlib = ["dylint_linting/constituent"]
+  ```
+
+[`constituent` feature]: ../../utils/linting/README.md#constituent-feature
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/general/abs_home_path/README.md===LINES===36
+# abs_home_path
+
+### What it does
+
+Checks for string literals that are absolute paths into the user's home directory, e.g.,
+===MID===
+### Note
+
+This lint doesn't warn in build scripts (`build.rs`) or test contexts, as they often need to reference absolute paths.
+
+### Example
+===END===
+fn main() {
+    let path = std::env::var("CARGO");
+    println!("{:?}", path);
+}
+```
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/general/await_holding_span_guard/README.md===LINES===71
+# await_holding_span_guard
+
+This lint is due to David Barsky (@davidbarsky).
+
+### What it does
+===MID===
+    bar().await;
+}
+```
+
+Use instead:
+===END===
+    .await // ...and await it.
+}
+```
+
+[#6353]: https://github.com/rust-lang/rust-clippy/issues/6353
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/general/basic_dead_store/README.md===LINES===31
+# basic_dead_store
+
+### What it does
+
+Finds instances of dead stores in arrays: array positions that are assigned twice without a
+===MID===
+
+This lint only checks for literal indices and will not try to find instances where an array
+is indexed by a variable.
+
+### Example
+===END===
+```rust
+let mut arr = [0u64; 2];
+arr[0] = 2;
+arr[1] = 1;
+```
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/general/crate_wide_allow/README.md===LINES===25
+# crate_wide_allow
+
+### What it does
+
+Checks for use of `#![allow(...)]` at the crate level.
+===MID===
+be overridden with `--force-warn` or `--forbid`, but one must know the `#![allow(...)]`
+are present to use these unconventional options.
+
+### Example
+
+===END===
+```rust
+// Allow `clippy::assertions-on-constants` in Cargo.toml. See:
+// - https://doc.rust-lang.org/cargo/reference/manifest.html#the-lints-section
+// - https://doc.rust-lang.org/clippy/configuration.html#lints-section-in-cargotoml
+```
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/general/incorrect_matches_operation/README.md===LINES===47
+# incorrect_matches_operation
+
+### What it does
+
+Checks for inefficient or incorrect use of the `matches!` macro.
+===MID===
+
+Since we use a pre-expansion-lint, we match the `matches!` argument tokens.
+This is not ideal since we don't know if the argument is a variable name or, e.g.,
+a call. If it is a call, this lint may result in a false positive, though I bet there won't
+be many of those.
+===END===
+    if matches!(x, 123 | 256) {
+        println!("Matches");
+    }
+}
+```
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/general/non_local_effect_before_error_return/README.md===LINES===54
+# non_local_effect_before_error_return
+
+### What it does
+
+Checks for non-local effects (e.g., assignments to mutable references) before return of an
+===MID===
+        self.balance -= amount;
+        if self.balance < 0 {
+            return Err(InsufficientBalance);
+        }
+        Ok(self.balance)
+===END===
+
+- `public_only: bool` (default `true`): Whether to check only publicly accessible functions.
+- `work_limit: u64` (default 500000): When exploring a function body, the maximum number of
+  times the search path is extended. Setting this to a higher number allows more bodies to
+  be explored exhaustively, but at the expense of greater runtime.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/general/non_thread_safe_call_in_test/README.md===LINES===43
+# non_thread_safe_call_in_test
+
+### What it does
+
+Checks for calls to non-thread-safe functions in code attributed with
+===MID===
+  `Command::arg("run")`'s receiver.
+
+### Example
+
+```rust
+===END===
+        .unwrap();
+}
+```
+
+[reference]: https://doc.rust-lang.org/book/ch11-02-running-tests.html#running-tests-in-parallel-or-consecutively
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/general/wrong_serialize_struct_arg/README.md===LINES===54
+# wrong_serialize_struct_arg
+
+### What it does
+
+Checks for Serde serialization method calls whose `len` argument does not match the number of
+===MID===
+state.serialize_field("r", &self.r)?;
+state.serialize_field("g", &self.g)?;
+state.serialize_field("b", &self.b)?;
+state.end()
+
+===END===
+
+The same principle applies to other serialization methods like `serialize_struct_variant`,
+`serialize_tuple_struct`, and `serialize_tuple_variant`.
+
+[`serde` documentation]: https://docs.rs/serde/latest/serde/trait.Serializer.html#tymethod.serialize_struct
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/restriction/README.md===LINES===1
+# Restriction lints
+===MID===
+# Restriction lints
+===END===
+# Restriction lints
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/restriction/assert_eq_arg_misordering/README.md===LINES===28
+# assert_eq_arg_misordering
+
+### What it does
+
+Checks for invocations of `assert_eq!` whose arguments are "non-const, const", which
+===MID===
+
+### Known problems
+
+A common source of false positives is "sorted, unsorted" where the check is of the
+sortedness of a collection that is const.
+===END===
+Use instead:
+
+```rust
+assert_eq!(0, x);
+```
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/restriction/collapsible_unwrap/README.md===LINES===28
+# collapsible_unwrap
+
+### What it does
+
+Checks for an `unwrap` that could be combined with an `expect` or `unwrap` using `and_then`.
+===MID===
+### Known problems
+
+The lint considers only `unwrap`s in method call chains. It does not consider unwrapped
+values that are assigned to local variables, or assignments to local variables that are
+later unwrapped, for example.
+===END===
+Use instead:
+
+```rust,no_run
+let package = toml.as_table().and_then(|map| map.get("package")).unwrap();
+```
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/restriction/const_path_join/README.md===LINES===24
+# const_path_join
+
+### What it does
+
+Checks for joining of constant path components.
+===MID===
+separator on both Unix and Windows (see [`std::path::Path`]).
+
+### Example
+
+```rust
+===END===
+```rust
+PathBuf::from("../target")
+```
+
+[`std::path::Path`]: https://doc.rust-lang.org/std/path/struct.Path.html
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/restriction/env_literal/README.md===LINES===28
+# env_literal
+
+### What it does
+
+Checks for environment variables referred to with string literals.
+===MID===
+
+```rust
+let _ = std::env::var("RUSTFLAGS");
+unsafe {
+    std::env::remove_var("RUSTFALGS"); // Oops
+===END===
+let _ = std::env::var(RUSTFLAGS);
+unsafe {
+    std::env::remove_var(RUSTFLAGS);
+}
+```
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/restriction/inconsistent_qualification/README.md===LINES===44
+# inconsistent_qualification
+
+### What it does
+
+Checks that a module's items are either imported or qualified with the module's path, but
+===MID===
+use std::env::var;
+fn main() {
+    assert_eq!(var("LD_PRELOAD"), Err(std::env::VarError::NotPresent));
+}
+```
+===END===
+        std::env::var("LD_PRELOAD"),
+        Err(std::env::VarError::NotPresent)
+    );
+}
+```
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/restriction/misleading_variable_name/README.md===LINES===27
+# misleading_variable_name
+
+### What it does
+
+Checks for variables satisfying the following three conditions:
+===MID===
+
+### Why is this bad?
+
+A reader could mistakenly believe the variable has a type other than the one it actually
+has.
+===END===
+Use instead:
+
+```rust,no_run
+let contents = read_to_string(path).unwrap();
+```
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/restriction/non_topologically_sorted_functions/README.md===LINES===29
+# non_topologically_sorted_functions
+
+### What it does
+
+It enforces a certain relative order among functions defined within a module.
+===MID===
+
+```rust
+fn bar() { }
+
+fn foo() {
+===END===
+    bar();
+}
+
+fn bar() { }
+```
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/restriction/question_mark_in_expression/README.md===LINES===23
+# question_mark_in_expression
+
+### What it does
+
+Checks for `?` operators embedded within a larger expression.
+===MID===
+It can be easy to overlook the `?`. Code is more readable when a `?` is the outermost
+operator in an expression.
+
+### Example
+
+===END===
+
+```rust
+let val = var("PWD")?;
+Ok(PathBuf::from(&val))
+```
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/restriction/ref_aware_redundant_closure_for_method_calls/README.md===LINES===28
+# ref_aware_redundant_closure_for_method_calls
+
+### What it does
+
+This is essentially a ref-aware fork of Clippy's [`redundant_closure_for_method_calls`]
+===MID===
+
+### Example
+
+```rust
+Some(String::from("a")).map(|s| s.is_empty());
+===END===
+Some(String::from("a")).as_deref().map(str::to_uppercase);
+```
+
+[`Option`]: https://doc.rust-lang.org/std/option/enum.Option.html
+[`redundant_closure_for_method_calls`]: https://rust-lang.github.io/rust-clippy/master/#redundant_closure_for_method_calls
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/restriction/register_lints_warn/README.md===LINES===35
+# register_lints_warn
+
+### What it does
+
+Checks for calls to `rustc_errors::DiagCtxtHandle::warn` from within a `register_lints`
+===MID===
+### Example
+
+```rust
+pub fn register_lints(sess: &rustc_session::Session, lint_store: &mut rustc_lint::LintStore) {
+    if condition {
+===END===
+            cx.sess().dcx().warn("something bad happened");
+        }
+    }
+}
+```
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/restriction/suboptimal_pattern/README.md===LINES===41
+# suboptimal_pattern
+
+### What it does
+
+Checks for patterns that could perform additional destructuring.
+===MID===
+- For the lint to suggest destructuring a reference, the idents involved must not use `ref`
+  annotations.
+
+### Example
+
+===END===
+- `explicit_deref_check: bool` (default `true`): By default, `suboptimal_pattern` will not
+  suggest to destructure a reference unless it would eliminate at least one explicit
+  dereference. Setting `explicit_deref_check` to `false` disables this check.
+
+[pattern-type-mismatch]: https://rust-lang.github.io/rust-clippy/master/#pattern_type_mismatch
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/restriction/try_io_result/README.md===LINES===37
+# try_io_result
+
+### What it does
+
+Checks for `?` operators applied to values of type `std::io::Result`.
+===MID===
+unnoticed.
+
+### Example
+
+```rust
+===END===
+    Ok(())
+}
+```
+
+[Error Handling Survey]: https://blog.yoshuawuyts.com/error-handling-survey/
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/supplementary/README.md===LINES===9
+# Supplementary lints
+
+Like the [general-purpose lints], the supplementary lints use `dylint_linting`'s [`constituent` feature].
+
+See the general-purpose lints' [documentation] for an explanation.
+===MID===
+
+Like the [general-purpose lints], the supplementary lints use `dylint_linting`'s [`constituent` feature].
+
+See the general-purpose lints' [documentation] for an explanation.
+
+===END===
+See the general-purpose lints' [documentation] for an explanation.
+
+[`constituent` feature]: ../../utils/linting/README.md#constituent-feature
+[documentation]: ../general/README.md
+[general-purpose lints]: ../general
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/supplementary/arg_iter/README.md===LINES===42
+# arg_iter
+
+### What it does
+
+Checks for functions that take `Iterator` trait bounds when they could use
+===MID===
+    for item in iter {
+        // ...
+    }
+}
+```
+===END===
+```rust
+fn complex_bound<I: Iterator + Clone>(iter: I) { // Ok
+    // ...
+}
+```
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/supplementary/commented_out_code/README.md===LINES===33
+# commented_out_code
+
+### What it does
+
+Checks for code that has been commented out.
+===MID===
+- Does not handle statements spanning multiple line comments, e.g.:
+
+  ```rust
+  // dbg!(
+  //   x
+===END===
+Use instead:
+
+```rust
+f(x);
+```
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/supplementary/dir_entry_path_file_name/README.md===LINES===36
+# dir_entry_path_file_name
+
+### What it does
+
+Checks for calling `.path().file_name()` on a `DirEntry` when `.file_name()` can be
+===MID===
+### Example
+
+```rust
+use std::fs;
+
+===END===
+for entry in fs::read_dir(".").unwrap() {
+    let entry = entry.unwrap();
+    let name = entry.file_name();
+}
+```
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/supplementary/escaping_doc_link/README.md===LINES===23
+# escaping_doc_link
+
+### What it does
+
+Checks for doc comment links that refer to files outside of their source file's package.
+===MID===
+Such links will be broken on [docs.rs], for example.
+
+### Example
+
+```rust
+===END===
+```rust
+//! [general-purpose lints]: https://github.com/trailofbits/dylint/tree/master/examples/general
+```
+
+[docs.rs]: https://docs.rs
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/supplementary/inconsistent_struct_pattern/README.md===LINES===31
+# inconsistent_struct_pattern
+
+### What it does
+
+Checks for struct patterns whose fields do not match their declared order.
+===MID===
+```rust
+struct Struct {
+    a: bool,
+    b: bool,
+};
+===END===
+    b: bool,
+};
+let strukt = Struct { a: false, b: true };
+let Struct { a, b } = strukt;
+```
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/supplementary/local_ref_cell/README.md===LINES===23
+# local_ref_cell
+
+### What it does
+
+Checks for local variables that are [`RefCell`]s.
+===MID===
+There is rarely a need for a locally declared `RefCell`.
+
+### Example
+
+```rust
+===END===
+```rust
+let mut x: usize = 0;
+```
+
+[`RefCell`]: https://doc.rust-lang.org/std/cell/struct.RefCell.html
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/supplementary/nonexistent_path_in_comment/README.md===LINES===43
+# nonexistent_path_in_comment
+
+### What it does
+
+This lint checks code comments, including both line comments (using `//`) and block comments
+===MID===
+
+Currently, this lint must be allowed at the crate level.
+
+- This example:
+
+===END===
+
+```
+// See ../actual/path/file.rs for implementation details
+fn main() {}
+```
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/supplementary/redundant_reference/README.md===LINES===51
+# redundant_reference
+
+### What it does
+
+Checks for fields that are references used only to read one copyable subfield, and whose
+===MID===
+
+    fn maybe_tcx(&mut self) -> Self::MaybeTyCtxt {
+        self.cx.tcx
+    }
+}
+===END===
+### Configuration
+
+- `lifetime_check: bool` (default `true`): Setting this to `false` disables the check that
+  the lifetime use is unique. That is, the lint becomes a check for: fields that are
+  references used only to read one copyable subfield.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/supplementary/unnamed_constant/README.md===LINES===29
+# unnamed_constant
+
+### What it does
+
+Checks for unnamed constants, aka magic numbers.
+===MID===
+### Example
+
+```rust
+x *= 1000;
+```
+===END===
+### Configuration
+
+- `threshold: u64` (default `10`): Minimum value a constant must exceed to be flagged.
+
+[pandaquests]: https://levelup.gitconnected.com/whats-so-bad-about-magic-numbers-4c0a0c524b7d
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/supplementary/unnecessary_borrow_mut/README.md===LINES===26
+# unnecessary_borrow_mut
+
+### What it does
+
+Checks for calls to [`RefCell::borrow_mut`] that could be calls to [`RefCell::borrow`].
+===MID===
+not.
+
+### Example
+
+```rust
+===END===
+x = *cell.borrow();
+```
+
+[`RefCell::borrow_mut`]: https://doc.rust-lang.org/std/cell/struct.RefCell.html#method.borrow_mut
+[`RefCell::borrow`]: https://doc.rust-lang.org/std/cell/struct.RefCell.html#method.borrow
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/supplementary/unnecessary_conversion_for_trait/README.md===LINES===24
+# unnecessary_conversion_for_trait
+
+### What it does
+
+Checks for trait-behavior-preserving calls in positions where a trait implementation is
+===MID===
+Such unnecessary calls make the code more verbose and could impact performance.
+
+### Example
+
+```rust
+===END===
+
+```rust
+let _ = Command::new("ls").args(["-a", "-l"]);
+let _ = Path::new("/").join(".");
+```
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/testing/README.md===LINES===1
+# Testing lints
+===MID===
+# Testing lints
+===END===
+# Testing lints
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/testing/clippy/README.md===LINES===1
+# clippy
+===MID===
+# clippy
+===END===
+# clippy
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/dylint/examples/testing/straggler/README.md===LINES===13
+# straggler
+
+### What it does
+
+This lint does nothing. Its Rust toolchain is intentionally held back for testing purposes.
+===MID===
+
+This lint does nothing. Its Rust toolchain is intentionally held back for testing purposes.
+
+### Why is this bad?
+
+===END===
+It's not.
+
+### Known problems
+
+This lint does nothing.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/dylint/internal/README.md===LINES===5
+# dylint_internal
+
+The package is used by [Dylint]. Users should not need to refer to this package directly.
+
+[Dylint]: ..
+===MID===
+# dylint_internal
+
+The package is used by [Dylint]. Users should not need to refer to this package directly.
+
+[Dylint]: ..
+===END===
+# dylint_internal
+
+The package is used by [Dylint]. Users should not need to refer to this package directly.
+
+[Dylint]: ..
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/dylint/internal/template/README.md===LINES===21
+# template
+
+### What it does
+
+### Why is this bad?
+===MID===
+
+Remove if none.
+
+### Example
+
+===END===
+Use instead:
+
+```rust
+// example code that does not raise a warning
+```
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/dylint/utils/linting/README.md===LINES===199
+# dylint_linting
+
+[docs.rs documentation]
+
+<!-- cargo-rdme start -->
+===MID===
+- With the feature turned off, the lint can be built as a library by itself.
+- With the feature turned on, the lint can be built as part of a larger library, alongside other
+  lints.
+
+The [general-purpose] and [supplementary] lints in this repository employ this technique.
+===END===
+[examples]: https://github.com/trailofbits/dylint/tree/master/examples
+[general-purpose]: https://github.com/trailofbits/dylint/tree/master/examples/general
+[supplementary]: https://github.com/trailofbits/dylint/tree/master/examples/supplementary
+
+<!-- cargo-rdme end -->
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/dylint/utils/testing/README.md===LINES===118
+# dylint_testing
+
+[docs.rs documentation]
+
+<!-- cargo-rdme start -->
+===MID===
+diff of stderr:
+
+ error: calling `std::env::set_var` in a test could affect the outcome of other tests
+   --> $DIR/main.rs:8:5
+    |
+===END===
+[docs.rs documentation]: https://docs.rs/dylint_testing/latest/dylint_testing/
+[examples]: https://github.com/trailofbits/dylint/tree/master/examples
+[its repository]: https://github.com/Manishearth/compiletest-rs
+
+<!-- cargo-rdme end -->
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/eurydice/README.md===LINES===83
+<p><div style="text-align: center">
+<img src="static/poussin.jpg"
+     alt="Orphée et Eurydice" title="Orphée et Eurydice"
+     style=""/>
+<figcaption>
+===MID===
+
+We recommend using Nix to easily ensure you are running the right versions of the tools and
+libraries. With nix, you can run:
+```bash
+$ nix run 'github:aeneasverif/eurydice#charon' -- [CHARON_OPTIONS]
+===END===
+
+Our CI will also check that your OCaml and C files have proper formatting -- the target `make
+format-apply` reformats your source code to conform to our style guide. It might sometimes be
+difficult to have the exact right versions of ocamlformat and clang-format -- in case your PR still
+fails, we recommend running `nix develop` followed by `make format-apply`.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/eurydice/cremepat/README.md===LINES===4
+CREMEPAT: CREdible, Meta-Extensible PATterns
+--------------------------------------------
+
+Write concrete syntax instead of 50 lines of deeply-embedded pattern matches. See lib/Cleanup2.ml
+===MID===
+CREMEPAT: CREdible, Meta-Extensible PATterns
+--------------------------------------------
+
+Write concrete syntax instead of 50 lines of deeply-embedded pattern matches. See lib/Cleanup2.ml
+===END===
+CREMEPAT: CREdible, Meta-Extensible PATterns
+--------------------------------------------
+
+Write concrete syntax instead of 50 lines of deeply-embedded pattern matches. See lib/Cleanup2.ml
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/flowistry/README.md===LINES===198
+# <img src="https://user-images.githubusercontent.com/663326/134070630-47b95f41-a4a7-4ded-a5cb-9884d1af2468.png" height="25" /> Flowistry: Information Flow for Rust
+
+[![tests](https://github.com/willcrichton/flowistry/actions/workflows/tests.yml/badge.svg)](https://github.com/willcrichton/flowistry/actions/workflows/ci.yml)
+[![crates.io](https://img.shields.io/crates/v/flowistry.svg)](https://crates.io/crates/flowistry)
+[![docs](https://img.shields.io/badge/docs-built-blue)](https://willcrichton.net/flowistry/flowistry)
+===MID===
+> Note: Flowistry type-checking results are cached in the `target/flowistry` directory. If you delete this folder, Flowistry will have to recompute types. Also for a large codebase this directory may take up a fair amount of disk space.
+
+### Entering focus mode
+
+Once Flowistry has booted up, the loading icon will disappear. Then you can enter focus mode by running the "Toggle focus mode" command. By default the keyboard shortcut is Ctrl+R Ctrl+A (⌘+R ⌘+A on Mac), or you can use the Flowistry context menu:
+===END===
+Rust Analyzer does not support [MIR](https://rustc-dev-guide.rust-lang.org/mir/index.html) and the borrow checker, which are essential parts of Flowistry's analysis. That fact is unlikely to change for a [long time](https://rust-lang.zulipchat.com/#narrow/stream/185405-t-compiler.2Frust-analyzer/topic/How.20far.20is.20RA.20from.20MIR.3F), so Flowistry is a standalone tool.
+
+### Why does Flowistry highlight (or not) this code?
+
+See [Limitations](#limitations) for known issues. If that doesn't explain what you're seeing, please post it in the [unexpected highlights issue](https://github.com/willcrichton/flowistry/issues/36) or ask on [Discord](https://discord.gg/XkcpkQn2Ah).
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/flowistry/crates/flowistry/README.md===LINES===18
+# Information flow analysis
+
+This crate contains the core analysis used by the [Flowistry](https://github.com/willcrichton/flowistry) IDE plugin. It is a Rust compiler plugin that computes the information flow within a function. The main analysis is at [`flowistry::infoflow::compute_flow`](https://github.com/willcrichton/flowistry/blob/master/crates/flowistry/src/infoflow/mod.rs).
+
+Documentation: [https://willcrichton.net/flowistry/flowistry/](https://willcrichton.net/flowistry/flowistry/)
+===MID===
+For details about this analysis, please read our paper ["Modular Information Flow Through Ownership"](https://arxiv.org/abs/2111.13662). If you use Flowistry in your research, please cite our paper:
+
+```bibtex
+@inproceedings{crichton2022,
+  author = {Crichton, Will and Patrignani, Marco and Agrawala, Maneesh and Hanrahan, Pat},
+===END===
+  booktitle = {Proceedings of the 43rd ACM SIGPLAN International Conference on Programming Language Design and Implementation},
+  pages = {1–14}, numpages = {14}, keywords = {information flow, rust, ownership types},
+  location = {San Diego, CA, USA}, series = {PLDI 2022}, doi = {10.1145/3519939.3523445},
+}
+```===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/flowistry/crates/flowistry/benches/README.md===LINES===20
+## Benching process
+
+The main benchmark file is `flowistry/benches/main.rs`. We use macros defined in the `bench_utils` crate to generate the code on which Flowistry is benchmarked. Each benchmark (information flow, locations, places, etc) is split into four distinct sub-benchmarks:
+
+1. flow (min)
+===MID===
+    - **Only** run `compute_flow` in the analysis; analyze a "maximum" function (large number of places, locations, etc)
+3. flow + deps (min)
+    - Run `compute_flow` **and** `compute_dependencies` on the first place in the function; analyze a "minimum" function (small number of places, locations, etc)
+4. flow + deps (max)
+    - Run `compute_flow` **and** `compute_dependencies` on the first place in the function; analyze a "maximum" function (large number of places, locations, etc)
+===END===
+## Adding a benchmark
+
+The `TESTS` array in `flowistry/benches/main.rs` defines the programs that are benchmarked. To add a new benchmark, add a file for the "min" and "max" stresses in `flowistry/benches/tests/<max & min>/<new benchmark>` and add the filename to the `TESTS` array.
+
+If you need to create a new macro to generate programs, add it to `bench_utils/src/lib.rs`.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/flowistry/crates/flowistry_ide/README.md===LINES===116
+# <img src="https://user-images.githubusercontent.com/663326/134070630-47b95f41-a4a7-4ded-a5cb-9884d1af2468.png" height="30" /> Flowistry: Powerful IDE Tools for Rust
+
+[![tests](https://github.com/willcrichton/flowistry/actions/workflows/tests.yml/badge.svg)](https://github.com/willcrichton/flowistry/actions/workflows/ci.yml)
+[![crates.io](https://img.shields.io/crates/v/flowistry.svg)](https://crates.io/crates/flowistry)
+
+===MID===
+
+You can install Flowistry from the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=wcrichton.flowistry) or the [Open VSX Registry](https://open-vsx.org/extension/wcrichton/flowistry). In VSCode:
+* Go to the Extensions pane by clicking this button in the left margin: <img width="30" alt="Screen Shot 2021-09-20 at 9 30 43 AM" src="https://user-images.githubusercontent.com/663326/134039225-68d11dce-be71-4f33-8057-569346ef26bc.png">
+* Search for "Flowistry" and then click "Install".
+* Open a Rust workspace and wait for the tool to finish installing.
+===END===
+```
+
+> Note: double check the value of "channel" in `rust-toolchain.toml` if `nightly-2023-08-25` is no longer correct.
+
+Then go back to VSCode and click "Continue" to let Flowistry continue installing.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/flowistry/ide/CHANGELOG.md===LINES===5
+# Change Log
+
+## 0.3.2
+
+- Initial release to the public
+===MID===
+# Change Log
+
+## 0.3.2
+
+- Initial release to the public
+===END===
+# Change Log
+
+## 0.3.2
+
+- Initial release to the public
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/flowistry/ide/src/tests/README.md===LINES===38
+# Extension Unit Tests
+This directory contains unit tests for the Flowistry VS Code extension.
+
+## `mock_project/`
+The `mock_project/` directory contains a Rust project which we can open in VS Code and on which we can perform Flowistry commands.
+===MID===
+
+Slice selection tests open `mock_project/` in VS Code and execute Flowistry select commands (`flowistry.forward_select` or `flowistry.backward_select`) on highlighted values. The tests compare the resulting highlighted text in VS Code with the expected slice computed from running `cargo flowistry` on the highlighted value.
+
+For example, given the following function:
+```rust
+===END===
+
+`slice/mock_data/slices.ts` contains the slices to perform.
+
+### Decoration
+Because of unit testing limitations for VS Code text decorations, they aren't currently tested. Although text decorations and selections should both distinguish the same slices of text, decorations should be tested in `slice/decorations.test.ts` in the future.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/flux/.github/copilot-instructions.md===LINES===137
+# Flux Repository - Copilot Coding Agent Instructions
+
+## Overview
+
+Flux is a refinement type checker for Rust. This is a Rust workspace with multiple crates, requiring specific dependencies (Z3, fixpoint) and custom build tooling through `cargo xtask`.
+===MID===
+│   ├── flux-core/   - Extern specs for std library
+│   ├── flux-attrs/  - Attribute proc macros
+│   └── flux-alloc/  - Extern specs for alloc
+├── tests/           - Regression test suite
+│   ├── pos/         - Tests that should type check
+===END===
+The information above has been validated against the repository structure, CI configuration, and developer documentation. When you need to build, test, or understand Flux:
+
+- **ALWAYS use `cargo xtask`** for building and testing
+- **NEVER run `cargo test`** directly on the workspace
+- Refer to these instructions first before searching the codebase for build/test commands
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/flux/NOTES.md===LINES===66
+# RJ Notes
+
+- [=] [Measures](https://hackmd.io/q7KU5P4dTXG4t0F60aIiOg)
+- [ ] Projection? (Get `iter` working _without_ refinements... e.g. on plain `Vec`)
+- [ ] Closure/FnPtr?
+===MID===
+- [] merge "automatically" into single spec
+
+
+```rust
+spec size : int for List<T> {
+===END===
+    Not : ( Box<Pred[@p1]> ) -> p1.is_var,
+    And : ( Box<Pred[@p1]>, Box<Pred[@p2]>) -> p1.nnf && p2.nnf,
+    Or  : ( Box<Pred[@p1]>, Box<Pred[@p2]>) -> p1.nnf && p2.nnf,
+}
+```===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/flux/README.md===LINES===23
+<img
+    src="assets/logo-wide.svg"
+    alt="flux logo" class="flux-logo">
+
+Flux is a refinement type checker for Rust.
+===MID===
+If you need help using Flux or would like to discuss, you can post on the discussions forum or join
+our [Zulip chat](https://flux-rs.zulipchat.com/)!
+
+# Online Demo
+
+===END===
+
+# Docs
+
+Documentation, including installation and usage guides can be found on the
+[website](https://flux-rs.github.io/flux).
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/flux/book/src/README.md===LINES===33
+<img src="img/logo-wide.svg" class="flux-logo" alt="Flux Logo">
+
+<!-- Types bring order to code.
+
+For example, if a variable `i:usize` then we know `i`
+===MID===
+a dash of optimism, to ensure that all the different
+bits snap together correctly at run-time. -->
+
+
+Flux is a [**refinement type checker**][flux-github] plugin
+===END===
+Better still, read the [**interactive tutorial**](./tutorial/01-refinements.md),
+to learn how you can use Flux on your Rust code.
+
+[jhala-vazou]: https://arxiv.org/abs/2010.07763
+[flux-github]: https://github.com/flux-rs/flux/
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/flux/book/src/SUMMARY.md===LINES===28
+# Summary
+
+[Introduction](README.md)
+[Install & Run](guide/install.md)
+[About](about.md)
+===MID===
+- [Structs](tutorial/03-structs.md)
+- [Enums](tutorial/04-enums.md)
+- [Opaques](tutorial/05-vectors.md)
+- [Consts](tutorial/06-consts.md)
+- [Externs](tutorial/07-externs.md)
+===END===
+# Appendix
+
+- [Specifications](guide/specifications.md)
+- [Developer's Guide](guide/develop.md)
+- [Architecture](guide/architecture.md)
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/flux/book/src/about.md===LINES===41
+# About Flux
+
+<img src="img/logo-wide.svg" class="flux-logo" alt="Flux Logo">
+
+## Team
+===MID===
+Flux is open-source and available [here](http://github.com/liquid-rust/flux)
+
+## Publications
+
+* [Lehmann, Nico, Adam T. Geller, Niki Vazou, and Ranjit Jhala. "Flux: Liquid types for rust."  PLDI (2023)](https://dl.acm.org/doi/pdf/10.1145/3591283)
+===END===
+[pldi23-talk]: https://www.youtube.com/watch?v=3iYt2JTXCwM
+
+## Limitations
+
+This is a prototype! Use at your own risk. Everything could break and it will break.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/flux/book/src/guide/architecture.md===LINES===48
+# High-level Architecture
+
+Flux is implemented as a compiler [driver](https://rustc-dev-guide.rust-lang.org/rustc-driver.html?highlight=Callbacks%5C#rustc_driver-and-rustc_interface). We hook into the compiler by implementing the [`Callbacks`](https://doc.rust-lang.org/nightly/nightly-rustc/rustc_driver/trait.Callbacks.html) trait. The implementation is located is in the `flux-driver` crate, and it is the main entry point to Flux.
+
+## Crates
+===MID===
+- `lib/flux-rs`: This is just a re-export of the macros implemented in `flux-attrs`. The intention is to eventually put Flux "standard library" here, i.e., a set of definitions that are useful when working with Flux.
+
+## Intermediate Representations
+
+Flux has several intermediate representations (IR) for types. They represent a refined version of an equivalent type in some `rustc` IR. We have picked a distinct _verb_ to refer to the process of going between these different representations to make it easier to refer to them. The following image summarizes all the IRs and the process for going between them.
+===END===
+The definition in the `flux_middle::rustc` module correspond to simplified version of data structures in `rustc`. They can be understood as the currently supported subset of Rust. The process of going from a definition in `rustc_middle` into `flux_middle::rustc` is called _lowering_ and it is implemented in `flux_middle::rustc::lowering`.
+
+### Lifting and Refining
+
+Besides the different translation between Flux intermediate representations, there are two ways to get a refined version from a rust type. The process of going from a type in `hir` into a type in `fhir` is called _lifting_, and it is implemented in `flux_middle::fhir::lift`. The process for going from a type in `flux_middle::rustc::ty` into a `flux_middle::rty` is called _refining_, and it is implemented `flux_middle::rty::refining`.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/flux/book/src/guide/develop.md===LINES===183
+# Developer's Guide
+
+## Backtraces
+
+You can use the usual `RUST_BACKTRACE=1` environment variable to enable backtraces.
+===MID===
+-Ztrack-diagnostics: created at crates/flux-refineck/src/lib.rs:114:15   <------- this
+```
+
+You can also pass `-Ztrack-diagnostics=y` to enable it if you are not using `cargo xtask run`
+
+===END===
+of the libraries by running:
+
+```sh
+cargo x build-sysroot
+```
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/flux/book/src/guide/install.md===LINES===238
+# Installing and Running Flux
+
+You can install and then run Flux either on a single file or on an entire crate.
+
+## Requirements
+===MID===
+
+#[spec(fn(x: i32) -> i32{v: x < v})]
+fn inc(x: i32) -> i32 {
+    x - 1
+}
+===END===
+for example, to print timing information for all crates checked by Flux:
+
+```console
+FLUXFLAGS="-Ftimings" cargo flux
+```
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/flux/book/src/guide/specifications.md===LINES===1045
+# Flux Specifications
+
+One day, this will be an actual user's guide, but for now,
+it is a WIP guide to writing specifications in `flux`, as
+illustrated by examples from the regression tests.
+===MID===
+- use the `#[reveal]` attribute at specific Rust function definition, to indicate you
+  want to use the actual definition when checking that Rust function.
+
+```rust,noplayground
+{{#include ../../../tests/tests/pos/surface/hide00.rs}}
+===END===
+that assertion.
+
+```rust,noplayground
+{{#include ../../../tests/tests/pos/surface/invariant_macro00.rs}}
+```
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/flux/book/src/tutorial/01-refinements.md===LINES===285
+# Refining Types
+
+Types bring order to code. For example, if a variable `i:usize`
+then we know `i` is a number that can be used to index a vector.
+Similarly, if `v: Vec<&str>` then we can be sure that `v` is a
+===MID===
+- **returns** as _output_ the `bool` _indexed by_ `0 < n`
+
+That is, `is_pos` returns `true` _exactly when_ `0 < n`.
+
+We might use this function to check that:
+===END===
+[flux-grammar]: https://github.com/flux-rs/flux/blob/main/book/src/guide/specs.md#grammar-of-refinements
+[jhala-vazou]: https://arxiv.org/abs/2010.07763
+[flux-github]: https://github.com/liquid-rust/flux/
+
+[^1]: These are not arbitrary Rust expressions but a subset of expressions from logics that can be efficiently decided by [SMT Solvers][flux-grammar]
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/flux/book/src/tutorial/02-ownership.md===LINES===324
+# Ownership in Flux
+
+```rust, editable, hidden
+#![allow(unused)]
+extern crate flux_rs;
+===MID===
+
+```
+fn ({i32[@n] : 0 <= n}) -> i32{v:n <= v}
+```
+
+===END===
+[^1]: For those familiar with the term, these types are _loop invariants_
+
+[^2]: Setting aside the issue of overflows for now
+
+[^3]: Thereby allowing so-called _strong updates_ in the type specifications
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/flux/book/src/tutorial/03-structs.md===LINES===348
+# Refining Structs
+
+```rust, editable, hidden
+#![allow(unused)]
+extern crate flux_rs;
+===MID===
+
+Of course, once we can index and constrain a single field, we can do so for many fields.
+
+For instance, suppose we wanted to write a `Range` type with two fields `start` and `end`
+which are integers such that `start <= end`. We might do so as
+===END===
+To see a more entertaining example, [check out this code][flux-date-test]
+which shows how we can use refinements to ensure that only legal `Date`s can be constructed
+at compile time!
+
+[flux-date-test]: https://github.com/flux-rs/flux/blob/f200714dfae5e7c9a3bdf7231191499f56aac45b/tests/tests/pos/surface/date.rs
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/flux/book/src/tutorial/04-enums.md===LINES===380
+# Refining Enums
+
+```rust, editable, hidden
+#![allow(unused)]
+extern crate flux_rs;
+===MID===
+pub fn safe_divide(n: i32, k: i32) -> Option<i32> {
+  if k > 0 {
+    Option::Some(n / k)
+  } else {
+    Option::None
+===END===
+[^1]: In the chapter on [extern specifications](06-extern-specs.md) we will explain how to "retrofit" these refinements onto the existing `std::option::Option` type.
+
+[flux-list-length]: https://github.com/flux-rs/flux/blob/main/tests/tests/pos/enums/list00.rs
+[flux-list-elements]: https://github.com/flux-rs/flux/blob/main/tests/tests/pos/enums/list01.rs
+[zulip-timer]: https://flux-rs.zulipchat.com/#narrow/channel/486098-general/topic/greetings/near/509911720
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/flux/book/src/tutorial/05-vectors.md===LINES===478
+# Opaque Types: Refined Vectors
+
+```rust, editable, hidden
+#![allow(unused)]
+extern crate flux_rs;
+===MID===
+a `usize` corresponding to (and hence, by indexed by)
+the size of the input vector
+
+```rust, editable
+#[flux_rs::trusted]
+===END===
+[neural network](./12-case-study-neural.md) library.
+
+[^1]: Why not use an iterator? We'll get there in [due course](./07-traits.md)!
+
+[bsearch]: https://doc.rust-lang.org/src/core/slice/mod.rs.html#2423-2425
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/flux/book/src/tutorial/06-consts.md===LINES===197
+# Const Generics
+
+[Online demo](https://flux.goto.ucsd.edu/index.html#?demo=arrays.rs)
+
+Rust has a built-in notion of _arrays_ : collections of objects of
+===MID===
+
+<img src="../img/04-arrays-average-fix.gif" width="100%">
+
+## Const Generics
+
+===END===
+
+Rust's (sized) arrays are great, and `flux`'s refinements make them even better,
+by ensuring indices are guaranteed to be within the arrays bounds. Const generics
+let us write functions that are polymorphic over array sizes, and again, refinements
+let us precisely track those sizes to prevent out-of-bounds errors!
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/flux/book/src/tutorial/07-externs.md===LINES===508
+# Extern Specifications
+
+```rust, editable
+#![feature(allocator_api)]
+#![allow(unused)]
+===MID===
+       None
+   }
+}
+
+fn test_unwrap() -> u8 {
+===END===
+
+[^assumption]: We say *assumption* because we're presuming that
+the actual code for the library is not available to verify; if
+it was, you could of course actually *guarantee* that the library
+correctly implements those specifications.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/flux/book/src/tutorial/08-traits.md===LINES===518
+# Traits and Associated Refinements
+
+```rust, editable
+#![allow(unused)]
+extern crate flux_rs;
+===MID===
+
+Thus, we can extend the trait with an associated refinement
+that specifies when an index is `valid` for a container.
+Lets do so by defining the `Index` trait as:
+
+===END===
+[spec-iterator]: https://github.com/flux-rs/flux/blob/main/lib/flux-core/src/iter/traits/iterator.rs#L10-L16
+
+[^4]: See section 6.2 of this [POPL 2025 paper](https://ranjitjhala.github.io/static/popl25-generic-refinements.pdf) for more details.
+
+[^5]: See this [SOSP 2025 paper](https://ranjitjhala.github.io/static/sosp25-ticktock.pdf) for more details.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/flux/book/src/tutorial/09-sparse.md===LINES===89
+# Preamble
+
+```rust,editable
+#![allow(unused)]
+extern crate flux_rs;
+===MID===
+#[spec(fn() -> i32[10])]
+pub fn test2() -> i32 {
+    5 + 4
+}
+```
+===END===
+<br>
+<br>
+<br>
+<br>
+<br>===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/flux/book/src/tutorial/11-equality.md===LINES===348
+# Simple Access Control
+
+Hopefully, by this point, you have a reasonable idea of the main tools
+that Flux provides for refining types to capture correctness
+requirements. In this, our first case study, lets see how to use those
+===MID===
+```rust, editable
+#[reflect]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+pub enum Permissions { Read, Write, Comment, Delete, Configure }
+```
+===END===
+    specifications*; sadly we cannot quite use those because they are
+    for things defined outside the current crate.
+
+[^2]: Yes indeed, the code below is a *lot* of boilerplate, that is best
+    generated by a macro, as we will see shortly, in [this chapter](ch12_sets.md).
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/flux/book/src/tutorial/12-sets.md===LINES===594
+# Dynamic Access Control
+
+```rust, editable, hidden
+extern crate flux_core;
+use flux_rs::{assert, attrs::*};
+===MID===
+        } else if r == Role::Member {
+          set_add(Permissions::Read,
+          set_add(Permissions::Write,
+          set_add(Permissions::Comment, set_emp())))
+        } else { // Role::Guest
+===END===
+
+In this chapter, we saw how to build a dynamic access control system, by
+indexing types with *set-valued* refinements that track users”
+permissions, and strong references which *conditionally* change types
+when we mutate references.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/flux/book/src/tutorial/13-bitvectors.md===LINES===633
+# Dependent Typestates
+
+```rust, editable, hidden
+use std::{
+  mem::replace,
+===MID===
+     .is_ok()
+  { Some(Peripherals {
+        gpio_a: Gpio(0x4800_0000 as *mut Registers),
+        gpio_b: Gpio(0x4800_0400 as *mut Registers),
+        gpio_c: Gpio(0x4800_0800 as *mut Registers),
+===END===
+    64-bit bitvectors, but lets focus on `BV32` for simplicity
+
+[^3]: <https://en.wikipedia.org/wiki/Magic_smoke>
+
+[^4]: <https://docs.rust-embedded.org/book/static-guarantees/state-machines.html>
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/flux/book/src/tutorial/14-neural.md===LINES===494
+# Neural Networks
+
+```rust, editable, hidden
+use crate::rvec::{self, AsRVec as _, RVec, rvec};
+use flux_rs::assert;
+===MID===
+    })
+  }
+}
+```
+
+===END===
+[^4]: As described in [this chapter](ch11_equality.md#detached)
+
+[^5]: As described in [this chapter](ch06_vectors.md)
+
+[^6]: <http://neuralnetworksanddeeplearning.com/>
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/flux/crates/flux-bin/README.md===LINES===6
+# flux-bin
+
+Executable wrappers that run `rustc` and `cargo` with `flux`.
+
+Much of the design is inspired by how
+===MID===
+# flux-bin
+
+Executable wrappers that run `rustc` and `cargo` with `flux`.
+
+Much of the design is inspired by how
+===END===
+
+Executable wrappers that run `rustc` and `cargo` with `flux`.
+
+Much of the design is inspired by how
+[`Prusti`](https://github.com/viperproject/prusti-dev/) set up its executables.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/flux/crates/flux-macros/src/diagnostics/LICENSE-MIT.md===LINES===23
+Permission is hereby granted, free of charge, to any
+person obtaining a copy of this software and associated
+documentation files (the "Software"), to deal in the
+Software without restriction, including without
+limitation the rights to use, copy, modify, merge,
+===MID===
+conditions:
+
+The above copyright notice and this permission notice
+shall be included in all copies or substantial portions
+of the Software.
+===END===
+SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/flux/crates/flux-macros/src/diagnostics/LICENSE.md===LINES===1
+The code under this directory is distributed under the MIT license.
+===MID===
+The code under this directory is distributed under the MIT license.
+===END===
+The code under this directory is distributed under the MIT license.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/flux/lib/README.md===LINES===14
+# lib
+
+Crates in this directory are meant to be used as dependencies for projects using Flux. They should be
+eventually published to [crates.io](https://crates.io). As such, they should not depend on other
+crates in the workspace. They could live in a separate repository or be excluded from the workspace,
+===MID===
+crates in the workspace. They could live in a separate repository or be excluded from the workspace,
+but we keep them inside to reuse `Cargo.lock` and the lint table.
+
+## FLUX_BUILD_SYSROOT
+
+===END===
+These libraries behave differently depending on whether they are being used during normal compilation
+or while flux is analyzing the code. For example, some macros are a no-op during normal compilation.
+The different behavior is toggled with a `--cfg flux_sysroot` flag. We control the toggle from cargo
+by setting the `FLUX_BUILD_SYSROOT` environment variable. This variable is read from the build scripts
+which set the `--cfg flux_sysroot` when present.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/flux/tools/vscode/CHANGELOG.md===LINES===9
+# Change Log
+
+All notable changes to the "flux-dev" extension will be documented in this file.
+
+Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
+===MID===
+
+All notable changes to the "flux-dev" extension will be documented in this file.
+
+Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
+
+===END===
+Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
+
+## [Unreleased]
+
+- Initial release
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/flux/tools/vscode/README.md===LINES===88
+# Flux Refinement Type Checker
+
+A VS Code extension for the **Flux Refinement Type Checker** for Rust, providing advanced type checking capabilities and interactive debugging features.
+
+## Features
+===MID===
+## Configuration
+
+Set your custom Flux command in VS Code settings:
+
+```json
+===END===
+├── setup/            # Setup utilities (file watcher, event listeners)
+├── types/            # TypeScript type definitions
+├── utils/            # Utility functions
+└── extension.ts      # Clean activation orchestration
+```===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/flux/tools/vscode/vsc-extension-quickstart.md===LINES===29
+# Welcome to your VS Code Extension
+
+## What's in the folder
+
+* This folder contains all of the files necessary for your extension.
+===MID===
+* Make sure the language configuration settings in `language-configuration.json` are accurate.
+* Press `F5` to open a new window with your extension loaded.
+* Create a new file with a file name suffix matching your language.
+* Verify that syntax highlighting works and that the language configuration settings are working.
+
+===END===
+
+## Install your extension
+
+* To start using your extension with Visual Studio Code copy it into the `<user home>/.vscode/extensions` folder and restart Code.
+* To share your extension with the world, read on <https://code.visualstudio.com/docs> about publishing an extension.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/CHANGELOG.md===LINES===204
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+===MID===
+Miscellaneous:
+- Reserve extraction folder for auto-generated files in Lean examples (#1754)
+- Add `lean_adc` example to the Lean examples section, demonstrating tactics introduced in PR(#1933)
+
+## 0.3.5
+===END===
+- `hax_lib::BACKEND::replace_body`: [#1321](https://github.com/cryspen/hax/pull/1321)
+- `hax_lib::decreases`: [#1342](https://github.com/cryspen/hax/pull/1342)
+
+## 0.2.0 (2024-01-20)
+ - Initial release
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/CI.md===LINES===26
+# Continuous Integration (CI)
+
+## Github Actions
+ - [`add_to_project`](./.github/workflows/add_to_project.yml): each
+   time an issue or a PR is open, this action adds it to the project
+===MID===
+ - [`format`](./.github/workflows/format.yml): ensure formatting for
+   Rust and OCaml files.
+ - [`specs`](./.github/workflows/specs.yml): compiles the toolchain
+   (using Nix) and runs it on (for now) a selection of the examples
+   provided by [hacspec/specs](https://github.com/hacspec/specs). For
+===END===
+   the build the JS version of the engine.
+ 
+## Merge queue
+Additional actions are triggered on pull requests in the merge queue. They are
+found in [`test_installs`](./.github/workflows/test_installs.yml).
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/CONTRIBUTING.md===LINES===149
+# Engineering & Contributing Guidelines
+
+The following is a set of guidelines for contributing to this repository.
+These are mostly guidelines, not rules.
+Use your best judgement, and feel free to propose changes to this document in a pull request.
+===MID===
+ - CI/CD or tooling changes with no external effect
+ - Linting, formatting, or style-only commits
+ - Reverts or fixup commits
+ - Dependency bumps with no behavioral impact
+
+===END===
+
+Using AI tools to generate code for Hax is accepted under the following conditions:
+- The PR should clearly state that AI has been used and say for which parts of the code, tests, or documentation.
+- The author should also explain the methodology: how AI has been used and how the result has been tested.
+- Any AI generated content should be carefully reviewed by the author of the PR (before the reviewer).
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/PUBLISHING.md===LINES===67
+# Publishing
+
+## OCaml
+
+There is only the package `hax-engine`, that includes a binary and a
+===MID===
+   - `hax-pretty-print-diagnostics`
+
+- `hax-driver`
+
+### hax-lib
+===END===
+## Notes
+`cargo release` reads the `Cargo.toml` of each crates of the workspace.
+Some creates are excluded from releasing: in their `Cargo.toml` manifest, they have `package.metadata.release.release` set to `false`.
+
+Also, `cli/subcommands/Cargo.toml` specifies pre-release replacements for the engine: the version of the engine is bumped automatically by `cargo release`.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/README.md===LINES===240
+<p align="center">
+  <img src="logo.svg"/>
+</p>
+
+<p align="center">
+===MID===
+  <summary><b>Manual installation</b></summary>
+
+1. Make sure to have the following installed on your system:
+
+- [`opam`](https://opam.ocaml.org/) (`opam switch create 5.1.1`)
+===END===
+
+[Zulip] graciously provides the hacspec & hax community with a "Zulip Cloud Standard" tier.
+
+
+[Zulip]: https://zulip.com/
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/cli/subcommands/src/engine_debug_webapp/README.md===LINES===17
+This folder implements a small webapp designed for viewing how a rust
+crate is translated by the engine, step-by-step.
+
+The engine works by phases. First, it receives a tweaked version of
+Rust's internal typed representation. On this representation, the
+===MID===
+engine then applies sequentially a certain number of phases. Each
+phase transports your code from a representation to another, by
+performing some translation or rewriting.
+
+This webapp allows you to display a rust code before and after each
+===END===
+### How to
+When running `cargo hax into BACKEND`, pass the option
+`--debug-engine` (or `-d`) to the subcommand `into`. This will spawn a
+small webserver with the webapp.
+
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/RFCs/0000-template.md===LINES===46
+---
+    title: 0000 template
+    tags:
+        - Accepted
+---
+===MID===
+
+What is the issue that we're seeing that is motivating this decision or change?
+
+## Assumptions
+
+===END===
+What becomes easier or more difficult to do because of this change?
+
+## Additional Information
+
+Provide additional evidence/confidence for the decision outcome Links to other decisions and resources might here appear as well.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/RFCs/index.md===LINES===3
+# RFCs
+
+
+===MID===
+# RFCs
+
+
+===END===
+# RFCs
+
+
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/blog/index.md===LINES===8
+---
+weight: 4
+---
+
+# Blog
+===MID===
+weight: 4
+---
+
+# Blog
+
+===END===
+
+# Blog
+
+The hax blog.
+Here you find announcement, development news, and more.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/blog/posts/announce-v0.1.md===LINES===118
+---
+authors:
+  - franziskus
+  - lucas
+title: "A new chapter"
+===MID===
+
+- [Verifying Bertie](https://cryspen.com/post/hax-pv/): A TLS 1.3 implementation, verified with the ProVerif backend
+- [Verifying ML-KEM](https://cryspen.com/post/ml-kem-verification): A post quantum cryptographic algorithm verified with the F\* backend
+- [Verifying Smart Contracts](https://github.com/hacspec/hacspec.github.io/blob/master/coqpl24-paper9-13.pdf): Leveraging the Rocq backend for enhanced security verification.
+
+===END===
+We encourage you to explore the new hax website, dive into the documentation,
+and experiment with the playground.
+Join us on this journey!
+Contribute to the project, share your feedback, and help us shape the future of
+Rust verification.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/blog/posts/hax-for-everyone.md===LINES===70
+---
+authors:
+  - maxime
+title: "Hax for everyone"
+date: 2025-02-25
+===MID===
+}
+```
+[Open this code snippet in the hax playground](https://hax-playground.cryspen.com/#fstar/b7fe08cccd/gist=fcb9cb9854c69ee6e2788648a380ff79)
+
+In this example there is a dependency between the top level module and the `private` module. Our solution to break these cycles is simply to put the content of the cyclic modules in a single module (that we call bundle), and then re-exposing the items in their original modules.
+===END===
+Support for control flow (`return`, `break` and `continue`) in loops has been added as well. In hax, loops are translated as a functional fold in which the accumulator keeps track of the modification of the environment done by the effectful operations in the source. This extension relies on a monadic encoding of the loop result, that is passed in the accumulator to deal with the specific cases of `return`, `break` and `continue`. 
+## Items sorting
+A quality of life feature that we have been lacking for a long time is trying to respect, as much as possible, the same order of items in the generated code compared to the source. We need to modify the order because (as for modules), Rust allows items to be defined in any order, while our backends need items to be defined after the other items they depend on (except for mutual recursion). We rely on a graph topological sort to ensure this property, and now use a modified version of the stable topological sort provided by ocamlgraph, which produces an order that respects the dependencies, but in the absence of constraints tries respects the order of the source.
+## Conclusion
+Bringing hax to a new kind of project revealed the gap needed for it to be usable, but thanks to our active work, we have made great progress towards this goal. Even though there is still much more to do, this has allowed us to get results in these new applications of hax (stay tuned for more details about that!).
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/blog/posts/lucas-departure.md===LINES===76
+---
+authors:
+  - lucas
+title: "My Departure from hax and Cryspen"
+date: 2026-01-14
+===MID===
+   pleasure and a lot of fun to work.
+
+ - **The engine**: an OCaml binary that reads our frontend's Rust AST, applies a
+   sequence of translation phases, and finally outputs F*, Coq, etc.
+
+===END===
+exciting applications!
+
+I'm proud of what hax has become, and I hope it will have a bright future! If
+hax speaks to you, consider following the project, trying it out, or
+contributing.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/blog/posts/reworking-names/reworking-names.md===LINES===97
+---
+authors:
+  - lucas
+title: "Redesigning Global Identifiers in hax"
+date: 2025-04-01
+===MID===
+}
+```
+
+## Our New Approach
+
+===END===
+This comprehensive redesign of identifier representation and handling has resolved most previously identified naming issues and significantly enhanced the expressiveness and robustness of backend identifier rendering in hax.
+
+Check out the pull request [#1199](https://github.com/cryspen/hax/pull/1199) on the GitHub repository of hax for more details!
+
+We are confident that this enhanced representation is sufficiently robust and flexible to accommodate future developments and evolving project requirements.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/blog/posts/rust-gcd-1.md===LINES===1152
+---
+authors:
+  - alex
+title: "Verifying a real world Rust crate"
+date: 2025-12-08
+===MID===
+
+To start verifying with Verus,
+we add the following import to `src/lib.rs`:
+```rust
+use vstd::prelude::*;
+===END===
+decreasing_by all_goals scalar_decr_tac
+```
+No more errors! So Aeneas, too, agrees that `binary_u8` terminates and does not panic.
+
+*What's to love:* Aeneas leaves our source code completely untouched!
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/blog/posts/rust-gcd-2.md===LINES===162
+---
+authors:
+  - alex
+title: "Verifying a real world Rust crate"
+date: 2026-01-19
+===MID===
+
+## Verification
+
+We can add the following `hax_lib::ensures` annoation 
+above the definition of `$euclid`
+===END===
+Build completed successfully (35 jobs).
+```
+Yay!
+
+We are working on better automation for proofs like this one and on better coverage of the Rust core library, e.g., to be able to verify the binary gcd implementation in this crate as well.===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/blog/posts/this-month-in-hax/2025-01.md===LINES===79
+---
+authors:
+  - lucas
+title: "This Month in Hax: January 2025"
+date: 2025-02-10
+===MID===
+
+### Full list of PRs
+
+* \#1278: [ci(gha): drop magic-nix-cache action because of EOL](https://github.com/cryspen/hax/pull/1278)
+* \#1277: [fix(mkdocs): use codemirror instead of ace, re-setup on page reload](https://github.com/cryspen/hax/pull/1277)
+===END===
+* [@app/dependabot](https://github.com/dependabot)
+* [@cmester0](https://github.com/cmester0)
+* [@franziskuskiefer](https://github.com/franziskuskiefer)
+* [@karthikbhargavan](https://github.com/karthikbhargavan)
+* [@maximebuyse](https://github.com/maximebuyse)
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/blog/posts/this-month-in-hax/2025-02.md===LINES===62
+---
+authors:
+  - lucas
+title: "This Month in Hax: February 2025"
+date: 2025-03-05
+===MID===
+
+### Full list of PRs
+
+* \#1325: [mkdocs: add Maxime description](https://github.com/cryspen/hax/pull/1325)
+* \#1322: [Proof libs (F*): fix trait inheritance in rand-core](https://github.com/cryspen/hax/pull/1322)
+===END===
+* [@W95Psp](https://github.com/W95Psp)
+* [@franziskuskiefer](https://github.com/franziskuskiefer)
+* [@karthikbhargavan](https://github.com/karthikbhargavan)
+* [@maximebuyse](https://github.com/maximebuyse)
+
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/blog/posts/this-month-in-hax/2025-03.md===LINES===60
+---
+authors:
+  - lucas
+title: "This Month in Hax: March 2025"
+date: 2025-04-01
+===MID===
+* \#1357: [fix(hax-lib): allow `future(self)`](https://github.com/cryspen/hax/pull/1357)
+* \#1356: [feat(proof-libs): add missing definitions](https://github.com/cryspen/hax/pull/1356)
+* \#1355: [fix(engine/fstar-backend): drop spurious precondition on `Lemma`s](https://github.com/cryspen/hax/pull/1355)
+* \#1354: [fix(hax-lib/dummy): intro `int!`](https://github.com/cryspen/hax/pull/1354)
+* \#1353: [fix(proof-libs/F*): fix name `f_TryInto`](https://github.com/cryspen/hax/pull/1353)
+===END===
+* [@W95Psp](https://github.com/W95Psp)
+* [@jschneider-bensch](https://github.com/jschneider-bensch)
+* [@karthikbhargavan](https://github.com/karthikbhargavan)
+* [@mamonet](https://github.com/mamonet)
+* [@maximebuyse](https://github.com/maximebuyse)
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/blog/posts/this-month-in-hax/2025-04.md===LINES===68
+---
+authors:
+  - maxime
+title: "This Month in Hax: April 2025"
+date: 2025-05-05
+===MID===
+* \#1417: [Add `arg_count` to MIR bodies](https://github.com/cryspen/hax/pull/1417)
+* \#1416: [fix(engine) Fix name clashes for functions defined in impl methods.](https://github.com/cryspen/hax/pull/1416)
+* \#1415: [fix(proof-libs): give a computable definition to `>>`](https://github.com/cryspen/hax/pull/1415)
+* \#1414: [Use `ConstantExprKind::Todo` more](https://github.com/cryspen/hax/pull/1414)
+* \#1413: [feat(justfile): `just expand`: always use nightly](https://github.com/cryspen/hax/pull/1413)
+===END===
+* [@W95Psp](https://github.com/W95Psp)
+* [@jschneider-bensch](https://github.com/jschneider-bensch)
+* [@karthikbhargavan](https://github.com/karthikbhargavan)
+* [@mamonet](https://github.com/mamonet)
+* [@maximebuyse](https://github.com/maximebuyse)
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/blog/posts/this-month-in-hax/2025-05.md===LINES===48
+---
+authors:
+  - maxime
+title: "This Month in Hax: May 2025"
+date: 2025-05-05
+===MID===
+* \#1481: [Update owners metadata](https://github.com/cryspen/hax/pull/1481)
+* \#1477: [Provide the `FnOnce` shim for closures](https://github.com/cryspen/hax/pull/1477)
+* \#1476: [Release 0.3.1](https://github.com/cryspen/hax/pull/1476)
+* \#1473: [fix(proof-libs) Remove fields that shouldn't be in PartialOrd.](https://github.com/cryspen/hax/pull/1473)
+* \#1471: [fix(engine) Add InlineConst in concrete_idents.](https://github.com/cryspen/hax/pull/1471)
+===END===
+* [@W95Psp](https://github.com/W95Psp)
+* [@clementblaudeau](https://github.com/clementblaudeau)
+* [@cmester0](https://github.com/cmester0)
+* [@franziskuskiefer](https://github.com/franziskuskiefer)
+* [@maximebuyse](https://github.com/maximebuyse)
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/blog/posts/this-month-in-hax/2025-06.md===LINES===48
+---
+authors:
+  - maxime
+title: "This Month in Hax: June 2025"
+date: 2025-06-08
+===MID===
+* \#1507: [Rust Engine: rename rust printer to rust engine](https://github.com/cryspen/hax/pull/1507)
+* \#1506: [Rust engine: Add spans to the Rust AST.](https://github.com/cryspen/hax/pull/1506)
+* \#1505: [Rust Engine: OCaml bridge for the AST (OCaml AST -> Rust AST)](https://github.com/cryspen/hax/pull/1505)
+* \#1504: [Rust Engine: transport the Rust AST to OCaml](https://github.com/cryspen/hax/pull/1504)
+* \#1502: [Upstream: Rust engine ast](https://github.com/cryspen/hax/pull/1502)
+===END===
+* [@chrysn](https://github.com/chrysn)
+* [@clementblaudeau](https://github.com/clementblaudeau)
+* [@cmester0](https://github.com/cmester0)
+* [@karthikbhargavan](https://github.com/karthikbhargavan)
+* [@maximebuyse](https://github.com/maximebuyse)
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/blog/posts/this-month-in-hax/2025-07.md===LINES===64
+---
+authors:
+  - maxime
+title: "This Month in Hax: July 2025"
+date: 2025-07-07
+===MID===
+* \#1562: [Local hax lib for ml kem ci](https://github.com/cryspen/hax/pull/1562)
+* \#1561: [Check rust formatting with 'cargo fmt'.](https://github.com/cryspen/hax/pull/1561)
+* \#1558: [chore(ci/gh actions): `ubuntu-20.04` -> `ubuntu-22.04`](https://github.com/cryspen/hax/pull/1558)
+* \#1557: [Fix typo in properties.md](https://github.com/cryspen/hax/pull/1557)
+* \#1556: [Nix: un-pin ocamlgraph](https://github.com/cryspen/hax/pull/1556)
+===END===
+* [@clementblaudeau](https://github.com/clementblaudeau)
+* [@cmester0](https://github.com/cmester0)
+* [@franziskuskiefer](https://github.com/franziskuskiefer)
+* [@maximebuyse](https://github.com/maximebuyse)
+* [@satiscugcat](https://github.com/satiscugcat)
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/blog/posts/this-month-in-hax/2025-08.md===LINES===40
+---
+authors:
+  - lucas
+title: "This Month in Hax: August 2025"
+date: 2025-09-02
+===MID===
+* \#1613: [ci(rengine): clippy: deny lints](https://github.com/cryspen/hax/pull/1613)
+* \#1612: [misc(rengine): stop pinning `derive-generic-visitor` with a git branch](https://github.com/cryspen/hax/pull/1612)
+* \#1609: [feat(nix/ci): run examples outside of the sandbox](https://github.com/cryspen/hax/pull/1609)
+* \#1608: [Rust Engine: improve debug utility `show-json`](https://github.com/cryspen/hax/pull/1608)
+* \#1607: [Update Lean printer to new infrastructure](https://github.com/cryspen/hax/pull/1607)
+===END===
+* [@Parrot7483](https://github.com/Parrot7483)
+* [@W95Psp](https://github.com/W95Psp)
+* [@clementblaudeau](https://github.com/clementblaudeau)
+* [@franziskuskiefer](https://github.com/franziskuskiefer)
+* [@maximebuyse](https://github.com/maximebuyse)
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/blog/posts/this-month-in-hax/2025-09.md===LINES===86
+---
+authors:
+  - clement
+title: "This Month in Hax: September 2025"
+date: 2025-10-01
+===MID===
+* \#1692: [Cargo hax: improve error reports](https://github.com/cryspen/hax/pull/1692)
+* \#1691: [Update CHANGELOG.md](https://github.com/cryspen/hax/pull/1691)
+* \#1690: [Website: add tests for dead links and playground integration](https://github.com/cryspen/hax/pull/1690)
+* \#1689: [Rust Engine: add interning table, intern `GlobalId`s](https://github.com/cryspen/hax/pull/1689)
+* \#1688: [Fix names in Lean tutorial.](https://github.com/cryspen/hax/pull/1688)
+===END===
+* [@W95Psp](https://github.com/W95Psp)
+* [@alexanderlhicks](https://github.com/alexanderlhicks)
+* [@app/dependabot](https://github.com/dependabot)
+* [@clementblaudeau](https://github.com/clementblaudeau)
+* [@maximebuyse](https://github.com/maximebuyse)
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/blog/posts/this-month-in-hax/2025-10.md===LINES===40
+---
+authors:
+  - lucas
+title: "This Month in Hax: October 2025"
+date: 2025-11-01
+===MID===
+Stay tuned for more updates next month!
+
+### Full list of PRs
+* \#1746: [feat(rust-engine/lean): monadic phase](https://github.com/cryspen/hax/pull/1746)
+* \#1739: [feat(rengine, lean): add rejection phase that ensures an expression is in the Lean do-notation DSL](https://github.com/cryspen/hax/pull/1739)
+===END===
+
+### Contributors
+* [@W95Psp](https://github.com/W95Psp)
+* [@clementblaudeau](https://github.com/clementblaudeau)
+* [@maximebuyse](https://github.com/maximebuyse)
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/blog/posts/this-month-in-hax/2025-11.md===LINES===42
+---
+authors:
+  - maxime
+title: "This Month in Hax: November 2025"
+date: 2025-12-01
+===MID===
+* \#1775: [docs(blog): add avatar pictures locally](https://github.com/cryspen/hax/pull/1775)
+* \#1770: [Update author avatars in .authors.yml](https://github.com/cryspen/hax/pull/1770)
+* \#1769: [Fix broken links in README.](https://github.com/cryspen/hax/pull/1769)
+* \#1768: [refactor(lean): rename Result to RustM](https://github.com/cryspen/hax/pull/1768)
+* \#1767: [fix(engine/fstar): print [Fstar.Char.char] instead of [char]](https://github.com/cryspen/hax/pull/1767)
+===END===
+* [@abentkamp](https://github.com/abentkamp)
+* [@app/dependabot](https://github.com/dependabot)
+* [@clementblaudeau](https://github.com/clementblaudeau)
+* [@franziskuskiefer](https://github.com/franziskuskiefer)
+* [@maximebuyse](https://github.com/maximebuyse)
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/blog/posts/this-month-in-hax/2026-01.md===LINES===51
+---
+authors:
+  - maxime
+title: "This Month in Hax: January 2026"
+date: 2026-02-02
+===MID===
+* \#1887: [feat(lean): support for opaque impls](https://github.com/cryspen/hax/pull/1887)
+* \#1885: [[Lean] add Core_models.Slice.Impl.is_empty](https://github.com/cryspen/hax/pull/1885)
+* \#1875: [set cfg for docs.rs](https://github.com/cryspen/hax/pull/1875)
+* \#1872: [refactor(ci/nix): clean up a bit frontends cli src](https://github.com/cryspen/hax/pull/1872)
+* \#1870: [Release 0.3.6](https://github.com/cryspen/hax/pull/1870)
+===END===
+* [@abentkamp](https://github.com/abentkamp)
+* [@franziskuskiefer](https://github.com/franziskuskiefer)
+* [@klausnat](https://github.com/klausnat)
+* [@maximebuyse](https://github.com/maximebuyse)
+* [@rusch95](https://github.com/rusch95)
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/dev/architecture.md===LINES===83
+# Architecture
+
+Hax is a software pipeline designed to transform Rust code into various formal verification backends such as **F\***, **Coq**, **ProVerif**, and **EasyCrypt**. It comprises two main components:
+
+1. **The Frontend** (written in Rust)
+===MID===
+6. **Interactive Communication:** Engages in interactive communication with the engine.
+7. **User Reporting:** Outputs results and diagnostics to the user.
+
+## The Engine (OCaml - [documentation](/engine/docs/hax-engine/index.html))
+
+===END===
+
+- **Diagnostic Data:** Sending error messages, warnings, and other diagnostics.
+- **Profiling Information:** Providing performance metrics and profiling data.
+- **Pretty-Printing Requests:** Requesting formatted versions of Rust source code or diagnostics for better readability.
+
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/dev/ast_ebnf.md===LINES===244
+We currently take inputs from the following AST. Literals are strings, numbers and
+booleans.
+
+``` ebnf
+char ::= [a-zA-Z]
+===MID===
+
+## Full eBNF
+
+``` ebnf
+char ::= [a-zA-Z]
+===END===
+* **[a]** no support yet for raw pointers, async/await, static, extern, or union types
+* **[b]** partial support for nested matching and range patterns
+* **[c]** partial support for mutable borrows
+* **[d]** most backends lack support for dynamic dispatch, floating point operations
+* **[e]** some backends only handle specific forms of iterators
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/dev/docs.md===LINES===35
+# Docs
+
+## mkdocs material (this page)
+
+Install dependencies
+===MID===
+* `mkdocs new [dir-name]` - Create a new project.
+* `mkdocs serve` - Start the live-reloading docs server.
+* `mkdocs build` - Build the documentation site.
+* `mkdocs -h` - Print help message and exit.
+
+===END===
+```
+;--8<-- "engine/DEV.md:3:7"
+```
+
+--8<-- "engine/DEV.md:3:7"
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/dev/index.md===LINES===8
+---
+weight: 5
+---
+
+# Dev on hax
+===MID===
+weight: 5
+---
+
+# Dev on hax
+This chapter contains information about internals of hax.
+===END===
+
+# Dev on hax
+This chapter contains information about internals of hax.
+
+Please read the [`CONTRIBUTING.md`](https://github.com/cryspen/hax/blob/main/CONTRIBUTING.md) before opening a pull request.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/dev/libraries_macros.md===LINES===25
+# Libraries
+
+# Macros and attributes
+The hax engine understands only one attribute: `#[_hax::json(PAYLOAD)]`,
+where `PAYLOAD` is a JSON serialization of the Rust enum
+===MID===
+attribute that is never expanded.
+
+In the engine, the OCaml module `Attr_payloads` offers an API to query
+attributes easily. The types in crate `hax_lib_macros_types` and
+corresponding serializers/deserializers are automatically generated in
+===END===
+that defines nice and simple-to-use macros. Those macro take care of
+cooking some `hax_lib_macros_types::AttrPayload` payload(s), then
+serialize those payloads to JSON and produce one or more
+`#[_hax::json(serialized_payload)]` attributes.
+
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/engine/index.md===LINES===2
+# Engine
+
+The hax engine. Its [odoc](https://ocaml.github.io/odoc/) documentation can be found [here](./docs/hax-engine/index.html).===MID===
+# Engine
+
+The hax engine. Its [odoc](https://ocaml.github.io/odoc/) documentation can be found [here](./docs/hax-engine/index.html).===END===
+# Engine
+
+The hax engine. Its [odoc](https://ocaml.github.io/odoc/) documentation can be found [here](./docs/hax-engine/index.html).===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/engine/toolchain_structure/index.md===LINES===7
+# Toolchain structure
+
+Hax is composed of three main parts:
+
+* The frontend, which interfaces with rustc to extract Rust intermediary representation ASTs (for MIR or THIR) out of Rust code.
+===MID===
+# Toolchain structure
+
+Hax is composed of three main parts:
+
+* The frontend, which interfaces with rustc to extract Rust intermediary representation ASTs (for MIR or THIR) out of Rust code.
+===END===
+Hax is composed of three main parts:
+
+* The frontend, which interfaces with rustc to extract Rust intermediary representation ASTs (for MIR or THIR) out of Rust code.
+* The engine, which imports the Rust THIR AST to the internal hax AST, and defines a set of transformation phases on this internal AST.
+* The backends, which make use of a set of phases from the engine, and print it to a target verification framework or language. A backend also usually needs to provide a proof library and some more utilities.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/frontend/evaluation.md===LINES===158
+# Evaluation of the hax Frontend
+
+This section provides an evaluation of the hax frontend, consisting of two parts:
+
+- A **quantitative evaluation**, which measures how effectively the frontend processes Rust code.
+===MID===
+    "Stack overflow in Rustc" : 4
+```
+
+The errors marked in **blue** on the chart indicate situations where the Rust
+toolchain used by the tested crate or its dependencies is incompatible with the
+===END===
+If the Rust code we get out of this tool is equivalent to the Rust code it was given as input, then this means hax frontend correctly extracted the input code without losing or altering any information.
+
+There is no easy way of testing the full input/output equivalence so the methodology here is to test that the resulting code behaves the same as the input code with respect to relevant test cases.
+
+This work is available in the `hax-rust-engine` folder. In the `tests` subfolder, an input file is available with tests for all Rust constructs supported by the printer (currently functions and expressions). For now these tests pass after extracting and printing the file with hax frontend and the Rust printer. This means that for the Rust constructs covered by the printer and the test file, hax frontend's extraction is correct. However this still needs to be extended to test more Rust constructs.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/frontend/index.md===LINES===171
+# Frontend
+
+hax is a tool designed to facilitate the formal verification of Rust programs. It enables the translation of Rust crates into formal languages like F* or Coq. Once translated, these formal representations allow to write formal proofs about the behavior and correctness of their Rust code.
+
+## User flow
+===MID===
+
+![](./workflow-diagram.excalidraw.png)
+
+When `cargo check` compiles a crate, it invokes `rustc` multiple times, but only
+some of these calls are relevant to us. Additionally, `cargo check` may also
+===END===
+The motivation behind hax' frontend is that interacting with the Rust compiler (rustc) can be difficult. Rustc works with its internal optimized representations and with a system of interactive queries.
+
+![](./workflow-diagram.excalidraw.png)
+
+The hax frontend. Its [rustdoc](https://doc.rust-lang.org/rustdoc/what-is-rustdoc.html) documentation can be found [here](./docs/hax_frontend_exporter/index.html). -->
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/index.md===LINES===18
+# hax
+
+hax is a tool for high assurance translations of a large subset of
+Rust into formal languages such as [F\*](https://www.fstar-lang.org/) or [Rocq](https://rocq-prover.org/).
+
+===MID===
+to get started!
+
+![hax overview](static/img/overview.png)
+
+## Playground
+===END===
+[![Playground screenshot](static/img/playground.png)](https://hax-playground.cryspen.com)
+
+## Community
+
+Join the hax community on our [Zulip chat](https://hacspec.zulipchat.com).
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/manual/faq/include-flags.md===LINES===144
+# **Rust Item Extraction Using `cargo hax`**
+
+## **Overview**
+When extracting Rust items with hax, it is often necessary to include only a specific subset of items from a crate. The `cargo hax into` subcommand provides the `-i` flag to control which items are included or excluded, and how their dependencies are handled. This allows precise tailoring of the extraction process.
+
+===MID===
+cargo hax into -i '+** -*::not_that_one' <BACKEND>
+```
+
+- **Explanation**:
+  - `+**`: Includes all items by default.
+===END===
+- Include items without dependencies (`+!`).
+- Extract type signatures only (`+:`).
+
+For complex crates, this flexibility ensures only the necessary parts are extracted, optimizing analysis or transformation workflows.
+
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/manual/faq/index.md===LINES===7
+---
+weight: 200
+---
+
+# Troubleshooting/FAQ
+===MID===
+---
+weight: 200
+---
+
+# Troubleshooting/FAQ
+===END===
+---
+
+# Troubleshooting/FAQ
+
+This chapter captures a list of common questions or issues and how to resolve them. If you happen to run into an issue that is not documented here, please consider submitting a pull request!
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/manual/faq/into.md===LINES===1
+# Troubleshooting/FAQ
+===MID===
+# Troubleshooting/FAQ
+===END===
+# Troubleshooting/FAQ
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/manual/fstar/index.md===LINES===0
+(empty file)
+===MID===
+(empty)
+===END===
+(empty)
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/manual/fstar/quick_start.md===LINES===86
+---
+weight: 0
+---
+
+# Quick start
+===MID===
+library). In this case, you likely want to extract only partially your
+crate, so that you can focus on the important part.
+
+**Partial extraction.**  
+If you want to extract a function
+===END===
+   second step is about panic freedom: if F\* can typecheck your crate,
+   it means your code *never* panics, which already is an important
+   property.
+
+To go further, please read the next chapter.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/manual/fstar/tutorial/data-invariants.md===LINES===100
+---
+weight: 2
+---
+
+# Data invariants
+===MID===
+
+### Newtype and refinements
+Since we don't want an `enum` with 2347 elements, we have to revert to
+a type that can hold this many elements. The smallest integer type
+large enough provided by Rust is `u16`.
+===END===
+
+Here, F\* is able to prove automatically that (1) the addition doesn't
+overflow and (2) that the invariant of `F` is preserved. The
+definition of type `F` in F\* (named `t_F`) very explicitly requires
+the invariant as a refinement on `v`.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/manual/fstar/tutorial/index.md===LINES===19
+---
+weight: 1
+---
+
+# Tutorial
+===MID===
+This tutorial is a guide for formally verifying properties about Rust
+programs using the hax toolchain. hax is a tool that translates Rust
+programs to various formal programming languages.
+
+The formal programming languages we target are called *backends*. Some
+===END===
+[ProVerif](https://bblanche.gitlabpages.inria.fr/proverif/) is
+dedicated to proving properties about protocols.
+
+This tutorial focuses on proving properties with
+[F\*](https://fstar-lang.org/).
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/manual/fstar/tutorial/panic-freedom.md===LINES===127
+---
+weight: 0
+---
+
+# Panic freedom
+===MID===
+
+### Solution A: reflect the partialness of the function in Rust
+A first solution is to make `square` return an `Option<u8>` instead of a `u8`:
+``` {.rust .playable}
+fn square_option(x: u8) -> Option<u8> {
+===END===
+Another solution for safe indexing is to use the [newtype index
+pattern](https://matklad.github.io/2018/06/04/newtype-index-pattern.html),
+which is [also supported by
+hax](https://github.com/cryspen/hax/blob/d668de4d17e5ddee3a613068dc30b71353a9db4f/tests/attributes/src/lib.rs#L98-L126). The [data invariants](data-invariants.md#newtype-and-refinements) chapter gives more details about this.
+
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/manual/fstar/tutorial/properties.md===LINES===152
+---
+weight: 1
+---
+
+# Proving properties
+===MID===
+arithmetic (multiplication, modulus, division) it needs more
+resources, hence we bump up the `rlimit` to 100 in an annotation above
+the function. With this annotation F\* and Z3 are able to automatically
+verify this function. However, it is worth noting that the heuristic
+strategies used by Z3 for non-linear arithmetic may sometimes fail to
+===END===
+    key: u32,
+    plaintext: u32,
+) -> Proof<{ decrypt(encrypt(plaintext, key), key) == plaintext }> {
+}
+```
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/manual/index.md===LINES===71
+---
+weight: -5
+---
+
+# Introduction
+===MID===
+      - [`opam`](https://opam.ocaml.org/) (`opam switch create 5.1.1`)
+      - [`rustup`](https://rustup.rs/)
+      - [`nodejs`](https://nodejs.org/)
+      - [`jq`](https://jqlang.github.io/jq/)
+
+===END===
+4. You can now run `cargo-hax --help` (notice here we use `cargo-hax` instead of `cargo hax`)
+
+Note: Please make sure that `$HOME/.cargo/bin` is in your `$PATH`, as
+that is where `setup.sh` will install hax.
+
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/manual/lean/index.md===LINES===0
+(empty file)
+===MID===
+(empty)
+===END===
+(empty)
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/manual/lean/internals.md===LINES===535
+---
+weight: 102
+---
+
+# Internals
+===MID===
+    // unit-like
+    V1,
+    V2,
+    // with positional arguments
+    V3(usize),
+===END===
+
+
+## Prelude
+
+See the [Hax Lean library](https://github.com/cryspen/hax/tree/main/hax-lib/proof-libs/lean)
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/manual/lean/quick_start.md===LINES===87
+---
+weight: 100
+---
+
+# Quick start
+===MID===
+leanprover/lean4:v4.29.0-rc1 
+```
+This version should be the same version as in the file `hax-lib/proof-libs/lean/lean-toolchain` of
+your hax installation.
+
+===END===
+using the LSP). Contrarily to F\*, successfully building the code doesn't prove panic freedom, this
+happens only if the specification states that the code is panic-free. 
+
+### Current limitations
+The Lean backend of Hax is under active development, and extraction can *fail* even on supported Rust. This can come from a missing Rust feature (i.e. supported by the Hax engine but not yet by the Lean backend). Testing the same extraction target on the *F\** backend can be an easy way to check. If all the Rust features are supported, then the extracted code can fail to build if it uses definitions from Rust `core` and `std` libraries that are missing in our Lean model (in `hax-lib/proof-libs/lean`). We're actively extending it to support idiomatic code, but feel free to report it on [zulip](https://hacspec.zulipchat.com/) or [github](https://github.com/cryspen/hax/issues)
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/manual/lean/tutorial/index.md===LINES===8
+---
+weight: 101
+---
+
+# Tutorial
+===MID===
+weight: 101
+---
+
+# Tutorial
+
+===END===
+
+# Tutorial
+
+This tutorial focuses on proving properties with the hax toolchain and its
+[Lean](https://lean-lang.org/) backend.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/manual/lean/tutorial/panic-freedom.md===LINES===96
+---
+weight: 0
+---
+
+# Panic freedom
+===MID===
+> handle and lets you tell the process to stop instead of trying to
+> proceed with invalid or incorrect values.
+
+A Rust program should panic only in a situation where an assumption
+or an invariant is broken: a panic models an *invalid* state. Formal
+===END===
+a vector is a partial operation: the index might be out of range.
+
+In the example folder of hax, you can find the [`chacha20`
+example](https://github.com/cryspen/hax/blob/main/examples/chacha20/src/lib.rs)
+that makes use of pre-conditions to prove panic freedom.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/manual/lean/tutorial/properties.md===LINES===27
+---
+weight: 1
+---
+
+# Proving properties
+===MID===
+_return a value_: it will not panic or diverge. We could enrich the
+contract of `square` with a post-condition about the fact it is an
+increasing function:
+```{.rust .playable .lean-backend}
+#[hax_lib::requires(x < 16)]
+===END===
+The property that we prove above demonstrates a very simple case of a proof using hax and Lean. For a more complex example, a version of the Barrett example is available in the 
+[`examples`](https://github.com/cryspen/hax/tree/main/examples/lean_barrett) 
+section of hax. 
+
+
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/docs/publications.md===LINES===21
+---
+weight: 5
+---
+
+To cite hax, please use
+===MID===
+# Publications
+
+* [Formal Security and Functional Verification of Cryptographic Protocol Implementations in Rust](https://eprint.iacr.org/2025/980)
+* [hax: Verifying Security-Critical Rust Software using Multiple Provers](https://eprint.iacr.org/2025/142)
+* [hacspec Tech report](https://hal.inria.fr/hal-03176482)
+===END===
+* [Last yard](https://eprint.iacr.org/2023/185)
+* [A Verified Pipeline from a Specification Language to Optimized, Safe Rust](https://github.com/hacspec/hacspec.github.io/blob/master/coqpl22-final61.pdf) at [CoqPL'22](https://popl22.sigplan.org/details/CoqPL-2022-papers/5/A-Verified-Pipeline-from-a-Specification-Language-to-Optimized-Safe-Rust)
+* [Hax - Enabling High Assurance Cryptographic Software](https://github.com/hacspec/hacspec.github.io/blob/master/RustVerify24.pdf) at [RustVerify24](https://sites.google.com/view/rustverify2024)
+* [A formal security analysis of Blockchain voting](https://github.com/hacspec/hacspec.github.io/blob/master/coqpl24-paper8-2.pdf) at [CoqPL'24](https://popl24.sigplan.org/details/CoqPL-2024-papers/8/A-formal-security-analysis-of-Blockchain-voting)
+* [Specifying Smart Contract with Hax and ConCert](https://github.com/hacspec/hacspec.github.io/blob/master/coqpl24-paper9-13.pdf) at [CoqPL'24](https://popl24.sigplan.org/details/CoqPL-2024-papers/9/Specifying-Smart-Contract-with-Hax-and-ConCert)
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/engine/DEV.md===LINES===63
+# Notes about developping on the engine
+
+Note that Hax uses [JSON schemas](https://json-schema.org/): an OCaml
+module `types.ml` definining the types we declared on the Rust side
+with JSON parser and serializer is automatically generated. Thus, when
+===MID===
+    [`Output`](../cli/options/engine/src/lib.rs) value, serialize it
+    to JSON, and output that on stdout.  
+    *Note that the engine doesn't write or read anything on the
+    hard-drive, it is supposed to be entirely side-ffect free (when
+    not in debug mode): files are created by the [Rust
+===END===
+Just add the flag `--debug-engine i` (or `-d i`, `i` stands for
+**i**nteractive) to the `into` subcommand.  At the end of the
+translation, `cargo hax` will spawn a webserver that lets you browse
+the debug information. Note, you can change to port by setting the
+environment variable `HAX_DEBUGGER_PORT`.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/engine/names/README.md===LINES===52
+# `hax-engine-names`
+
+## Purpose of the crate
+The crate `hax-engine-names` is a dummy crate that contains all the
+Rust names the engine should be aware of.
+===MID===
+    }
+}
+```
+
+Note this will also make `Option` available.
+===END===
+concrete ident `my_concrete_ident` is `core::option::Option::None`.
+
+## How to build a concrete ident out of a name
+See the function `Concrete_ident.of_name`.
+
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/engine/utils/generate_from_ast/README.md===LINES===18
+# `generate_from_ast`
+
+## `generate_from_ast visitors`
+This binary reads the AST module of hax and creates **standalone**
+visitors. We need to define visitors and the types of the AST in two
+===MID===
+we end up re-defining every single visitor. Since the AST functor is
+instantiated a lot, this used to lead to huge memory consumption while
+building.
+
+This binary takes an OCaml module that defines types as input and
+===END===
+Note that this binary relies on the structure and naming of the AST of
+hax; it is not intended for any other use.
+
+## `generate_from_ast ast_builder`
+Generates helpers to build node in the AST.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/engine/utils/ppx_functor_application/README.md===LINES===82
+# `ppx_functor_application`
+
+## Motivation
+The engine consists of numerous phases, implemented as OCaml functors
+parametrized over "AST features" (see the book). Two phases can be
+===MID===
+    module ARG25 = (SubtypeToInputLanguage)(ARG24.FB)
+    module ARG26 = (Identity)(ARG25.FB)
+    include
+        ((BindPhase)(((BindPhase)(((BindPhase)(((BindPhase)(((BindPhase)(((BindPhase)(((BindPhase)(((BindPhase)(((BindPhase)(((BindPhase)(((BindPhase)(((BindPhase)(((BindPhase)(((BindPhase)(((BindPhase)(((BindPhase)(((BindPhase)(((BindPhase)(((BindPhase)(((BindPhase)(((BindPhase)(((BindPhase)(((BindPhase)(((BindPhase)(((BindPhase)(((BindPhase)(ARG0))(ARG1)))(ARG2)))(ARG3)))(ARG4)))(ARG5)))(ARG6)))(ARG7)))(ARG8)))(ARG9)))(ARG10)))(ARG11)))(ARG12)))(ARG13)))(ARG14)))(ARG15)))(ARG16)))(ARG17)))(ARG18)))(ARG19)))(ARG20)))(ARG21)))(ARG22)))(ARG23)))(ARG24)))(ARG25)))(ARG26)
+end
+===END===
+ - `Name(X, Y, Z)`: the application of the functor `Name` with three arguments `X`, `Y` and `Z`
+ - `(module <M>)`: the arbitary OCaml module expression `<M>`
+ - `<a> <b>`: the application of the module described by `<a>` and the module described by `<b>`
+ - `(fun X -> <a>)`: a "functor" from `X` to `<a>`
+ - `<a> |> <b>`: `<a>` binded with `<b>`
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/engine/utils/ppx_generate_features/README.md===LINES===10
+# `ppx_generate_features`
+
+Specific to `hax-engine`: 
+    - generates a `FEATURES` module type;
+    - modules `Off` and `On` of type `FEATURES`, one with every feature type set to `on`, the other with every feature type set to `off`;
+===MID===
+Specific to `hax-engine`: 
+    - generates a `FEATURES` module type;
+    - modules `Off` and `On` of type `FEATURES`, one with every feature type set to `on`, the other with every feature type set to `off`;
+    - a `SUBSET.T` module type that describe a subtyping relation between two modules of type `FEATURES`;
+    - a `SUBSET.Id` module that maps every feature to themselves.
+===END===
+    - a `SUBSET.T` module type that describe a subtyping relation between two modules of type `FEATURES`;
+    - a `SUBSET.Id` module that maps every feature to themselves.
+    
+This PPX aims to alleviates the pain of adding new features.
+
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/engine/utils/ppx_inline/README.md===LINES===77
+# `ppx_inline`
+
+Inlines chunks of OCaml AST in place.
+
+Rewrite `[%%inline_defs L]`, `let rec ... [@@inline_ands L]`, `[%%inline_arms L]`, `[%%inline_body PATH]` inside nodes `[%%inlined_contents NODE]`, where:
+===MID===
+The module:
+```ocaml
+module%inlined_contents [@@add "some_module.ml"] Test = struct
+    [%%inline_defs f + g + foo]
+    [%%inline_defs "M.*" - z - y]
+===END===
+    and bundle_2 y = bundle_3 + 1
+    and bundle_3 z = z + 1
+end
+```
+
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/engine/utils/ppx_phases_index/README.md===LINES===5
+# `ppx_phases_index`
+
+This PPX looks for a `phases` folder in the sources, and generate a
+module binding for each, inlining the documentation, so that we can
+have a nice index of all the phases with their documentation.
+===MID===
+# `ppx_phases_index`
+
+This PPX looks for a `phases` folder in the sources, and generate a
+module binding for each, inlining the documentation, so that we can
+have a nice index of all the phases with their documentation.
+===END===
+# `ppx_phases_index`
+
+This PPX looks for a `phases` folder in the sources, and generate a
+module binding for each, inlining the documentation, so that we can
+have a nice index of all the phases with their documentation.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/examples/README.md===LINES===109
+# Examples
+
+| Name               | Status of the F\* extraction |
+| ------------------ | ---------------------------- |
+| chacha20           | Typechecks                   |
+===MID===
+showcases arithmetic operations, conversions between integer types (namely `i32`
+and `i64`). The Lean backend provides *panicking* arithmetic operations `+?`,
+`-?`, etc, that panic on overflows.
+
+For the Lean extracted code, we prove panic freedom with regards to those
+===END===
+
+```sh
+cd lean_chacha20/
+make
+```
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/examples/coq-example/README.md===LINES===49
+# Stack example
+This example is a simple interpreter for a stack.
+
+## How to build
+```sh
+===MID===
+Import RecordSetNotations.
+```
+can be commented out.
+
+## Library required to run
+===END===
+We then build a makefile from the project file by
+```sh
+coq_makefile -f _CoqProject -o Makefile
+```
+and run `make` to build. Any tests and proofs, we put into a seperate file `proofs/coq/extraction/Coq_proofs.v`. which imports the generated file, such that we can update and regenerate the file, without overwriting the proofs.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/examples/limited-order-book/README.md===LINES===1
+This crate comes from https://github.com/oggy-dfin/lob
+===MID===
+This crate comes from https://github.com/oggy-dfin/lob
+===END===
+This crate comes from https://github.com/oggy-dfin/lob
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/examples/proverif-psk/Readme.md===LINES===77
+# A hax ProVerif example
+
+This crate demonstrates an example of ProVerif extraction using hax.
+
+The crate provides functions for implementing a simplistic pre-shared-key (PSK) based protocol
+===MID===
+respective functionality in ProVerif's analysis of the protocol. To
+obtain assurance that these operations are correct and implemented
+securely, one of hax' other backends can be used.
+
+
+===END===
+Query not attacker(SECRET_PAYLOAD[]) is true.
+
+--------------------------------------------------------------
+```
+
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/frontend/exporter/README.md===LINES===3
+# Special core extraction mode
+For now, the frontend is sensible to the `HAX_CORE_EXTRACTION_MODE`
+variable environment that enables a special mode.
+===MID===
+# Special core extraction mode
+For now, the frontend is sensible to the `HAX_CORE_EXTRACTION_MODE`
+variable environment that enables a special mode.
+===END===
+# Special core extraction mode
+For now, the frontend is sensible to the `HAX_CORE_EXTRACTION_MODE`
+variable environment that enables a special mode.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/frontend/exporter/adt-into/README.md===LINES===15
+# hax adt into
+
+This crate provides the `adt_into` procedural macro, allowing for
+mirroring data types with small variations.
+
+===MID===
+
+This crate is used by the frontend of hax, where we need to mirror a
+big part of the data types defined by the Rust compiler. While the
+abstract syntax trees (ASTs) from the Rust compiler expose a lot of
+indirections (identifiers one should lookup, additional informations
+===END===
+removing indirections and inlining additional informations.
+
+The `adt_into` derive macro can be used on `struct`s and `enum`s. `adt_into` then looks for another `#[args(<GENERICS>, from: FROM_TYPE, state: STATE_TYPE as SOME_NAME)]` attribute. Such an attribute means that the `struct` or `enum` mirrors the type `FROM_TYPE`, and that the transformation is carried along with a state of type `STATE_TYPE` that will be accessible via the name `SOME_NAME`.
+
+An example is available in the `tests` folder.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/hax-lib-protocol/README.md===LINES===19
+# Hax Protocol Library
+This crate provides tools for protocol developers to write protcol
+specifications for hax.
+
+## Protocol Traits
+===MID===
+machines. This module provides traits that describe parts of a state
+machine's behaviour, specifically it provides traits for creating an
+initial state, and for state transition behaviour when reading or
+writing a message.
+
+===END===
+cryptographic protocols, these will be of a fairly restricted set of
+cryptoraphic primitive operations, which are provided in these
+cryptographic abstractions. This allows protocol authors to specify
+protocol party internal operations in a way that is easily accessible
+to hax.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/hax-lib/README.md===LINES===17
+# hax library
+
+This crate contains helpers that can be used when writing Rust code that is proven
+through the hax toolchain.
+
+===MID===
+**⚠️ The code in this crate has no effect when compiled without the `--cfg hax`.**
+
+## Examples:
+
+```rust
+===END===
+  hax_lib::assert!(hax_lib::forall(|i: usize| hax_lib::implies(i < x.len(), || x[i] < 4242)));
+  hax_lib::debug_assert!(hax_lib::exists(|i: usize| hax_lib::implies(i < x.len(), || x[i] > 123)));
+  x.into_iter().zip(y.into_iter()).map(|(x, y)| x + y).collect()
+}
+```
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/hax-lib/core-models/README.md===LINES===64
+This crate contains a partial model of Rust core that should preserve the same types signatures and behaviour as the original Rust core library. It only contains code that can be extracted with hax and used in `proof-libs` to give a model to Rust core items in the different hax backends.
+
+## Contributing
+
+Currently the only backend supported is F*, and the extracted models coexist with hand-written F* models. When a new module is added, the hand-written version should be deleted and replaced by the generated one. `.hax.sh extract` takes care of extracting and placing the result in `proof-libs`.
+===MID===
+
+```Rust
+pub enum Option<T> {
+    Some(T),
+    None,
+===END===
+        None => false,
+        Some(x) => f.call_once(x),
+    }
+}
+```
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/hax-lib/macros/README.md===LINES===8
+# hax proc macros
+
+Hax-specific proc-macros for Rust programs.
+
+This crate defines proc macros to be used in Rust programs that are extracted with
+===MID===
+
+Hax-specific proc-macros for Rust programs.
+
+This crate defines proc macros to be used in Rust programs that are extracted with
+hax.
+===END===
+
+This crate defines proc macros to be used in Rust programs that are extracted with
+hax.
+It provides proc macros such as `requires` and `ensures` to define pre- and post-conditions
+for functions.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/hax-lib/macros/types/README.md===LINES===3
+# hax internal types
+
+A crate that defines the types of the various payloads of the attributes produced by the crate `hax-lib-macros` and consumed internally by the engine of hax.
+===MID===
+# hax internal types
+
+A crate that defines the types of the various payloads of the attributes produced by the crate `hax-lib-macros` and consumed internally by the engine of hax.
+===END===
+# hax internal types
+
+A crate that defines the types of the various payloads of the attributes produced by the crate `hax-lib-macros` and consumed internally by the engine of hax.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/hax-lib/proof-libs/coq/ssprove/README.md===LINES===30
+## Dependencies
+
+The coq libraries uses `ssprove/jasmin` for machine signed and unsigned integer modulo arithmetic, and `coqword` for finite field arithmetic on prime modulus (to support hacspec's `nat_mod p` type).
+This requires the following repository:
+
+===MID===
+opam update
+opam install conf-ppl.1 -y
+opam install coq-mathcomp-word.2.0 -y
+opam pin jasmin https://github.com/SSProve/ssprove.git#3d40bc89 -y
+opam pin ssprove https://github.com/SSProve/ssprove.git#bead4e76acbb69b3ecf077cece56cd3fbde501e3 -y
+===END===
+## Compiling the coq files
+
+In folder `/coq_ssprove`, type `make`. This compiles the coq libraries and the compiled examples, as defined in `_CoqProject`.
+
+If you want to add a new example to `_CoqProject`, such that it is compiled through `make`, you should run `coq_makefile -f _CoqProject -o Makefile` in `/coq` to update the makefile.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/hax-lib/proof-libs/fstar-secret-integers/README.md===LINES===35
+## Libraries for Hax
+
+The goal of this directory is to serve as a snapshot of the current F*
+supporting libraries for Hax.
+
+===MID===
+between Rust and F*. A number of files in this directory use the 
+[HACL Library](https://github.com/hacl-star/hacl-star/tree/main/lib).
+
+# Core & Alloc
+
+===END===
+The `/hax_lib` directory contains hand-written and generated code
+for the Hax library which adds new features and functionality to Rust
+to help programmers. For example, this library includes bounded indexes
+for arrays, unbounded integers etc.
+
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/hax-lib/proof-libs/fstar-secret-integers/core/README.md===LINES===29
+# Core (and alloc) library
+
+This directory contains a model for the [Core Rust
+library](https://doc.rust-lang.org/core/): the minimal Rust foundation
+behind the [standard libarary of
+===MID===
+small: it is around **75k LoC**, comments excluded.
+
+In this directory, you will find the first stage of our approach to
+`core` in F\*: a hand-written model. Note that this model tries to
+follow as much as possible the structure and naming found in the Rust
+===END===
+
+Note that we already started experimenting with this second approach:
+hax is already able to digest and generate signature-only F\* for
+more than 80% of core definitions.
+
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/hax-lib/proof-libs/fstar/README.md===LINES===35
+## Libraries for Hax
+
+The goal of this directory is to serve as a snapshot of the current F*
+supporting libraries for Hax.
+
+===MID===
+between Rust and F*. A number of files in this directory use the 
+[HACL Library](https://github.com/hacl-star/hacl-star/tree/main/lib).
+
+# Core & Alloc
+
+===END===
+The `/hax_lib` directory contains hand-written and generated code
+for the Hax library which adds new features and functionality to Rust
+to help programmers. For example, this library includes bounded indexes
+for arrays, unbounded integers etc.
+
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/hax-lib/proof-libs/fstar/core/README.md===LINES===29
+# Core (and alloc) library
+
+This directory contains a model for the [Core Rust
+library](https://doc.rust-lang.org/core/): the minimal Rust foundation
+behind the [standard libarary of
+===MID===
+small: it is around **75k LoC**, comments excluded.
+
+In this directory, you will find the first stage of our approach to
+`core` in F\*: a hand-written model. Note that this model tries to
+follow as much as possible the structure and naming found in the Rust
+===END===
+
+Note that we already started experimenting with this second approach:
+hax is already able to digest and generate signature-only F\* for
+more than 80% of core definitions.
+
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/hax-lib/proof-libs/lean/README.md===LINES===7
+# Hax Lean library
+
+This folder contains the Lean library necessary to use hax-extracted rust code
+in Lean. It is organized as follows:
+
+===MID===
+# Hax Lean library
+
+This folder contains the Lean library necessary to use hax-extracted rust code
+in Lean. It is organized as follows:
+
+===END===
+This folder contains the Lean library necessary to use hax-extracted rust code
+in Lean. It is organized as follows:
+
+- `Lib.lean` : main prelude definitions (integer types, arrays, errors, etc)
+- `BitVec.lean` : additional lemmas and tactics to handle bitvectors
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/hax-types/README.md===LINES===8
+# `hax-types`
+This crate contains the type definitions that are used to communicate between:
+ - the command line (the `cargo-hax` binary);
+ - the custom rustc driver;
+ - the hax engine (the `hax-engine` binary).
+===MID===
+This crate contains the type definitions that are used to communicate between:
+ - the command line (the `cargo-hax` binary);
+ - the custom rustc driver;
+ - the hax engine (the `hax-engine` binary).
+ 
+===END===
+ - the custom rustc driver;
+ - the hax engine (the `hax-engine` binary).
+ 
+Those three component send and receive messages in JSON or CBOR on
+stdin and stdout.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/rust-engine/README.md===LINES===14
+# Hax Rust Engine
+
+This crate implements an alternative engine for Rust: the main one is implemented in OCaml and is located in `/engine`.
+This Rust engine is designed so that it can re-use some bits of the OCaml engine.
+
+===MID===
+
+The plan is to slowly deprecate the OCaml engine, rewrite most of its components and drop it.
+
+## Usage
+The Rust engine supports only one backend for now: `Lean`.
+===END===
+
+To run it, use the following command:
+```bash
+cargo hax into lean
+```
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/rustc-coverage-tests/README.md===LINES===53
+This crate contains the [rust files](https://github.com/rust-lang/rust/tree/master/tests/coverage) from rustc [coverage tests](https://rustc-dev-guide.rust-lang.org/tests/compiletest.html#coverage-tests). 
+
+The following test target are available:
+- `json` to test AST extraction as json using hax frontend
+- `fstar` to test that extraction to F* succeeds
+===MID===
+
+If you run `python run-coverage-tests.py --with-negative --check-stability <target>` you check that the generated files correspond to the stored snapshots. To update these snapshots, run `python run-coverage-tests.py --with-negative --check-stability --update-snapshots <target>`
+
+
+## Modifying
+===END===
+This means that the test in `abort.rs` runs only for features `json` and `fstar`. If you want to also run it under a new feature you can modify this to `#[cfg(any(feature = "json", feature = "fstar", feature = "<my_new_feature>"))]`.
+
+Some tests are currently not activated for any feature. The corresponding module declarations are commented out (for example `// mod async_block;`). To add these tests to a target, uncomment the corresponding line and add the adequate `cfg` attribute.
+
+There is a separate configuration in `test_config.yaml` that should match what is defined with the `cfg` flags. This one is also used to check that tests that are not activated do fail.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/test-harness/README.md===LINES===67
+# Tests the whole toolchain
+
+This crate defines a custom test harness[^1][^2] that scans for packages
+in the Cargo workspace `../tests/Cargo.toml`.
+
+===MID===
+
+- <code><b>positive</b>: bool <i>⟨true⟩</i></code>: is the test positive (the exit code of the `cargo hax` command is `0`) or negative (the exit code is non-null)?
+- <code><b>snapshots</b></code>: should we enforce the stability of the output of the `cargo hax` command?
+  - <code>snapshots.<b>stdout</b>: bool <i>⟨true⟩</i></code>
+  - <code>snapshots.<b>stderr</b>: bool <i>⟨true⟩</i></code>  
+===END===
+
+## Miscelaneous
+ - If the environment variable `DUNEJOBS` is set, it will set the `-j`
+   flag when `dune build`ing, controlling the maximum number of jobs
+   `dune build` will run in parallel.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/tests/README.md===LINES===4
+# Tests
+
+This directory contains tests for the engine and the frontend.
+For examples of verification using hax, see `../examples`.
+===MID===
+# Tests
+
+This directory contains tests for the engine and the frontend.
+For examples of verification using hax, see `../examples`.
+===END===
+# Tests
+
+This directory contains tests for the engine and the frontend.
+For examples of verification using hax, see `../examples`.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/hax/tests/raw-attributes/README.md===LINES===4
+This example is more interesting with the debug mode enabled, to see all the attributes:
+ - `cargo hax into --debug-engine SOME_EMPTY_EXISTING_DIR fstar`
+ - `cd engine/utils/phase_debug_webapp && PORT=8989 node server.js SOME_EMPTY_EXISTING_DIR`
+ - browse `http://localhost:8989/`, and observe the attributes
+===MID===
+This example is more interesting with the debug mode enabled, to see all the attributes:
+ - `cargo hax into --debug-engine SOME_EMPTY_EXISTING_DIR fstar`
+ - `cd engine/utils/phase_debug_webapp && PORT=8989 node server.js SOME_EMPTY_EXISTING_DIR`
+ - browse `http://localhost:8989/`, and observe the attributes
+===END===
+This example is more interesting with the debug mode enabled, to see all the attributes:
+ - `cargo hax into --debug-engine SOME_EMPTY_EXISTING_DIR fstar`
+ - `cd engine/utils/phase_debug_webapp && PORT=8989 node server.js SOME_EMPTY_EXISTING_DIR`
+ - browse `http://localhost:8989/`, and observe the attributes
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/kani/.github/ISSUE_TEMPLATE/bug_report.md===LINES===44
+---
+name: Bug Report
+about: Create a bug report for Kani
+title: ''
+labels: "[C] Bug"
+===MID===
+I tried this code:
+<!--
+If the reproducing code is small, please post it here.
+Otherwise, please attach the relevant files to this issue.
+Alternatively, post a link to the repository and branch that exposes the issue.
+===END===
+<!--
+If Kani crashed, please include a backtrace in the code block by setting
+`RUST_BACKTRACE=1` in your environment. E.g. `RUST_BACKTRACE=1 kani ...`
+-->
+Instead, this happened: *explanation*
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/kani/.github/ISSUE_TEMPLATE/dev-improvement.md===LINES===13
+---
+name: Dev Improvement
+about: 'Internal issues that track improvements that don''t affect Kani users. E.g.:
+  CI, refactoring.'
+title: ''
+===MID===
+  CI, refactoring.'
+title: ''
+labels: "[C] Internal"
+assignees: ''
+
+===END===
+---
+
+**Proposed change:**
+
+**Motivation:**
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/kani/.github/ISSUE_TEMPLATE/feature_request.md===LINES===30
+---
+name: Feature Request
+about: Request a new feature or improvement for Kani
+title: ''
+labels: "[C] Feature / Enhancement"
+===MID===
+-->
+
+<!--
+Thank you for requesting a Kani feature!
+Please include the following information if it applies to your case:
+===END===
+Otherwise, please attach the relevant files to this issue.
+-->
+```rust
+<code>
+```
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/kani/.github/PULL_REQUEST_TEMPLATE.md===LINES===11
+> Please ensure your PR description includes the following:
+> 1. A description of how your changes improve Kani.
+> 2. Some context on the problem you are solving.
+> 3. A list of issues that are resolved by this PR.
+> 4. If you had to perform any manual test, please describe them.
+===MID===
+> 2. Some context on the problem you are solving.
+> 3. A list of issues that are resolved by this PR.
+> 4. If you had to perform any manual test, please describe them.
+>
+> **Make sure you remove this list from the final PR description.**
+===END===
+> **Make sure you remove this list from the final PR description.**
+
+Resolves #ISSUE-NUMBER
+
+By submitting this pull request, I confirm that my contribution is made under the terms of the Apache 2.0 and MIT licenses.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/kani/.github/SECURITY.md===LINES===6
+If you think you have discovered a security issue related to Kani, **please write to us**  at kani-verifier-security@amazon.com; do **NOT** open a public issue. Along with your notification email, please provide any supporting material (proof-of-concept code, tool output, etc.) that would be useful in helping us understand the nature and severity of the security concern. Sensitive information can be encrypted using our [PGP key](https://github.com/model-checking/kani/blob/main/kani-verifier-security.public.key).
+
+We will send a non-automated acknowledgement email reply within 1 business day followed by an initial assessment of the issue within 5 business days. Subsequently, we will work in partnership with you to assess any impact of the issue and prepare a security advisory (including any patches with appropriate fix) as needed.
+
+If we confirm that your report represents a security issue in Kani, we will work with you to agree on an embargo period (typically at least 2 weeks AFTER any necessary development time) which will provide enough time to test our proposed fix and develop patches prior to any broader or more public disclosure. At the end of the embargo period, Kani maintainers will publicly release information about the security issue together with the patches that mitigate it.
+===MID===
+If you think you have discovered a security issue related to Kani, **please write to us**  at kani-verifier-security@amazon.com; do **NOT** open a public issue. Along with your notification email, please provide any supporting material (proof-of-concept code, tool output, etc.) that would be useful in helping us understand the nature and severity of the security concern. Sensitive information can be encrypted using our [PGP key](https://github.com/model-checking/kani/blob/main/kani-verifier-security.public.key).
+
+We will send a non-automated acknowledgement email reply within 1 business day followed by an initial assessment of the issue within 5 business days. Subsequently, we will work in partnership with you to assess any impact of the issue and prepare a security advisory (including any patches with appropriate fix) as needed.
+
+If we confirm that your report represents a security issue in Kani, we will work with you to agree on an embargo period (typically at least 2 weeks AFTER any necessary development time) which will provide enough time to test our proposed fix and develop patches prior to any broader or more public disclosure. At the end of the embargo period, Kani maintainers will publicly release information about the security issue together with the patches that mitigate it.
+===END===
+
+We will send a non-automated acknowledgement email reply within 1 business day followed by an initial assessment of the issue within 5 business days. Subsequently, we will work in partnership with you to assess any impact of the issue and prepare a security advisory (including any patches with appropriate fix) as needed.
+
+If we confirm that your report represents a security issue in Kani, we will work with you to agree on an embargo period (typically at least 2 weeks AFTER any necessary development time) which will provide enough time to test our proposed fix and develop patches prior to any broader or more public disclosure. At the end of the embargo period, Kani maintainers will publicly release information about the security issue together with the patches that mitigate it.
+
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/kani/CHANGELOG.md===LINES===783
+# Changelog
+
+This file contains notable changes (e.g. breaking changes, major changes, etc.) in Kani releases.
+
+This file was introduced starting Kani 0.23.0, so it only contains changes from version 0.23.0 onwards.
+===MID===
+* Fix "unused mut" warnings created by generated code. by @jsalzbergedu in https://github.com/model-checking/kani/pull/3247
+* Refactor stubbing so Kani compiler only invoke rustc once per crate by @celinval in https://github.com/model-checking/kani/pull/3245
+* Use cfg=kani_host for host crates by @tautschnig in https://github.com/model-checking/kani/pull/3244
+* Add intrinsics and Arbitrary support for no_core by @jaisnan in https://github.com/model-checking/kani/pull/3230
+* Contracts: Avoid attribute duplication and `const` function generation for constant function by @celinval in https://github.com/model-checking/kani/pull/3255
+===END===
+```
+
+### Major Changes
+
+- Enable the build cache to avoid recompiling crates that haven't changed, and introduce `--force-build` option to compile all crates from scratch by @celinval in #2232.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/kani/CODE_OF_CONDUCT.md===LINES===14
+# Code of Conduct
+This project has adopted the [Rust Code Of Conduct](https://www.rust-lang.org/policies/code-of-conduct).
+
+* We are committed to providing a friendly, safe and welcoming environment for all, regardless of level of experience, gender identity and expression, sexual orientation, disability, personal appearance, body size, race, ethnicity, age, religion, nationality, or other similar characteristic.
+* Please avoid using overtly sexual aliases or other nicknames that might detract from a friendly, safe and welcoming environment for all.
+===MID===
+* Please avoid using overtly sexual aliases or other nicknames that might detract from a friendly, safe and welcoming environment for all.
+* Please be kind and courteous. There’s no need to be mean or rude.
+* Respect that people have differences of opinion and that every design or implementation choice carries a trade-off and numerous costs. There is seldom a right answer.
+* Please keep unstructured critique to a minimum. If you have solid ideas you want to experiment with, make a fork and see how it works.
+* We will exclude you from interaction if you insult, demean or harass anyone. That is not welcome behavior. We interpret the term “harassment” as including the definition in the Citizen Code of Conduct; if you have any lack of clarity about what might be included in that concept, please read their definition. In particular, we don’t tolerate behavior that excludes people in socially marginalized groups.
+===END===
+* Private harassment is also unacceptable. No matter who you are, if you feel you have been or are being harassed or made uncomfortable by a community member, please contact one of the channel ops or any of the Rust moderation team immediately. Whether you’re a regular contributor or a newcomer, we care about making this community a safe place for you and we’ve got your back.
+* Likewise any spamming, trolling, flaming, baiting or other attention-stealing behavior is not welcome.
+
+## Reporting Code of Conduct Issues
+If you have witnessed or been subjected to a violation of the Code of Conduct, please send an email to kani-verifier-moderation@amazon.com. Your message will be handled in a secure and confidential manner.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/kani/CONTRIBUTING.md===LINES===58
+# Contributing Guidelines
+
+Thank you for your interest in contributing to our project. Whether it's a bug report, new feature, correction, or additional
+documentation, we greatly value feedback and contributions from our community.
+
+===MID===
+2. You check existing open, and recently merged, pull requests to make sure someone else hasn't addressed the problem already.
+3. You open an issue to discuss any significant work - we would hate for your time to be wasted.
+
+To send us a pull request, please:
+
+===END===
+## Licensing
+
+Kani is distributed under the terms of both the MIT license and the Apache License (Version 2.0).
+See [LICENSE-APACHE](LICENSE-APACHE) and [LICENSE-MIT](LICENSE-MIT) for details.
+By submitting a pull request, you confirm that your contribution is made under the terms of the Apache 2.0 and MIT licenses.===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/kani/README.md===LINES===69
+![](./kani-logo.png)
+[![Kani regression](https://github.com/model-checking/kani/actions/workflows/kani.yml/badge.svg)](https://github.com/model-checking/kani/actions/workflows/kani.yml)
+[![Nightly: CBMC Latest](https://github.com/model-checking/kani/actions/workflows/cbmc-latest.yml/badge.svg)](https://github.com/model-checking/kani/actions/workflows/cbmc-latest.yml)
+
+The Kani Rust Verifier is a bit-precise model checker for Rust.
+===MID===
+   // Create a nondeterministic input
+   let input: u8 = kani::any();
+
+   // Call the function under verification
+   let output = function_under_test(input);
+===END===
+### Rust
+Kani contains code from the Rust project.
+Rust is primarily distributed under the terms of both the MIT license and the Apache License (Version 2.0), with portions covered by various BSD-like licenses.
+
+See [the Rust repository](https://github.com/rust-lang/rust) for details.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/README.md===LINES===27
+## Kani documentation development
+
+VS Code recognizes localhost URLs in the terminal and automatically offers to port-forward them for you.
+All you need to do is run `mdbook serve` and then click "Open in browser".
+
+===MID===
+ssh -t -L 3000:127.0.0.1:3000 kani-host 'cd kani/docs/ && ./mdbook serve'
+```
+
+This command will connect to `kani-host` where it assumes Kani is checked out in `kani/` and the documentation has been built once successfully.
+It will automatically detect changes to the docs and rebuild, allowing you to quickly refresh in your local browser when you visit: `http://127.0.0.1:3000/`
+===END===
+To run just these tests, return to the Kani root directory and run:
+
+```
+cargo run -p compiletest --quiet -- --suite kani-docs --mode cargo-kani --quiet
+```
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/SUMMARY.md===LINES===59
+# Kani Rust Verifier
+
+- [Getting started](./getting-started.md)
+  - [Installation](./install-guide.md)
+    - [Building from source](./build-from-source.md)
+===MID===
+    - [Contracts](./reference/experimental/contracts.md)
+    - [Loop Contracts](./reference/experimental/loop-contracts.md)
+    - [Concrete Playback](./reference/experimental/concrete-playback.md)
+    - [Quantifiers](./reference/experimental/quantifiers.md)
+- [Application](./application.md)
+===END===
+  - [Overrides](./overrides.md)
+
+---
+
+- [FAQ](./faq.md)
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/application.md===LINES===13
+# Application
+
+You may be interested in applying Kani if you're in this situation:
+
+1. You're working on a moderately important project in Rust.
+===MID===
+
+1. You're working on a moderately important project in Rust.
+2. You've already invested heavily in testing to ensure correctness.
+3. You want to invest further, to gain a much higher degree of assurance.
+
+===END===
+> If you haven't already, we also recommend techniques like property testing and fuzzing (e.g. with [`bolero`](https://github.com/camshaft/bolero/)).
+> These yield good results, are very cheap to apply, and are often easy to adopt and debug. 
+
+In this section, we explain [how Kani compares with other tools](./tool-comparison.md)
+and suggest [where to start applying Kani in real code](./tutorial-real-code.md).
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/benchcomp-cli.md===LINES===139
+# `benchcomp` command line
+
+`benchcomp` is a single command that runs benchmarks, parses their results, combines these results, and emits visualizations.
+`benchcomp` also provides *subcommands* to run these steps individually.
+Most users will want to invoke `benchcomp` in one of two ways:
+===MID===
+
+Running `benchcomp` invokes `run`, `collate`, and `visualize` behind the scenes.
+If you have previously run `benchcomp`, then running `benchcomp visualize` will emit the visualizations in the config file using the previous `result.yaml`.
+
+In the diagram above, two different suites (1 and 2) are both run using two *variants*---combinations of command, working directory, and environment variables.
+===END===
+  - type: error_on_regression
+    variant_pairs:
+    - [variant_a, variant_b]
+    - [variant_c, variant_d]
+```
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/benchcomp-conf.md===LINES===54
+# `benchcomp` configuration file
+
+`benchcomp`'s operation is controlled through a YAML file---`benchcomp.yaml` by default or a file passed to the `-c/--config` option.
+This page lists the different visualizations that are available.
+
+===MID===
+
+
+## Filters
+
+After benchcomp has finished parsing the results, it writes the results to `results.yaml` by default.
+===END===
+{{#include ../gen_src/visualization_list.txt}}
+
+Detailed documentation for these visualizations follows.
+
+{{#include ../gen_src/visualization_docs.txt}}
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/benchcomp-parse.md===LINES===61
+# Custom parsers
+
+Benchcomp ships with built-in *parsers* that retrieve the results of a benchmark suite after the run has completed.
+You can also create your own parser, either to run locally or to check into the Kani codebase.
+
+===MID===
+      variants: [variant_1, variant_2]
+      parser:
+        command: ./my-cool-parser.sh
+```
+
+===END===
+
+## Contributing custom parsers to Kani
+
+To turn your executable parser into one that benchcomp can invoke as a module, ensure that it has a `main(working_directory)` method that returns a dict (the same dict that it would print out as a YAML file to stdout).
+Save the file in `tools/benchcomp/benchcomp/parsers` using python module naming conventions (filename should be an identifier and end in `.py`).
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/build-from-source.md===LINES===89
+# Installing from source code
+
+> If you were able to [install Kani](install-guide.md) normally, you do not need to build Kani from source.
+> You probably want to proceed to the [Kani tutorial](kani-tutorial.md).
+
+===MID===
+
+```
+# git clone git@github.com:model-checking/kani.git
+git clone https://github.com/model-checking/kani.git
+cd kani
+===END===
+```
+
+## Next steps
+
+If you're learning Kani for the first time, you may be interested in our [tutorial](kani-tutorial.md).
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/cargo-kani.md===LINES===3
+# Usage on a package
+
+[See here](./usage.md#usage-on-a-package)
+===MID===
+# Usage on a package
+
+[See here](./usage.md#usage-on-a-package)
+===END===
+# Usage on a package
+
+[See here](./usage.md#usage-on-a-package)
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/cbmc-hacks.md===LINES===65
+# Working with CBMC
+
+This section describes how to access more advanced CBMC options from Kani.
+
+## CBMC arguments
+===MID===
+
+In the general case, specifying just the highest bound globally for all loops
+shouldn't cause any problems, except that the solver may take more time because
+_all_ loops will be unwound to the specified bound.
+
+===END===
+loop as follows:
+
+```bash
+kani src/lib.rs --cbmc-args --unwindset _RNvCs6JP7pnlEvdt_3lib17initialize_prefix.0:12
+```
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/cheat-sheets.md===LINES===162
+# Command cheat sheets
+
+Development work in the Kani project depends on multiple tools. Regardless of
+your familiarity with the project, the commands below may be useful for
+development purposes.
+===MID===
+If defined, Kani will generate a DOT graph `${INPUT}.dot` with the graph traversed during reachability analysis.
+If defined and not empty, the graph will be filtered to end at functions that contains the substring
+from `KANI_REACH_DEBUG`.
+
+Note that this will only work on debug builds.
+===END===
+# "Move" commit to a branch:
+git checkout -b my_branch
+# Fix main:
+git branch --force main origin/main
+```
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/conventions.md===LINES===126
+# Coding conventions
+
+## Formatting
+
+We automate most of our formatting preferences. Our CI will run format checkers for PRs and pushes.
+===MID===
+
+Because of that, we bias on the side of correctness.
+Any incorrect modeling
+that may trigger an unsound analysis that cannot be fixed in the short term should be mitigated.
+Here are a few ways how we do that.
+===END===
+
+- Sort match arms, enum variants, and struct fields alphabetically.
+- Prefer concise but meaningful names.
+- Prefer exhaustive matches.
+- Prefer declarative over imperative programming.===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/crates/index.md===LINES===11
+# Crates documentation
+
+Kani currently ships with a `kani` crate that provide APIs to allow users to
+write and configure their harnesses.
+These APIs are tightly coupled with each Kani version, so they are not
+===MID===
+Kani currently ships with a `kani` crate that provide APIs to allow users to
+write and configure their harnesses.
+These APIs are tightly coupled with each Kani version, so they are not
+published yet at <https://crates.io>.
+
+===END===
+
+You can find their latest documentation here:
+  - [kani](https://model-checking.github.io/kani/crates/doc/kani): This crate
+  provide APIs to write Kani harnesses.
+
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/debugging-slow-proofs.md===LINES===107
+# Debugging Slow Proofs
+
+Kani uses SAT/SMT solvers to verify code, which can sometimes result in slow or non-terminating proofs. This chapter outlines common causes of slowness and strategies to debug and improve proof performance.
+
+## Common Causes of Slow Proofs
+===MID===
+### Reduce Collection Sizes
+
+Similarly, if smaller values are acceptable for your proof, use those instead:
+
+```rust
+===END===
+### Disable Unnecessary Checks
+
+If you're focusing on functional correctness rather than safety, you may disable memory safety checks (run `kani --help` for a list of options to do so). Note that disabling these checks may cause Kani to miss undefined behavior, so use it with caution.
+
+Alternatively, to assume that all assertions succeed and only focus on finding safety violations, use the `--prove-safety-only` option.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/dev-documentation.md===LINES===23
+# Developer documentation
+
+Kani is an open source project open to external contributions.
+
+The easiest way to contribute is to [report any
+===MID===
+
+In this chapter, we provide documentation that might be helpful for Kani
+developers (including external contributors):
+ 1. [Coding conventions](./conventions.md).
+ 2. [Useful command-line instructions for Kani/CBMC/Git](./cheat-sheets.md).
+===END===
+
+> **NOTE**: The developer documentation is intended for Kani developers and not
+users. At present, the project is under heavy development and some items
+discussed in this documentation may stop working without notice (e.g., commands
+or configurations). Therefore, we recommend users to not rely on them.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/faq.md===LINES===59
+# FAQs
+
+This section collects frequently asked questions about Kani.
+Please consider [opening an issue](https://github.com/model-checking/kani/issues/new/choose) if you have a question that would like to see here.
+
+===MID===
+In that case, you'll need to write a function that builds an object from non-deterministic variables.
+Inside this function you would simply return an arbitrary value by generating arbitrary values for its components.
+
+For example, let's assume the type you're working with is this enum:
+
+===END===
+If the type comes from `std` (Rust's standard library), you can [open a request](https://github.com/model-checking/kani/issues/new?assignees=&labels=%5BC%5D+Feature+%2F+Enhancement&template=feature_request.md&title=) for adding `Arbitrary` implementations to the Kani library.
+Otherwise, there are more involved options to consider:
+ 1. Importing a copy of the external crate that defines the type, then implement `Arbitrary` there.
+ 2. Contributing the `Arbitrary` implementation to the external crate that defines the type.
+</details>
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/getting-started.md===LINES===27
+# Getting started
+
+Kani is an open-source verification tool that uses [model checking](./tool-comparison.md) to analyze Rust programs.
+Kani is useful for checking both safety and correctness of Rust code.
+- *Safety*: Kani automatically checks for many kinds of [undefined behavior](./undefined-behaviour.md).
+===MID===
+Kani uses proof harnesses to analyze programs.
+Proof harnesses are similar to test harnesses, especially property-based test harnesses.
+
+## Project Status
+
+===END===
+
+Kani releases every month.
+As part of every release, Kani will synchronize with a recent nightly release of Rust, and so is generally up-to-date with the latest Rust language features.
+
+If you encounter issues when using Kani, we encourage you to [report them to us](https://github.com/model-checking/kani/issues/new/choose).
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/install-github-ci.md===LINES===74
+# GitHub Action
+
+Kani offers a GitHub Action for running Kani in CI.
+As of now, only Ubuntu 20.04 with `x86_64-unknown-linux-gnu` is supported for Kani in CI.
+
+===MID===
+  Defaults to `cargo kani`.
+  Most often, you will not need to change this.
+- `working-directory`: The directory to execute the command in.
+  Defaults to `.`.
+  Useful if your repository has multiple crates, and you only want to run on one of them.
+===END===
+- **Kani Silently Crashes with no logs**: Few possible reasons:
+  - Kani ran out of RAM. GitHub offers up to 7GB of RAM, but Kani may
+    use more. Run locally to confirm.
+  - GitHub terminates jobs longer than 6 hours.
+  - Otherwise, consider filing an issue [here](https://github.com/model-checking/kani/issues).
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/install-guide.md===LINES===84
+# Installation
+
+Kani offers an easy installation option on three platforms:
+
+* `x86_64-unknown-linux-gnu` (Most Linux distributions)
+===MID===
+cargo install --locked kani-verifier --version <VERSION>
+cargo kani setup
+```
+
+## Checking your installation
+===END===
+```
+
+## Next steps
+
+If you're learning Kani for the first time, you may be interested in our [tutorial](kani-tutorial.md).
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/kani-single-file.md===LINES===3
+# Usage on a single file
+
+[See here](./usage.md#usage-on-a-single-crate)
+===MID===
+# Usage on a single file
+
+[See here](./usage.md#usage-on-a-single-crate)
+===END===
+# Usage on a single file
+
+[See here](./usage.md#usage-on-a-single-crate)
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/kani-tutorial.md===LINES===12
+# Tutorial
+
+> **NOTE**: This tutorial expects you to have followed the Kani [installation instructions](./install-guide.md) first.
+
+This tutorial will step you through a progression from simple to moderately complex tasks with Kani.
+===MID===
+
+This tutorial will step you through a progression from simple to moderately complex tasks with Kani.
+It's meant to ensure you can get started, and see at least some simple examples of how typical proofs are structured.
+It will also teach you the basics of "debugging" proof harnesses, which mainly consists of diagnosing and resolving non-termination issues with the solver.
+
+===END===
+
+For a more in-depth overview of Kani's features, see the [Reference](./reference.md) section.
+
+You may also want to read the [Application](./application.md) section to better
+understand what Kani is and how it can be applied on real code.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/limitations.md===LINES===13
+# Limitations
+
+Like other tools, Kani comes with some limitations. In some cases, these
+limitations are inherent because of the techniques it's based on, or the
+undecidability of the properties that Kani seeks to prove. In other
+===MID===
+limitations are inherent because of the techniques it's based on, or the
+undecidability of the properties that Kani seeks to prove. In other
+cases, it's just a matter of time and effort to remove these limitations (e.g.,
+specific unsupported Rust language features).
+
+===END===
+In this chapter, we do the following to document these limitations:
+ * Discuss the effect of [Rust undefined behaviour](./undefined-behaviour.md).
+ * Summarize the [current support for Rust features](./rust-feature-support.md).
+ * Explain the need for [overrides](./overrides.md) and list all overriden
+   symbols.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/overrides.md===LINES===22
+# Overrides
+
+As explained in [Comparison with other
+tools](./tool-comparison.md#comparison-with-other-tools), Kani is based on a
+technique called model checking, which verifies a program without actually
+===MID===
+that requires modeling are system calls and I/O operations. In some cases, Kani
+performs such encoding through overriding some of the definitions in the Rust
+standard library.
+
+The following table lists some of the symbols that Kani
+===END===
+`assert`, `assert_eq`, and `assert_ne` macros | Skips string formatting code, generates a more informative message and performs some instrumentation |
+`debug_assert`, `debug_assert_eq`, and `debug_assert_ne` macros | Rewrites as equivalent `assert*` macro |
+`print`, `eprint`, `println`, and `eprintln` macros | Skips string formatting and I/O operations |
+`unreachable` macro | Skips string formatting and invokes `panic!()` |
+`std::process::{abort, exit}` functions | Invokes `panic!()` to abort the execution |
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/performance-comparisons.md===LINES===40
+# Performance comparisons with `benchcomp`
+
+While Kani includes a [performance regression suite](https://github.com/model-checking/kani/tree/main/tests/perf), you may wish to test Kani's performance using your own benchmarks or with particular versions of Kani.
+You can use the `benchcomp` tool in the Kani repository to run several 'variants' of a command on one or more benchmark suites; automatically parse the results of each of those suites; and take actions or emit visualizations based on those results.
+
+===MID===
+* **Parses the results of different 'kinds' of benchmark suite** and combines those results into a single unified format.
+  This allows you to run benchmarks from external repositories, suites of pre-compiled GOTO-binaries, and other kinds of benchmark all together and view their results in a single dashboard.
+* **Driven by a single configuration file** that can be sent to colleagues or checked into a repository to be used in continuous integration.
+* **Extensible,** allowing you to write your own parsers and visualizations.
+* **Caches all previous runs** and allows you to re-create visualizations for the latest run without actually re-running the suites.
+===END===
+This uses the [`perf-regression.yaml` configuration file](https://github.com/model-checking/kani/blob/main/tools/benchcomp/configs/perf-regression.yaml) that we use in continuous integration.
+After running the suite twice, the configuration file terminates `benchcomp` with a return code of 1 if any of the benchmarks regressed on metrics such as `success` (a boolean), `solver_runtime`, and `number_vccs` (numerical).
+Additionally, the config file directs benchcomp to print out a Markdown table that GitHub's CI summary page renders in to a table.
+
+The rest of this documentation describes how to modify `benchcomp` for your own use cases, including writing a configuration file; writing a custom parser for your benchmark suite; and writing a custom visualization to examine the results of a performance comparison.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/profiling.md===LINES===26
+# Profiling Kani's Performance
+
+To profile Kani's performance at a fine-grained level, we use a tool called [`samply`](https://github.com/mstange/samply) that allows the compiler & driver to periodically record the current stack trace, allowing us to construct flamegraphs of where they are spending most of their time.
+
+## Install samply
+===MID===
+2. Then, you can profile the Kani compiler on a crate of your choice by [exporting Kani to your local PATH](build-from-source.md#adding-kani-to-your-path) and  running `FLAMEGRAPH=[OPTION] cargo kani` within the crate.
+
+The `FLAMEGRAPH` environment variable can be set to `driver` (to profile the complete `kani-driver` execution) or `compiler` (to profile each time the `kani-compiler` is called).
+
+We have to instrument the driver and compiler separately because samply's instrumentation usually cannot handle detecting the subprocess the driver uses to call the compiler.
+===END===
+This will create a new `flamegraphs` directory in the crate which will contain a single `driver.json.gz` output file and one `compiler-{crate_name}.json.gz` file for each crate in the workspace. Run `samply load flamegraphs/XXX.json.gz` on any of these to open a local server that will display the file's flamegraph.
+
+Once the server has opened, you'll see a display with the list of threads in rows at the top, and a flamegraph for the currently selected thread at the bottom. There is typically only one process when profiling the driver. When profiling the compiler, the process that runs the `kani-compiler` and handles all codegen is usually at the very bottom of the thread window.
+
+In the flamegraph view, I've found it very useful to right click on a function of interest and select "focus on subtree only" so that it zooms in and you can more clearly see the callees it uses. This can then be undone with the breadcrumb trail at the top of the flamegraph.===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/reference.md===LINES===4
+# Reference
+
+This section is the main reference for Kani.
+It contains sections that informally describe its main features.
+===MID===
+# Reference
+
+This section is the main reference for Kani.
+It contains sections that informally describe its main features.
+===END===
+# Reference
+
+This section is the main reference for Kani.
+It contains sections that informally describe its main features.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/reference/arbitrary.md===LINES===119
+# Arbitrary Trait
+
+The `Arbitrary` trait is the foundation for generating non-deterministic values in Kani proof harnesses. It allows you to create symbolic values that represent all possible values of a given type.
+
+For a type to implement `Arbitrary`, Kani must be able to represent every possible value of it, so unbounded types cannot implement it. For nondeterministic representations of unbounded types, e.g., `Vec`, see the [`BoundedArbitrary` trait](./bounded_arbitrary.md).
+===MID===
+## Derive Implementations
+
+Kani can automatically derive `Arbitrary` implementations for structs and enums when all their fields/variants implement `Arbitrary`:
+
+### Structs
+===END===
+## See Also
+
+- [Nondeterministic Variables Tutorial](../tutorial-nondeterministic-variables.md)
+- [Bounded Non-deterministic Variables](./bounded_arbitrary.md)
+- [First Steps Tutorial](../tutorial-first-steps.md)===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/reference/attributes.md===LINES===253
+# Attributes
+
+In Kani, attributes are used to mark functions as harnesses and control their execution.
+This section explains the attributes available in Kani and how they affect the verification process.
+
+===MID===
+Check the [*Loops, unwinding and bounds* section](../tutorial-loop-unwinding.md) for more information about unwinding.
+
+### Example
+
+Let's assume we've written this code which contains a loop:
+===END===
+- Verified stubbing: `#[kani::stub_verified]`
+- Function contract specification: `#[kani::requires]`, `#[kani::modifies]`, `#[kani::ensures]`, `#[kani::recursion]`
+- Loop contract specification: `#[kani::loop_invariant]`, `#[kani::loop_modifies]`.
+
+See the documentation on [function contracts](./experimental/contracts.md) and [loop contracts](./experimental/loop-contracts.md) for details.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/reference/bounded_arbitrary.md===LINES===81
+# Bounded Non-deterministic variables
+
+This is an experimental feature that allows you to bound otherwise unbounded types. For example, `Vec<T>` does not have an `Arbitrary` implementation because vectors can grow arbitrarily in size. One way of handling proofs about such types is to make the problem easier, and only prove a property up to some bound. Of course, the proof is only valid up to the bound, but can still be useful in providing confidence that your code is correct.
+
+## Example
+===MID===
+Then, with `kani` we can prove that our reverse function is indeed its own inverse, for vectors up to size 16.
+
+## Proof Incompleteness
+
+It's very important to note, that this is **not** a complete proof that this function is correct. To drive this point home, consider this bad implementation of `reverse_vector`:
+===END===
+You must specify which fields should be bounded using the `#[bounded]` attribute. All other fields must derive `Arbitrary`.
+
+### Limitations
+
+Currently you can only specify a single bound for the entire type, and all bounded fields use the same bound. If different bounds would be useful, let us know through [filing an issue](https://github.com/model-checking/kani/issues/new/choose) and we can probably lift this restriction.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/reference/experimental/autoharness.md===LINES===146
+# Automatic Harness Generation
+
+Recall the harness for `estimate_size` that we wrote in [First Steps](../../tutorial-first-steps.md):
+```rust
+{{#include ../../tutorial/first-steps-v1/src/lib.rs:kani}}
+===MID===
+kani autoharness -Z autoharness --include-pattern 'foo::bar' --exclude-pattern 'bar'
+```
+
+Note that because Kani prefixes function paths with the crate name, some patterns might match more than you expect.
+For example, given a function `foo_top_level` inside crate `my_crate`, the regex `.*::foo_.*` will match `foo_top_level`, since Kani interprets it as `my_crate::foo_top_level`.
+===END===
+Failed Checks: x and y are equal
+ File: "src/lib.rs", line 3, in foo::<u8>
+
+VERIFICATION:- FAILED
+```
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/reference/experimental/concrete-playback.md===LINES===88
+# Concrete Playback
+
+When the result of a certain check comes back as a `FAILURE`, Kani offers the `concrete-playback` option to help debug. This feature generates a Rust unit test case that plays back a failing proof harness using a concrete counterexample.
+
+When concrete playback is enabled, Kani will generate unit tests for assertions that failed during verification,
+===MID===
+## Example
+
+Running `kani -Z concrete-playback --concrete-playback=print` on the following source file:
+```rust
+#[kani::proof]
+===END===
+* This feature does not support generating unit tests for multiple assertion failures within the same harness.
+This limitation might be removed in the future.
+Kani generates warning messages for this.
+* This feature requires that you use the same Kani version to generate the test and to playback. 
+Any extra compilation option used during verification must be used during playback.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/reference/experimental/contracts.md===LINES===66
+# Contracts
+
+Consider the following example:
+
+```rust
+===MID===
+
+Since `gcd` performs `max % min` (and perhaps swaps those values), passing zero as an argument could cause a division by zero.
+The `requires` contract tells Kani to restrict the range of nondeterministic inputs to nonzero ones so that we don't run into this error.
+The `ensures` contract is what actually checks that the result is a correct divisor for the inputs.
+(The `recursion` attribute is required when using contracts on recursive functions).
+===END===
+```
+By leveraging the stubbing feature, we can replace the (expensive) `gcd` call with a *verified abstraction* of its behavior, greatly reducing verification time for `foo`.
+
+There is far more to learn about contracts.
+We highly recommend reading our [blog post about contracts](https://model-checking.github.io/kani-verifier-blog/2024/01/29/function-contracts.html) (from which this `gcd` example is taken). We also recommend looking at the `contracts` module in our [documentation](../../crates/index.md).
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/reference/experimental/coverage.md===LINES===32
+# Coverage
+
+Recall our `estimate_size` example from [First steps](../../tutorial-first-steps.md),
+where we wrote a proof harness constraining the range of inputs to integers less than 4096:
+
+===MID===
+In the `first-steps-v2` directory, try running:
+
+```
+cargo kani --coverage -Z source-coverage --harness verify_success
+```
+===END===
+```
+src/lib.rs, 24, NONE
+```
+
+which indicates that the proof no longer covers line 24, which addresses the case where `x >= 2048`.
+===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/reference/experimental/experimental-features.md===LINES===4
+# Experimental Features
+
+We elaborate on some of the more commonly used experimental features in Kani.
+This is not an exhaustive list; to see all of Kani's experimental features, run `cargo kani --help`.
+To use an experimental feature, invoke Kani with the `--unstable` or `-Z` flag followed by the name of the feature.===MID===
+# Experimental Features
+
+We elaborate on some of the more commonly used experimental features in Kani.
+This is not an exhaustive list; to see all of Kani's experimental features, run `cargo kani --help`.
+To use an experimental feature, invoke Kani with the `--unstable` or `-Z` flag followed by the name of the feature.===END===
+# Experimental Features
+
+We elaborate on some of the more commonly used experimental features in Kani.
+This is not an exhaustive list; to see all of Kani's experimental features, run `cargo kani --help`.
+To use an experimental feature, invoke Kani with the `--unstable` or `-Z` flag followed by the name of the feature.===DONE===
+===FILE===archived-docs/pre202602/prep-v256/rustc-tools/kani/docs/src/reference/experimental/loop-contracts.md===LINES===289
+# Loop Contracts
+
+## Introduction
+
+Loop contracts are used to specify invariants for loops for the sake of extending Kani's *bounded proofs* to *unbounded proofs*.
+===MID===
+In proof path 2, we prove properties after leaving the loop. As we leave the loop only when the loop guard is violated, the post condition of the loop can be expressed as
+`!guard && inv`, which is `x <= 1 && x >= 1` in the example. The postcondition implies `x == 1`—the property we want to prove at the end of `simple_loop_with_loop_contracts`.
+
+## Historic values and extra variables
+
+===END===
+   the execution of the loops. A proof will fail if the inferred loop modifies misses some targets written in the loops.
+   We observed this happens when some fields of structs are modified by some other functions called in the loops.
+3. Kani doesn't check if a loop will always terminate in proofs with loop contracts. So it could be that some properties are proved successfully with Kani but actually are unreachable due to the 
+   non-termination of some loops.
+4. We don't check if loop contracts are side-effect free. A loop contract with a side effect could lead to an unsound proof result. Make sure that the specified loop contracts are side-effect free.
+===DONE===
