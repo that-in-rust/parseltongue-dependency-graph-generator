@@ -1,1 +1,0 @@
-{"success":false,"endpoint":"/folder-structure-discovery-tree","error":"Failed to query folder structure: Database query failed: Database operation 'raw_query' failed: Datalog query failed: Cannot find requested stored relation 'CodeGraph'"}
