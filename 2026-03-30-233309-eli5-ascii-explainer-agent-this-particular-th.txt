@@ -1,0 +1,799 @@
+▗ ▗   ▖ ▖  Claude Code v2.1.87
+           Opus 4.6 (1M context) · Claude Max
+  ▘▘ ▝▝    ~/Desktop/parseltongue-rust-LLM-companion
+
+❯ @"eli5-ascii-explainer (agent)" this particular thesis for my understanding:  
+  Parseltongue: Code Reading Companion — Product Design                         
+                                                                                
+  ---                                                                           
+  1. Premise Check                                                              
+                                                                                
+  What this product actually is, in practical terms:                            
+                                                                                
+  A macOS desktop app where a developer drags in a Rust project folder, waits   
+5-30 seconds for indexing, and then has a persistent local environment for      
+reading, browsing, and learning that codebase. The app                          
+  shows visual maps, source code with graph annotations, and an embedded LLM    
+that acts as a reading guide — not a chatbot. Behind the scenes: SQLite stores  
+entities and edges, Python computes graph metrics, and                          
+   a local HTTP API serves structured packets to both the Tauri frontend and    
+the LLM.                                                                        
+                                                                                
+  Most important implications for human code reading:                           
+                                                                                
+  1. The app is the reading surface, not a terminal. (Direct.) Tauri gives us a 
+ native window with WebView. This means: side-by-side panels, clickable graph   
+nodes, hover cards, breadcrumbs, visual navigation.                             
+  The reading experience is a GUI, not curl commands. This is the fundamental   
+shift from the LLM-query framing.                                               
+  2. The graph provides reading structure that file trees cannot. (Direct.) A   
+file tree says "here are 400 files in 30 folders." The graph says "here are 12  
+communities with 3 that matter for authentication."                             
+  For a newcomer, the graph replaces folder-browsing with concept-browsing.     
+  3. Source code is read from disk, not stored in DB. (Direct from v180         
+architecture.) Entities store location pointers (file:line:line). Source is     
+read on demand. This means the reading surface can always show                  
+   current source even if the graph snapshot is slightly stale — with a visual  
+indicator when they diverge.                                                    
+  4. The LLM is a reading companion, not the primary interface. (Inference.)    
+The human reads code. The LLM explains what they're looking at, suggests what   
+to read next, and answers questions about what they                             
+  just read. The LLM should never be the bottleneck for browsing. Visual        
+navigation must work without the LLM.                                           
+  5. Latency budget is ~100ms for navigation, ~2s for LLM responses.            
+(Inference.) Clicking a function in the map and seeing its source + callers +   
+callees must be instant. Asking "explain this module" can take                  
+  2 seconds because the human expects to wait for a thoughtful answer.          
+                                                                                
+  Biggest constraint shaping the UX:                                            
+                                                                                
+  Edge quality caps explanation depth. Tree-sitter knows that foo() calls bar() 
+ but not which bar() when there are multiple. This means: the product must be   
+hones                                                                           
+… +1067 lines …                                                                 
+────────────┼────────────────────────────────────────────────────────────────── 
+─────────────────────────────────────────────────────────────────────────────── 
+─┤                                                                              
+  │ Blast radius, upstream trace, coupling analysis   │ Strong for power users  
+and LLM workflows, but not critical for the reading companion mission — add     
+when users graduate from reading to analyzing │                                 
+  ├───────────────────────────────────────────────────┼──────────────────────── 
+─────────────────────────────────────────────────────────────────────────────── 
+───────────────────────────────────────────┤                                    
+  │ Betweenness centrality, bridge detection          │ Low priority until      
+architecture review workflows mature                                            
+                                               │                                
+  └───────────────────────────────────────────────────┴──────────────────────── 
+─────────────────────────────────────────────────────────────────────────────── 
+───────────────────────────────────────────┘                                    
+                                                                                
+  ---                                                                           
+  13. Final Synthesis                                                           
+                                                                                
+  The single best newcomer workflow: Architecture Overview → Community Zoom →   
+Read the Most Important Entity. In 30 seconds, the user goes from "I have no    
+idea what this codebase is" to reading the most                                 
+  critical function in the most relevant module. No other tool provides this    
+path.                                                                           
+                                                                                
+  The best visual workflow: The architecture map with community zoom. It        
+replaces folder-tree browsing with concept-level navigation. The community map  
+IS the product's visual identity. If this one surface is                        
+  great, the product feels great.                                               
+                                                                                
+  The best LLM-guided workflow: The guided tour. A numbered reading plan with   
+per-stop narration, generated from graph structure, tracking progress across    
+sessions. This is the LLM acting as a senior engineer                           
+  walking you through the codebase — not answering questions, but planning your 
+ reading.                                                                       
+                                                                                
+  The most dangerous gimmick to avoid: Making the LLM explain every entity      
+automatically without the user asking. Auto-generated explanations that appear  
+on every click will become noise within 5 minutes. The                          
+  LLM should be available and concise, not aggressive and verbose. Default:     
+short annotation. Expand: on user request.                                      
+                                                                                
+  The one-sentence product thesis:                                              
+                                                                                
+  Parseltongue is a reading environment that uses graph structure to turn a     
+large codebase into something that feels like an explorable, guided, structured 
+ book — where every page has context, every concept has                         
+   neighbors, and a companion is ready to explain exactly what you need when    
+you need it.                                                                    
+                                                                                
+                                                                                
+
+⏺ eli5-ascii-explainer(ELI5 Parseltongue product thesis)
+  ⎿  Bash(ls /Users/amuldotexe/.claude/skills/visual-explainer/)
+     Bash(ls /Users/amuldotexe/Desktop/parseltongue-rust-LLM-companion/.prd/
+         2>/dev/null; echo "EXIT: $?")
+     Bash(mkdir -p
+         /Users/amuldotexe/Desktop/parseltongue-rust-LLM-companion/.prd/ELI5)
+     +3 more tool uses (ctrl+o to expand)
+  ⎿  Interrupted · What should Claude do instead?
+
+❯   Parseltongue: Code Reading Companion — Product Design                       
+                                                                                
+  ---                                                                           
+  1. Premise Check                                                              
+                                                                                
+  What this product actually is, in practical terms:                            
+                                                                                
+  A macOS desktop app where a developer drags in a Rust project folder, waits   
+5-30 seconds for indexing, and then has a persistent local environment for      
+reading, browsing, and learning that codebase. The app                          
+  shows visual maps, source code with graph annotations, and an embedded LLM    
+that acts as a reading guide — not a chatbot. Behind the scenes: SQLite stores  
+entities and edges, Python computes graph metrics, and                          
+   a local HTTP API serves structured packets to both the Tauri frontend and    
+the LLM.                                                                        
+                                                                                
+  Most important implications for human code reading:                           
+                                                                                
+  1. The app is the reading surface, not a terminal. (Direct.) Tauri gives us a 
+ native window with WebView. This means: side-by-side panels, clickable graph   
+nodes, hover cards, breadcrumbs, visual navigation.                             
+  The reading experience is a GUI, not curl commands. This is the fundamental   
+shift from the LLM-query framing.                                               
+  2. The graph provides reading structure that file trees cannot. (Direct.) A   
+file tree says "here are 400 files in 30 folders." The graph says "here are 12  
+communities with 3 that matter for authentication."                             
+  For a newcomer, the graph replaces folder-browsing with concept-browsing.     
+  3. Source code is read from disk, not stored in DB. (Direct from v180         
+architecture.) Entities store location pointers (file:line:line). Source is     
+read on demand. This means the reading surface can always show                  
+   current source even if the graph snapshot is slightly stale — with a visual  
+indicator when they diverge.                                                    
+  4. The LLM is a reading companion, not the primary interface. (Inference.)    
+The human reads code. The LLM explains what they're looking at, suggests what   
+to read next, and answers questions about what they                             
+  just read. The LLM should never be the bottleneck for browsing. Visual        
+navigation must work without the LLM.                                           
+  5. Latency budget is ~100ms for navigation, ~2s for LLM responses.            
+(Inference.) Clicking a function in the map and seeing its source + callers +   
+callees must be instant. Asking "explain this module" can take                  
+  2 seconds because the human expects to wait for a thoughtful answer.          
+                                                                                
+  Biggest constraint shaping the UX:                                            
+                                                                                
+  Edge quality caps explanation depth. Tree-sitter knows that foo() calls bar() 
+ but not which bar() when there are multiple. This means: the product must be   
+honest about its limits. Show "3 possible targets"                              
+  instead of confidently pickin                                                 
+… +1066 lines …                                                                 
+─────────────────────────────────────────────────────────────────────────────── 
+───────────────┤                                                                
+  │ Blast radius, upstream trace, coupling analysis   │ Strong for power users  
+and LLM workflows, but not critical for the reading companion mission — add     
+when users graduate from reading to analyzing │                                 
+  ├───────────────────────────────────────────────────┼──────────────────────── 
+─────────────────────────────────────────────────────────────────────────────── 
+───────────────────────────────────────────┤                                    
+  │ Betweenness centrality, bridge detection          │ Low priority until      
+architecture review workflows mature                                            
+                                               │                                
+  └───────────────────────────────────────────────────┴──────────────────────── 
+─────────────────────────────────────────────────────────────────────────────── 
+───────────────────────────────────────────┘                                    
+                                                                                
+  ---                                                                           
+  13. Final Synthesis                                                           
+                                                                                
+  The single best newcomer workflow: Architecture Overview → Community Zoom →   
+Read the Most Important Entity. In 30 seconds, the user goes from "I have no    
+idea what this codebase is" to reading the most                                 
+  critical function in the most relevant module. No other tool provides this    
+path.                                                                           
+                                                                                
+  The best visual workflow: The architecture map with community zoom. It        
+replaces folder-tree browsing with concept-level navigation. The community map  
+IS the product's visual identity. If this one surface is                        
+  great, the product feels great.                                               
+                                                                                
+  The best LLM-guided workflow: The guided tour. A numbered reading plan with   
+per-stop narration, generated from graph structure, tracking progress across    
+sessions. This is the LLM acting as a senior engineer                           
+  walking you through the codebase — not answering questions, but planning your 
+ reading.                                                                       
+                                                                                
+  The most dangerous gimmick to avoid: Making the LLM explain every entity      
+automatically without the user asking. Auto-generated explanations that appear  
+on every click will become noise within 5 minutes. The                          
+  LLM should be available and concise, not aggressive and verbose. Default:     
+short annotation. Expand: on user request.                                      
+                                                                                
+  The one-sentence product thesis:                                              
+                                                                                
+  Parseltongue is a reading environment that uses graph structure to turn a     
+large codebase into something that feels like an explorable, guided, structured 
+ book — where every page has context, every concept has                         
+   neighbors, and a companion is ready to explain exactly what you need when    
+you need it.                                                                    
+                                                                                
+ - explain this this thesis using @"eli5-ascii-explainer (agent)"               
+
+⏺ eli5-ascii-explainer(ELI5 Parseltongue product thesis)
+  ⎿  Search(pattern: "PRD*.md", path:
+           "~/Desktop/parseltongue-rust-LLM-companion")
+     Search(pattern: "docs/**/*.md", path:
+           "~/Desktop/parseltongue-rust-LLM-companion")
+     Read(docs/v301-PRD.md)
+  ⎿  Interrupted · What should Claude do instead?
+
+❯ /agents                                                                       
+  ⎿  Agent changes:
+     Updated agent: eli5-ascii-explainer
+     Updated agent: eli5-ascii-explainer
+
+❯ /effort max                                                                   
+  ⎿  Set effort level to max (this session only): Maximum capability with
+     deepest reasoning (Opus 4.6 only)
+
+❯   Parseltongue: Code Reading Companion — Product Design                       
+                                                                                
+  ---                                                                           
+  1. Premise Check                                                              
+                                                                                
+  What this product actually is, in practical terms:                            
+                                                                                
+  A macOS desktop app where a developer drags in a Rust project folder, waits   
+5-30 seconds for indexing, and then has a persistent local environment for      
+reading, browsing, and learning that codebase. The app                          
+  shows visual maps, source code with graph annotations, and an embedded LLM    
+that acts as a reading guide — not a chatbot. Behind the scenes: SQLite stores  
+entities and edges, Python computes graph metrics, and                          
+   a local HTTP API serves structured packets to both the Tauri frontend and    
+the LLM.                                                                        
+                                                                                
+  Most important implications for human code reading:                           
+                                                                                
+  1. The app is the reading surface, not a terminal. (Direct.) Tauri gives us a 
+ native window with WebView. This means: side-by-side panels, clickable graph   
+nodes, hover cards, breadcrumbs, visual navigation.                             
+  The reading experience is a GUI, not curl commands. This is the fundamental   
+shift from the LLM-query framing.                                               
+  2. The graph provides reading structure that file trees cannot. (Direct.) A   
+file tree says "here are 400 files in 30 folders." The graph says "here are 12  
+communities with 3 that matter for authentication."                             
+  For a newcomer, the graph replaces folder-browsing with concept-browsing.     
+  3. Source code is read from disk, not stored in DB. (Direct from v180         
+architecture.) Entities store location pointers (file:line:line). Source is     
+read on demand. This means the reading surface can always show                  
+   current source even if the graph snapshot is slightly stale — with a visual  
+indicator when they diverge.                                                    
+  4. The LLM is a reading companion, not the primary interface. (Inference.)    
+The human reads code. The LLM explains what they're looking at, suggests what   
+to read next, and answers questions about what they                             
+  just read. The LLM should never be the bottleneck for browsing. Visual        
+navigation must work without the LLM.                                           
+  5. Latency budget is ~100ms for navigation, ~2s for LLM responses.            
+(Inference.) Clicking a function in the map and seeing its source + callers +   
+callees must be instant. Asking "explain this module" can take                  
+  2 seconds because the human expects to wait for a thoughtful answer.          
+                                                                                
+  Biggest constraint shaping the UX:                                            
+                                                                                
+  Edge quality caps explanation depth. Tree-sitter knows that foo() calls bar() 
+ but not which bar() when there are multiple. This means: the product must be   
+honest about its limits. Show "3 possible targets"                              
+  instead of confidently pickin                                                 
+… +1066 lines …                                                                 
+─────────────────────────────────────────────────────────────────────────────── 
+───────────────┤                                                                
+  │ Blast radius, upstream trace, coupling analysis   │ Strong for power users  
+and LLM workflows, but not critical for the reading companion mission — add     
+when users graduate from reading to analyzing │                                 
+  ├───────────────────────────────────────────────────┼──────────────────────── 
+─────────────────────────────────────────────────────────────────────────────── 
+───────────────────────────────────────────┤                                    
+  │ Betweenness centrality, bridge detection          │ Low priority until      
+architecture review workflows mature                                            
+                                               │                                
+  └───────────────────────────────────────────────────┴──────────────────────── 
+─────────────────────────────────────────────────────────────────────────────── 
+───────────────────────────────────────────┘                                    
+                                                                                
+  ---                                                                           
+  13. Final Synthesis                                                           
+                                                                                
+  The single best newcomer workflow: Architecture Overview → Community Zoom →   
+Read the Most Important Entity. In 30 seconds, the user goes from "I have no    
+idea what this codebase is" to reading the most                                 
+  critical function in the most relevant module. No other tool provides this    
+path.                                                                           
+                                                                                
+  The best visual workflow: The architecture map with community zoom. It        
+replaces folder-tree browsing with concept-level navigation. The community map  
+IS the product's visual identity. If this one surface is                        
+  great, the product feels great.                                               
+                                                                                
+  The best LLM-guided workflow: The guided tour. A numbered reading plan with   
+per-stop narration, generated from graph structure, tracking progress across    
+sessions. This is the LLM acting as a senior engineer                           
+  walking you through the codebase — not answering questions, but planning your 
+ reading.                                                                       
+                                                                                
+  The most dangerous gimmick to avoid: Making the LLM explain every entity      
+automatically without the user asking. Auto-generated explanations that appear  
+on every click will become noise within 5 minutes. The                          
+  LLM should be available and concise, not aggressive and verbose. Default:     
+short annotation. Expand: on user request.                                      
+                                                                                
+  The one-sentence product thesis:                                              
+                                                                                
+  Parseltongue is a reading environment that uses graph structure to turn a     
+large codebase into something that feels like an explorable, guided, structured 
+ book — where every page has context, every concept has                         
+   neighbors, and a companion is ready to explain exactly what you need when    
+you need it.                                                                    
+                                                                                
+ - explain this this thesis using @"eli5-ascii-explainer (agent)"               
+
+⏺ eli5-ascii-explainer(ELI5 Parseltongue product thesis)
+  ⎿  Backgrounded agent (↓ to manage · ctrl+o to expand)
+
+⏺ The eli5-ascii-explainer agent is building your interactive HTML explainer in
+  the background. It will create parseltongue-thesis-explained.html in your
+  project root with:
+
+  - 9 progressive-disclosure layers (from "Google Maps for code" ELI5 to the
+  full thesis)
+  - Animated ASCII diagrams for the core loop, 3-layer architecture, and system
+  flow
+  - Algorithm table with real-world metaphors (Leiden = "friend groups at a
+  party", etc.)
+  - Risk warning cards with colored borders
+  - Horizontal roadmap timeline (v1 → v1.1 → v1.2)
+  - Dark theme, floating TOC, scroll progress bar
+
+  I'll share the result as soon as it finishes.
+
+✻ Cooked for 6m 41s
+
+❯ ok waiting for it                                                             
+
+⏺ Got it, I'll let you know as soon as the agent finishes.
+
+❯ can you check how far along they are                                          
+
+  Read 2 files (ctrl+o to expand)
+
+⏺ Bash(grep -c '"type"'
+      /private/tmp/claude-501/-Users-amuldotexe-Desktop-parseltongue-rust-LLM-co
+      mpanion/c8cb3a27-6818-4313-b95c-9603e19ef36e/tasks/a8ee581453e1125cf.…)
+  ⎿  15
+     ---
+     ?
+     … +4 lines (ctrl+o to expand)
+
+  Searched for 1 pattern (ctrl+o to expand)
+
+⏺ Bash(python3 -c "
+      import json…)
+  ⎿  ASSISTANT: {'model': 'claude-opus-4-6', 'id': 'msg_012DTu1wQ8PaxSa4zDx
+     hMw2V', 'type': 'message', 'role': 'assistant', 'content': [{
+     ASSISTANT: {'model': 'claude-opus-4-6', 'id': 'msg_012DTu1wQ8PaxSa4zDx
+     … +14 lines (ctrl+o to expand)
+
+⏺ Bash(python3 -c "
+      import json…)
+  ⎿  (No output)
+
+  Read 1 file (ctrl+o to expand)
+
+⏺ The agent is actively working — it's generated 136KB of output across multiple
+   model calls (Opus 4.6) and is currently in the process of building the HTML.
+  The file hasn't been written to disk yet, which means it's still composing the
+   content. Given the size and complexity of the explainer (9 layers, diagrams,
+  animations), it's likely mid-generation of the HTML.
+
+  Should be done shortly — I'll notify you the moment it completes.
+
+✻ Sautéed for 50s
+
+❯ cool                                                                          
+
+⏺ Standing by.
+
+⏺ Agent "ELI5 Parseltongue product thesis" completed
+
+⏺ It's done! The explainer is ready — 2,155 lines, 93KB, fully self-contained
+  HTML.
+
+⏺ Bash(open /Users/amuldotexe/Desktop/parseltongue-rust-LLM-companion/parseltong
+      ue-thesis-explained.html)  ⎿  (No output)
+
+⏺ Opened it in your browser. Here's what you'll find across 9 expandable layers:
+
+  1. The Big Idea — "Google Maps for code" metaphor with before/after ASCII
+  diagrams
+  2. Core Loop — Animated Orient → Comprehend → Navigate cycle with pulsing glow
+  3. System Layers — 3-tier architecture diagram showing async LLM (source
+  instant, LLM delayed)
+  4. 12 Reading Modes — Grouped card grid (Orientation / Deep Reading /
+  Navigation / Compare)
+  5. Graph Algorithms — 10-row hover table + expandable ASCII visuals for
+  Leiden, BFS, PPR
+  6. LLM Personality — Green/red Good vs Bad examples, 6 behavior patterns
+  7. Build Roadmap — Horizontal 3-phase timeline (v1 → v1.1 → v1.2)
+  8. Biggest Risks — 9 warning cards (red = critical, amber = caution)
+  9. The Thesis — Large glowing blockquote callout with the one-sentence summary
+
+  Everything is dark-themed, scroll-tracked, and has a floating TOC sidebar. No
+  external dependencies.
+
+❯ copy it with suffix YYYYMMDDHHSS in name and save it in @docs/ and commit and 
+ push to origin                                                                 
+  ⎿  Listed directory docs/
+
+⏺ Bash(date "+%Y%m%d%H%M")
+  ⎿  202603301918
+
+⏺ Bash(cp /Users/amuldotexe/Desktop/parseltongue-rust-LLM-companion/parseltongue
+      -thesis-explained.html
+      /Users/amuldotexe/Desktop/parseltongue-rust-LLM-companion/docs/p…)
+  ⎿  Done
+
+⏺ Bash(git status)
+  ⎿  On branch v301
+     Your branch is up to date with 'origin/v301'.
+     … +8 lines (ctrl+o to expand)
+
+⏺ Bash(git log --oneline -5)
+  ⎿  45150e2ed docs: add bi-directional workflow analysis and update v301 P
+     RD
+     914b86272 m
+     … +3 lines (ctrl+o to expand)
+
+⏺ Bash(git add docs/parseltongue-thesis-explained-202603301918.html && git
+      commit -m "$(cat <<'EOF'
+      docs: add interactive ELI5 product thesis explainer…)
+  ⎿  [v301 1d9f3564e] docs: add interactive ELI5 product thesis explainer
+      1 file changed, 2155 insertions(+)
+      create mode 100644 docs/parseltongue-thesis-explained-202603301918.ht
+     ml
+
+⏺ Bash(git push origin v301)
+  ⎿  remote:
+     remote: GitHub found 2 vulnerabilities on that-in-rust/parseltongue-ru
+     st-LLM-companion's default branch (1 high, 1 moderate). To find out mo
+     … +6 lines (ctrl+o to expand)
+
+⏺ Done. Committed and pushed to origin/v301:
+
+  - File: docs/parseltongue-thesis-explained-202603301918.html
+  - Commit: 1d9f3564e — "docs: add interactive ELI5 product thesis explainer"
+
+✻ Cogitated for 44s
+
+❯ What if I told you that one of the problems is: how do you cluster code? How  
+do you figure out control flow and data flow? Then how would you look at this   
+and constrain yourself to say just Rust code, like other languages can be       
+tree-sitter, but can Rust code control flow be figured out just by Rust C APIs  
+based on the data that we have in our archive docs or somewhere? If that can be 
+ figured out, then do you think we can actually isolate control flow, like how  
+the control flows and map it out in some kind of a diagram in a very, very      
+predictable way? - @"Explore (agent)" - check out @archived-docs/ - check rustc 
+ APIs                                                                           
+  ⎿  Listed directory archived-docs/
+
+⏺ Explore(Explore archived-docs for rustc APIs)
+  ⎿  Done (15 tool uses · 128.5k tokens · 1m 18s)
+  (ctrl+o to expand)
+
+⏺ This is a great question, and your archived research already has the answer —
+  yes, definitively yes. Here's the synthesis:
+
+  The Short Answer
+
+  Rust's compiler gives you exact, compiler-verified control flow via MIR. Not
+  approximate. Not heuristic. Exact. This is fundamentally different from
+  tree-sitter.
+
+  What You Already Decided (and it was right)
+
+  Your archived docs show converged decisions on this:
+
+  ┌───────────┬──────────────────┬──────────────────────────────────────────┐
+  │   Layer   │       Tool       │            What It Gives You             │
+  ├───────────┼──────────────────┼──────────────────────────────────────────┤
+  │ Syntax    │ tree-sitter      │ Declarations, line ranges, basic         │
+  │           │                  │ patterns (all languages)                 │
+  ├───────────┼──────────────────┼──────────────────────────────────────────┤
+  │ Semantics │ rustc_private +  │ Exact call graphs, CFG, type resolution, │
+  │           │ MIR              │  trait dispatch (Rust only)              │
+  ├───────────┼──────────────────┼──────────────────────────────────────────┤
+  │ Ownership │ Polonius facts   │ Move semantics, borrow lifecycle,        │
+  │           │                  │ liveness at every CFG point              │
+  └───────────┴──────────────────┴──────────────────────────────────────────┘
+
+  Why MIR Solves Your Control Flow Problem
+
+  MIR (Mid-level IR) gives you the literal control flow graph the compiler uses:
+
+  ┌──────────────────────────────────────────────────────────┐
+  │  MIR Body                                                │
+  │                                                          │
+  │  bb0: ──→ bb1 (if condition)                             │
+  │       ──→ bb3 (else)                                     │
+  │                                                          │
+  │  bb1: ──→ bb2 (call foo())                               │
+  │                                                          │
+  │  bb2: ──→ bb4 (return)                                   │
+  │                                                          │
+  │  bb3: ──→ bb4 (call bar())                               │
+  │                                                          │
+  │  bb4: ──→ return                                         │
+  │                                                          │
+  │  APIs:                                                   │
+  │    body.basic_blocks          → all blocks                │
+  │    block.successors()         → forward edges             │
+  │    basic_blocks.predecessors()→ backward edges            │
+  │    basic_blocks.dominators()  → dominator tree            │
+  │    TerminatorKind::Call       → exact call targets        │
+  │    Instance::try_resolve()    → resolves trait → concrete │
+  └──────────────────────────────────────────────────────────┘
+
+  The killer feature: Instance::try_resolve() solves the exact problem your
+  thesis identified as the biggest constraint — "tree-sitter knows foo() calls
+  bar() but not which bar()." MIR resolves trait dispatch to the concrete 
+  implementation. No ambiguity. No "3 possible targets." The compiler knows.
+
+  What This Means for Your Control Flow Diagrams
+
+  You can produce fully deterministic, predictable control flow diagrams
+  because:
+
+  1. CFG is a DAG of BasicBlocks — each block has typed successors (branch,
+  call, drop, return, panic)
+  2. Call graph is fully resolved — direct calls, trait dispatch, generic
+  monomorphization, closures
+  3. Dominator tree is built-in — BasicBlocks::dominators() gives you loop
+  detection, unreachable code
+  4. Data flow is available — MaybeInitializedPlaces, MaybeLiveLocals, variable
+  def/use chains
+
+  So the flow from codebase → diagram looks like:
+
+  Rust source
+      │
+      ▼ (rustc_private, pinned nightly)
+  MIR basic blocks + terminators
+      │
+      ▼ (extract TerminatorKind::Call, Branch, Drop)
+  Control Flow Graph (exact, typed edges)
+      │
+      ▼ (Instance::try_resolve for trait dispatch)
+  Resolved Call Graph (no ambiguity)
+      │
+      ▼ (Leiden clustering on the call graph)
+  Community-grouped control flow diagram
+
+  The Clustering Question
+
+  Your research on Leiden is spot-on. Once you have the exact call graph from
+  MIR (not tree-sitter's approximate one), Leiden clustering becomes
+  dramatically more meaningful — because the edges are real. Your modularity > 
+  0.3 gate works because the graph isn't polluted with false edges.
+
+  What's Different from Tree-Sitter
+
+  ┌────────────────────────┬────────────────────┬───────────────────────────┐
+  │       Capability       │    tree-sitter     │         rustc MIR         │
+  ├────────────────────────┼────────────────────┼───────────────────────────┤
+  │ "foo calls bar"        │ Yes (syntax match) │ Yes (compiler-verified)   │
+  ├────────────────────────┼────────────────────┼───────────────────────────┤
+  │ "which bar" (trait     │ No (shows all      │ Yes (resolves to concrete │
+  │ dispatch)              │ candidates)        │  impl)                    │
+  ├────────────────────────┼────────────────────┼───────────────────────────┤
+  │ Control flow within a  │ No                 │ Yes (BasicBlock CFG)      │
+  │ function               │                    │                           │
+  ├────────────────────────┼────────────────────┼───────────────────────────┤
+  │ Loop detection         │ No                 │ Yes (dominator tree       │
+  │                        │                    │ back-edges)               │
+  ├────────────────────────┼────────────────────┼───────────────────────────┤
+  │ Dead code paths        │ No                 │ Yes (unreachable blocks)  │
+  ├────────────────────────┼────────────────────┼───────────────────────────┤
+  │ Generic instantiation  │ No                 │ Yes (monomorphized)       │
+  ├────────────────────────┼────────────────────┼───────────────────────────┤
+  │ Closure capture        │ No                 │ Yes (capture analysis)    │
+  ├────────────────────────┼────────────────────┼───────────────────────────┤
+  │ Move vs borrow         │ No                 │ Yes (Polonius facts)      │
+  └────────────────────────┴────────────────────┴───────────────────────────┘
+
+  Bottom Line
+
+  For Rust code specifically, you can produce 100% predictable control flow 
+  diagrams — not because you're guessing from syntax, but because you're reading
+   the same CFG the compiler builds. The MIR is deterministic. The call
+  resolution is deterministic. The dominator tree is deterministic.
+
+  The only question isn't "can it be done" — your research already proved that
+  with 8 production tools (Miri, Flowistry, Aquascope, etc.). The question is
+  when you build pt09 (currently deferred to v3.0 Iteration B).
+
+  Want me to build an interactive explainer for this too, or dive into what a
+  pt09 implementation would actually look like?
+
+✻ Churned for 2m 17s
+
+❯ can you now create a new version of workflows integrating this - constraining 
+ ourselves to Rust codebases?                                                   
+
+⏺ Skill(superpowers:brainstorming)
+  ⎿  Successfully loaded skill
+
+⏺ Let me start by exploring the current context to ground this properly.  ⎿  Interrupted · What should Claude do instead?
+
+❯ no do not do that shit -- use your new rustc proposal ⏺ ---                   
+  Parseltongue: Code Reading Companion — Product Design                         
+                                                                                
+  ---                                                                           
+  1. Premise Check                                                              
+                                                                                
+  What this product actually is, in practical terms:                            
+                                                                                
+  A macOS desktop app where a developer drags in a Rust project folder, waits   
+  5-30 seconds for indexing, and then has a persistent local environment for    
+  reading, browsing, and learning that codebase. The app shows visual maps,     
+  source code with graph annotations, and an embedded LLM that acts as a        
+reading                                                                         
+   guide — not a chatbot. Behind the scenes: SQLite stores entities and edges,  
+  Python computes graph metrics, and a local HTTP API serves structured packets 
+  to both the Tauri frontend and the LLM.                                       
+                                                                                
+  Most important implications for human code reading:                           
+                                                                                
+  1. The app is the reading surface, not a terminal. (Direct.) Tauri gives us a 
+  native window with WebView. This means: side-by-side panels, clickable graph  
+  nodes, hover cards, breadcrumbs, visual navigation. The reading experience is 
+  a GUI, not curl commands. This is the fundamental shift from the LLM-query    
+  framing.                                                                      
+  2. The graph provides reading structure that file trees cannot. (Direct.) A   
+  file tree says "here are 400 files in 30 folders." The graph says "here are   
+12                                                                              
+   communities with 3 that matter for authentication." For a newcomer, the      
+graph                                                                           
+   replaces folder-browsing with concept-browsing.                              
+  3. Source code is read from disk, not stored in DB. (Direct from v180         
+  architecture.) Entities store location pointers (file:line:line). Source is   
+  read on demand. This means the reading surface can always show current source 
+  even if the graph snapshot is slightly stale — with a visual indicator when   
+  they diverge.                                                                 
+  4. The LLM is a reading companion, not the primary interface. (Inference.)    
+The                                                                             
+   human reads code. The LLM explains what they're looking at, suggests what to 
+  read next, and answers questions about what they just read. The LLM should    
+  never be the bottleneck for browsing. Visual navigation must work without the 
+  LLM.                                                                          
+  5. Latency budget is ~100ms for navigation, ~2s for LLM responses.            
+  (Inference.) Clicking a function in the map and seeing its source + callers + 
+  callees must be instant. Asking "explain this module" can take 2 seconds      
+  because the human expects to wait for a thoughtful answer.                    
+                                                                                
+  Biggest constraint shaping the UX:                                            
+                                                                                
+  Edge quality caps explanation depth. Tree-sitter knows that foo() calls bar() 
+  but not which bar() when there are multiple. This means: the                  
+… +3018 lines …                                                                 
+y             │                                                                 
+  ├─────────────────────────┼───────────────────────────────────────────────┤   
+  │ Temporal snapshot       │ Needs multi-snapshot storage, low priority    │   
+  │ comparison              │ until user base exists                        │   
+  ├─────────────────────────┼───────────────────────────────────────────────┤   
+  │ Blast radius, upstream  │ Strong for power users and LLM workflows, but │   
+  │ trace, coupling         │  not critical for the reading companion       │   
+  │ analysis                │ mission — add when users graduate from        │   
+  │                         │ reading to analyzing                          │   
+  ├─────────────────────────┼───────────────────────────────────────────────┤   
+  │ Betweenness centrality, │ Low priority until architecture review        │   
+  │  bridge detection       │ workflows mature                              │   
+  └─────────────────────────┴───────────────────────────────────────────────┘   
+                                                                                
+  ---                                                                           
+  13. Final Synthesis                                                           
+                                                                                
+  The single best newcomer workflow: Architecture Overview → Community Zoom →   
+  Read the Most Important Entity. In 30 seconds, the user goes from "I have no  
+  idea what this codebase is" to reading the most critical function in the most 
+  relevant module. No other tool provides this path.                            
+                                                                                
+  The best visual workflow: The architecture map with community zoom. It        
+  replaces folder-tree browsing with concept-level navigation. The community    
+map                                                                             
+   IS the product's visual identity. If this one surface is great, the product  
+  feels great.                                                                  
+                                                                                
+  The best LLM-guided workflow: The guided tour. A numbered reading plan with   
+  per-stop narration, generated from graph structure, tracking progress across  
+  sessions. This is the LLM acting as a senior engineer walking you through the 
+  codebase — not answering questions, but planning your reading.                
+                                                                                
+  The most dangerous gimmick to avoid: Making the LLM explain every entity      
+  automatically without the user asking. Auto-generated explanations that       
+appear                                                                          
+   on every click will become noise within 5 minutes. The LLM should be         
+  available and concise, not aggressive and verbose. Default: short annotation. 
+  Expand: on user request.                                                      
+                                                                                
+  The one-sentence product thesis:                                              
+                                                                                
+  Parseltongue is a reading environment that uses graph structure to turn a     
+  large codebase into something that feels like an explorable, guided,          
+  structured book — where every page has context, every concept has neighbors,  
+  and a companion is ready to explain exactly what you need when you need it.   
+
+⏺ Writing the updated Rust-only thesis with compiler truth now.
+
+⏺ Write(docs/parseltongue-v2-rust-compiler-truth-thesis-202603301930.md)
+  ⎿  Wrote 1194 lines to
+     docs/parseltongue-v2-rust-compiler-truth-thesis-202603301930.md
+      1 # Parseltongue v2: Rust Code Reading Companion — Compiler Truth E
+        dition
+      2 
+      3 **Constraint: Rust codebases only. Compiler-verified graphs. Zero
+         ambiguity.**
+      4 
+      5 ---
+      6 
+      7 ## 1. Premise Check (Updated)
+      8 
+      9 ### What this product actually is:
+     … +1184 lines (ctrl+o to expand)
+
+⏺ Done. Written to
+  docs/parseltongue-v2-rust-compiler-truth-thesis-202603301930.md.
+
+  Key changes from the original thesis:
+
+  Eliminated: The "3 possible targets" ambiguity. MIR + Instance::try_resolve()
+  gives exact call targets. Only dyn Trait remains ambiguous (honestly labeled).
+
+  3 New Reading Modes:
+  - Mode 13: CFG Visualizer — MIR BasicBlock diagrams showing real branching
+  structure
+  - Mode 14: Data Flow Explorer — trace values through moves, borrows, drops
+  - Mode 15: Lifetime/Borrow Visualizer — Polonius-verified borrow timelines (no
+   longer "syntactic only")
+
+  7 New Workflows (#29-35): CFG viewing, value tracing, borrow analysis,
+  dispatch resolution, async flow, generic instantiations, unsafe explanation
+
+  Rebuilt Mode 12: Ownership visualizer upgraded from tree-sitter guesses to
+  Polonius compiler facts
+
+  Updated Build Order: Compiler truth from v1 day one (with tree-sitter
+  fallback). Polonius borrow analysis in v1.2.
+
+  Want me to commit and push this?
+
+✻ Brewed for 6m 24s
+
+❯ yes                                                                           
+
+⏺ Bash(git status)
+  ⎿  On branch v301
+     Your branch is up to date with 'origin/v301'.
+     … +6 lines (ctrl+o to expand)
+
+⏺ Bash(git log --oneline -3)
+  ⎿  701cc40d6 m
+     1d9f3564e docs: add interactive ELI5 product thesis explainer
+     45150e2ed docs: add bi-directional workflow analysis and update v301 P
+     RD
+
+⏺ Bash(git add docs/parseltongue-v2-rust-compiler-truth-thesis-202603301930.md
+      && git commit -m "$(cat <<'EOF'
+      docs: add v2 Rust-only compiler truth thesis…)
+  ⎿  [v301 60d8b137b] docs: add v2 Rust-only compiler truth thesis
+      1 file changed, 1194 insertions(+)
+      create mode 100644 docs/parseltongue-v2-rust-compiler-truth-thesis-20
+     … +10 lines (ctrl+o to expand)
+
+⏺ Committed and pushed to origin/v301:
+
+  - Commit: 60d8b137b — "docs: add v2 Rust-only compiler truth thesis"
+  - File: docs/parseltongue-v2-rust-compiler-truth-thesis-202603301930.md (1,194
+   lines)
+
+✻ Worked for 30s
