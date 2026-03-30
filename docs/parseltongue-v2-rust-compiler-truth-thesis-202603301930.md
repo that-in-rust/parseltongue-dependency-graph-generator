@@ -1,6 +1,7 @@
 # Parseltongue v2: Rust Code Reading Companion — Compiler Truth Edition
 
 **Constraint: Rust codebases only. Compiler-verified graphs. Zero ambiguity.**
+**Core UX: Semantic Focus Lens. Moat: Variant Graph Overlays.**
 
 ---
 
@@ -120,16 +121,155 @@ v1 thesis: "The LLM fills gaps where tree-sitter can't see."
 v2 thesis: "The LLM narrates what the compiler already knows."
 ```
 
-**New thesis point (9):**
+**New thesis points (9, 10, 11):**
 
 9. **The compiler is the source of truth, and the product never contradicts it.** Every edge, every
    type annotation, every ownership fact shown in the UI must trace back to a `rustc_private` query.
    If the compiler doesn't know it, the product doesn't claim it. The LLM can speculate ("this
    pattern is probably used for X"), but the graph never speculates.
 
+10. **Zooming is changing levels of abstraction, not scaling the raw graph (Semantic Focus Lens).**
+    You should not zoom the raw graph. You should zoom the representation. The product behaves like
+    a focus lens: the selected thing is fully saturated, its 1-hop neighborhood is visible and
+    ranked, its 2-hop neighborhood is faint, and unrelated areas are ghosted or hidden. Boundary
+    nodes are shown as exits, not full clutter.
+
+    "Importance" is always relative to a focus. The ranking stack:
+    1. Local relevance: `Personalized PageRank` from the selected node
+    2. Structural proximity: `BFS` distance
+    3. Global importance: `PageRank`
+    4. Edge semantics: calls, impls, type refs, public boundary edges
+
+    This produces four zoom levels:
+    - **Workspace level**: subsystems and communities
+    - **Subsystem level**: modules, public APIs, representative files
+    - **Entity level**: one function/type/trait and its ego network
+    - **Flow level**: CFG, DDG, type-flow slices inside one chosen unit
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│                      SEMANTIC FOCUS LENS                             │
+├──────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  When the user selects an entity:                                    │
+│                                                                      │
+│  ┌─────────────────────────────────────────────────────────────┐     │
+│  │                                                             │     │
+│  │     ░░░░░░░░░░░  ghosted  ░░░░░░░░░░░░░░░░░░░░            │     │
+│  │   ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░           │     │
+│  │   ░░░░░  ▒▒▒▒▒▒▒▒▒▒▒▒▒  faint (2-hop)  ░░░░░░           │     │
+│  │   ░░░░░  ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒  ░░░░░           │     │
+│  │   ░░░░░  ▒▒▒  ▓▓▓▓▓▓▓▓▓▓▓▓▓  visible    ░░░░░           │     │
+│  │   ░░░░░  ▒▒▒  ▓▓▓▓▓▓▓▓▓▓▓▓▓  (1-hop)    ░░░░░           │     │
+│  │   ░░░░░  ▒▒▒  ▓▓▓  ████████  ▓▓▓  ▒▒▒▒  ░░░░░           │     │
+│  │   ░░░░░  ▒▒▒  ▓▓▓  █ FOCUS█  ▓▓▓  ▒▒▒▒  ░░░░░           │     │
+│  │   ░░░░░  ▒▒▒  ▓▓▓  ████████  ▓▓▓  ▒▒▒▒  ░░░░░           │     │
+│  │   ░░░░░  ▒▒▒  ▓▓▓▓▓▓▓▓▓▓▓▓▓  ▒▒▒  ▒▒▒▒  ░░░░░           │     │
+│  │   ░░░░░  ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒  ▒▒▒▒  ░░░░░           │     │
+│  │   ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░           │     │
+│  │     ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░            │     │
+│  │                                                             │     │
+│  │  Boundary nodes shown as ◇ exit portals, not full entities  │     │
+│  │  Click a boundary node → re-center focus there              │     │
+│  └─────────────────────────────────────────────────────────────┘     │
+│                                                                      │
+│  Ranking within each ring:                                           │
+│    1. PPR score from focus (local relevance)                         │
+│    2. BFS distance (structural proximity)                            │
+│    3. Global PageRank (importance)                                   │
+│    4. Edge kind weight (calls > impls > type_refs > contains)        │
+│                                                                      │
+│  Zoom levels:                                                        │
+│    Workspace ──► Subsystem ──► Entity ──► Flow                       │
+│    (communities)  (modules)   (ego net)  (CFG/DDG)                   │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+11. **Architecture what-if analysis uses variant overlays, not fiction (Variant Graph Overlays).**
+    The product's moat is not just reading the current graph — it's letting the user explore
+    architectural alternatives as structured deltas on the base graph, not as LLM-generated fiction.
+
+    An architecture option is not just "add edge." It is often: add edge, remove edge, reroute
+    dependency, replace direct dependency with interface dependency, collapse or split a node.
+
+    Representation:
+    - **Base snapshot**: the current compiler-verified graph (truth)
+    - **Variant A/B/C**: overlay deltas on the base
+
+    Each delta contains typed, justified, clearly-marked-as-proposed operations:
+    - `add_edge { src, dst, kind, rationale }`
+    - `remove_edge { src, dst, kind, rationale }`
+    - `change_edge_kind { src, dst, old_kind, new_kind, rationale }`
+
+    Every API can be queried as `?variant=current` or `?variant=option-1`.
+
+    The LLM receives **difference packets**, not raw graph dumps:
+    - edges added/removed
+    - new reachability changes
+    - SCC changes (cycles introduced or broken)
+    - PageRank delta (what got more/less important)
+    - k-core delta (what moved to core/periphery)
+    - Leiden community boundary changes
+    - hotspot shifts
+    - public boundary crossings changed
+
+    This turns "graph dump comparison" into an **architectural consequence engine**.
+
+    **Trust constraint**: proposed edges must be typed, variant-scoped, justified with rationale,
+    and clearly marked as `proposed` — never `truth`. The base graph is always compiler-verified.
+    Variants are always human- or LLM-proposed hypotheticals.
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│                     VARIANT GRAPH OVERLAYS                            │
+├──────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  ┌────────────────────────────────────────────┐                      │
+│  │  BASE SNAPSHOT (compiler truth)            │                      │
+│  │  ══════════════════════════════            │                      │
+│  │  A ──calls──► B ──calls──► C              │                      │
+│  │  A ──calls──► D                            │                      │
+│  │  D ──impls──► TraitX                       │                      │
+│  └────────────────────┬───────────────────────┘                      │
+│                       │                                              │
+│         ┌─────────────┼─────────────┐                                │
+│         ▼             ▼             ▼                                │
+│  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐                  │
+│  │  VARIANT A   │ │  VARIANT B   │ │  VARIANT C   │                  │
+│  │  "Interface" │ │  "Direct"    │ │  "Merge"     │                  │
+│  │ ──────────── │ │ ──────────── │ │ ──────────── │                  │
+│  │ + A→I (new)  │ │ + A→C (new)  │ │ - D (remove) │                  │
+│  │ + I→B (new)  │ │ - A→B (rem)  │ │ + A→B_D      │                  │
+│  │ - A→B (rem)  │ │              │ │   (merged)   │                  │
+│  │ + trait Iface│ │              │ │              │                  │
+│  └──────┬───────┘ └──────┬───────┘ └──────┬───────┘                  │
+│         │                │                │                          │
+│         ▼                ▼                ▼                          │
+│  ┌───────────────────────────────────────────────┐                   │
+│  │  CONSEQUENCE ENGINE (per variant)              │                   │
+│  │  ─────────────────────────────────             │                   │
+│  │  • PageRank delta: B drops 0.04 → 0.02        │                   │
+│  │  • New SCC: none / cycle introduced?           │                   │
+│  │  • k-core shift: D moves periphery → core     │                   │
+│  │  • Community boundary: A and B now split       │                   │
+│  │  • Hotspot change: I becomes new hotspot       │                   │
+│  │  • Public boundary: I now exposed              │                   │
+│  └───────────────────────────────────────────────┘                   │
+│                                                                      │
+│  API: /communities?variant=option-1                                  │
+│       /hotspots?variant=option-2                                     │
+│       /variant/{id}/diff  ← the difference packet                   │
+│                                                                      │
+│  Trust rule: base = solid lines. Variant = dotted + "proposed" tag.  │
+│              LLM narrates consequences, never asserts truth.         │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
 ---
 
-## 3. Reading Modes (15 Modes — 12 Upgraded + 3 New)
+## 3. Reading Modes (17 Modes — 12 Upgraded + 3 Compiler + 2 Foundational)
 
 ### Mode 1: Architecture Overview (Upgraded)
 
@@ -512,7 +652,142 @@ why the compiler accepts or rejects the code:
 
 ---
 
-## 4. Workflow Catalog (35 Workflows — 28 Upgraded + 7 New)
+### Mode 16: Semantic Focus Lens (NEW — FOUNDATIONAL)
+
+**Problem it solves:** "I clicked a function and now I see the entire 500-node graph. Everything is
+equally visible. I can't tell what matters."
+
+**Who it's for:** Everyone, every time. This is the default rendering mode, not a feature toggle.
+
+**Why it's foundational:** Every other mode benefits from focus-relative rendering. Architecture
+Overview uses it at workspace level. Module Deep Read uses it at subsystem level. Call Chain
+Explorer uses it at entity level. CFG Visualizer uses it at flow level.
+
+**What the user sees:**
+
+```
+┌────────────────────────────────────────────────────────────────────┐
+│  Focus: Consumer::poll()                                          │
+│  Zoom level: Entity                                                │
+│                                                                    │
+│  ┌─ 1-hop (visible, ranked by PPR) ──────────────────────────┐    │
+│  │                                                            │    │
+│  │  ← callers                    callees →                    │    │
+│  │  ┌──────────────────┐        ┌──────────────────┐          │    │
+│  │  │ consumer_loop    │        │ msg_queue        │          │    │
+│  │  │ ::run()          │───────►│ ::dequeue()      │          │    │
+│  │  │ PPR: 0.18        │        │ PPR: 0.15        │          │    │
+│  │  └──────────────────┘        └──────────────────┘          │    │
+│  │  ┌──────────────────┐        ┌──────────────────┐          │    │
+│  │  │ batch_processor  │        │ offset_tracker   │          │    │
+│  │  │ ::flush()        │───────►│ ::advance()      │          │    │
+│  │  │ PPR: 0.09        │        │ PPR: 0.12        │          │    │
+│  │  └──────────────────┘        └──────────────────┘          │    │
+│  │                                                            │    │
+│  │  siblings (same impl block)                                │    │
+│  │  ┌──────────────────┐  ┌──────────────────┐                │    │
+│  │  │ Consumer::new()  │  │ Consumer::stop() │                │    │
+│  │  │ PPR: 0.06        │  │ PPR: 0.04        │                │    │
+│  │  └──────────────────┘  └──────────────────┘                │    │
+│  └────────────────────────────────────────────────────────────┘    │
+│                                                                    │
+│  ┌─ 2-hop (faint) ───────────────────────────────────────────┐    │
+│  │  ▒ Server::start() ▒  ▒ TopicPartition::read() ▒          │    │
+│  │  ▒ MessageHandler::process() ▒                             │    │
+│  └────────────────────────────────────────────────────────────┘    │
+│                                                                    │
+│  Boundary exits: ◇ "Streaming Pipeline" community                 │
+│                  ◇ "Storage" community                             │
+│                  ◇ "Server" community                              │
+│                                                                    │
+│  Everything else: ghosted ░░░░░░                                   │
+└────────────────────────────────────────────────────────────────────┘
+```
+
+**Zoom level transitions:**
+- **Workspace → Subsystem**: Click a community. Community entities become 1-hop. Other communities
+  become boundary exits.
+- **Subsystem → Entity**: Click an entity. Entity becomes focus. Community peers become 1-hop.
+  Other communities ghost.
+- **Entity → Flow**: Click "CFG" or "Borrows." The entity's internal structure (basic blocks, borrow
+  scopes) fills the view. Callers/callees become boundary exits.
+- **Any level → Up**: Click breadcrumb or press Escape. Re-center at parent zoom level.
+
+**Key design rule:** The lens is not a filter. It doesn't hide things — it dims them. The user can
+always see ghosted nodes and click them to re-center. The lens controls salience, not visibility.
+
+---
+
+### Mode 17: Architecture Variant Explorer (NEW — MOAT)
+
+**Problem it solves:** "What would happen if we introduced an interface between A and B? How would
+that change the architecture?"
+
+**Who it's for:** Tech leads, architects, anyone making structural decisions.
+
+**Why it's the moat:** No other code reading tool lets you explore architectural alternatives as
+structured, comparable graph variants with computed consequences. This is the feature that makes
+Parseltongue irreplaceable once adopted.
+
+**What the user sees:**
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│  Architecture Variants                                               │
+│                                                                      │
+│  ┌─ BASE (current) ────────────────────────────────────────────┐    │
+│  │  Server ──calls──► Consumer ──calls──► Storage              │    │
+│  │  Server ──calls──► BatchProcessor                            │    │
+│  │  BatchProcessor ──impls──► MessageHandler                    │    │
+│  │                                                              │    │
+│  │  Communities: 3 | Hotspot: Consumer | Cycles: 0              │    │
+│  └──────────────────────────────────────────────────────────────┘    │
+│                                                                      │
+│  ┌─ VARIANT A: "Add Interface Layer" ──────────────────────────┐    │
+│  │  + Server ──calls──► ConsumerAPI (new trait)    [proposed]   │    │
+│  │  + ConsumerAPI ──calls──► Consumer              [proposed]   │    │
+│  │  - Server ──calls──► Consumer                   [removed]    │    │
+│  │                                                              │    │
+│  │  Consequences:                                               │    │
+│  │  • Consumer PageRank: 0.042 → 0.031 (▼ 26%)                │    │
+│  │  • ConsumerAPI becomes new hotspot (PageRank: 0.038)        │    │
+│  │  • Communities: 3 → 4 (ConsumerAPI creates boundary)        │    │
+│  │  • Coupling: Server↔Consumer reduced by 1 direct edge       │    │
+│  │  • No new cycles introduced ✓                               │    │
+│  └──────────────────────────────────────────────────────────────┘    │
+│                                                                      │
+│  ┌─ VARIANT B: "Merge Batch into Consumer" ────────────────────┐    │
+│  │  - BatchProcessor (removed as separate entity)   [proposed] │    │
+│  │  + Consumer ──impls──► MessageHandler             [proposed] │    │
+│  │                                                              │    │
+│  │  Consequences:                                               │    │
+│  │  • Consumer PageRank: 0.042 → 0.058 (▲ 38% — more central) │    │
+│  │  • k-core: Consumer moves from shell 6 → shell 8           │    │
+│  │  • ⚠ Risk: Consumer becomes god-object (out-degree: 15→23) │    │
+│  │  • Communities: 3 → 2 (batch absorbed into streaming)       │    │
+│  └──────────────────────────────────────────────────────────────┘    │
+│                                                                      │
+│  [Compare A vs B]  [Apply variant to map overlay]  [Ask LLM]        │
+│                                                                      │
+│  LLM: "Variant A decouples Server from Consumer, which is good      │
+│  for testability but adds a new abstraction layer. Variant B         │
+│  simplifies the dependency graph but risks making Consumer a         │
+│  god-object. I'd recommend A if you plan to add more consumer        │
+│  types, B if Consumer and BatchProcessor are always changed           │
+│  together."                                                          │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+**Trust rules:**
+- Base graph edges = solid lines, labeled "truth" (compiler-verified)
+- Variant edges = dotted lines, labeled "proposed"
+- Every proposed edge requires: `kind` (typed), `rationale` (justified), `variant_id` (scoped)
+- The LLM can suggest variants, but they are always marked as proposed, never merged into truth
+- The consequence engine computes metrics on the hypothetical graph — it does not guess
+
+---
+
+## 4. Workflow Catalog (40 Workflows — 28 Upgraded + 7 Compiler + 5 Focus/Variant)
 
 ### Original 28 workflows carry forward with these upgrades:
 
@@ -611,24 +886,103 @@ Why It Matters: Unsafe Rust is critical to understand in systems code.
 
 ---
 
+### 5 New Focus Lens + Variant Workflows:
+
+```
+────────────────────────────────────────
+#: 36
+Workflow: Focus on an entity (Semantic Focus Lens)
+Human Action/Prompt: Clicks any entity on any surface
+LLM Role: Silent — visual transition
+Parseltongue API Role: /focus?entity={id}&depth=2
+Journey Stage: ALL (this IS the navigation model)
+Visual/Textual: Visual (focus lens re-render)
+Required Data: PPR from selected node, BFS distance, global PageRank
+Why It Matters: This is the foundational UX. Every click triggers a
+  focus transition. Without it, the graph is noise.
+────────────────────────────────────────
+#: 37
+Workflow: Zoom between abstraction levels
+Human Action/Prompt: Clicks breadcrumb level or scrolls zoom control
+LLM Role: Silent at workspace/subsystem/entity. Active at flow level
+  ("This CFG has 3 branches...")
+Parseltongue API Role: /focus?entity={id}&level=workspace|subsystem|entity|flow
+Journey Stage: ALL
+Visual/Textual: Visual (level transition animation)
+Required Data: Containment hierarchy + PPR at each level
+Why It Matters: Zoom = changing abstraction, not scaling pixels. The
+  user moves between "big picture" and "inside one function" fluidly.
+────────────────────────────────────────
+#: 38
+Workflow: Create an architecture variant
+Human Action/Prompt: Clicks "New variant" → adds/removes edges via UI
+  or asks LLM to propose one
+LLM Role: Can propose a variant: "If you want to decouple Server from
+  Consumer, I'd suggest adding a ConsumerAPI trait between them"
+Parseltongue API Role: POST /variant { name, deltas: [{op, src, dst, kind, rationale}] }
+Journey Stage: POST-DIVE (architecture analysis)
+Visual/Textual: Visual (variant panel with delta list)
+Required Data: Base graph + proposed delta operations
+Why It Matters: Turns Parseltongue from "reading tool" to
+  "architectural reasoning tool." The moat feature.
+────────────────────────────────────────
+#: 39
+Workflow: Compare architecture variants
+Human Action/Prompt: Selects 2 variants, clicks "Compare"
+LLM Role: Narrates consequences — "Variant A reduces coupling but adds
+  a new abstraction. Variant B simplifies but creates a god-object."
+Parseltongue API Role: GET /variant/{id}/diff, GET /variant/compare?a={id}&b={id}
+Journey Stage: POST-DIVE
+Visual/Textual: Visual (side-by-side consequence tables) + Text (LLM)
+Required Data: Consequence engine: PageRank delta, SCC changes, k-core
+  delta, Leiden boundary changes, hotspot shifts
+Why It Matters: "Which architecture option is better?" answered with
+  data, not opinions. No other tool does this.
+────────────────────────────────────────
+#: 40
+Workflow: Apply variant overlay to map
+Human Action/Prompt: Toggles a variant on the architecture map
+LLM Role: Silent
+Parseltongue API Role: GET /communities?variant={id}&layout=true
+Journey Stage: POST-DIVE
+Visual/Textual: Visual (map with proposed edges shown as dotted lines,
+  removed edges shown as strikethrough, consequence badges on affected
+  entities)
+Required Data: Base layout + variant delta overlay
+Why It Matters: See the architectural change ON the map, not in a
+  table. Visual impact assessment.
+```
+
+---
+
 ## 5. Top 10 UX Flows (Re-Ranked for v2)
 
-1. **Architecture Overview → Community Zoom → Read** (same as v1, but better data)
+1. **Semantic Focus Lens → Architecture Overview → Community Zoom → Read** (Focus lens is now THE
+   navigation model. Every click triggers a focus transition. The architecture map is the first
+   focus context. This is not a feature — it is the product.)
 2. **Guided Tour** (upgraded with "Type System Tour" and "Ownership Tour")
 3. **Call Chain Explorer** (MAJOR upgrade — exact chains, error path branches)
 4. **Trait/Impl Browser with Dispatch Resolution** (NEW capability, killer Rust feature)
-5. **"What Should I Read Next?"** (same algorithm, better graph)
+5. **"What Should I Read Next?"** (same algorithm, better graph, now uses PPR-relative ranking
+   from the focus lens — suggestions are relative to WHERE you are, not globally)
 6. **Ownership & Borrow Visualizer** (REBUILT — compiler-verified, not syntactic)
-7. **"You Are Here" Navigator** (same)
+7. **"You Are Here" Navigator** (same — the focus lens subsumes this as the default state)
 8. **Control Flow Graph Visualizer** (NEW — no other tool has this)
 9. **"Explain This Module To Me"** (same, but LLM gets richer compiler context)
-10. **Reading History & Resume** (same)
+10. **Architecture Variant Explorer** (MOAT — compare architectural alternatives with computed
+    consequences. Not top-5 because it requires a trustworthy base graph and focus lens first.)
 
-**What moved up:** Call Chain Explorer (#8 → #3) because exact chains are transformative.
+**What moved up:** Focus Lens (new, #1) — it's the foundational UX, not a feature.
+Call Chain Explorer (#8 → #3) because exact chains are transformative.
 Trait/Impl Browser (#5 → #4) because dispatch resolution is a killer feature.
-Ownership Visualizer (was "Later" → #6) because Polonius makes it real, not approximate.
+Ownership Visualizer (was "Later" → #6) because Polonius makes it real.
 
-**What's new in top 10:** Control Flow Graph (#8) — unique capability no other tool provides.
+**What's new in top 10:** Semantic Focus Lens (#1), Architecture Variant Explorer (#10).
+
+**Priority order for the two new ideas:**
+1. Build the focus/zoom model first (it IS the navigation)
+2. Build variant overlays second (it IS the moat)
+3. Build "compare architecture options" views on top
 
 ---
 
@@ -715,7 +1069,7 @@ Rust source (.rs files)
 
 ---
 
-## 7. Visual System (12 Surfaces — 10 Upgraded + 2 New)
+## 7. Visual System (14 Surfaces — 10 Upgraded + 2 Compiler + 2 Foundational)
 
 Surfaces 1-10 from v1 carry forward. Two new surfaces:
 
@@ -745,6 +1099,37 @@ Color-coded: blue for shared (`&`), red for mutable (`&mut`), with overlap warni
 **Useful vs decorative:** Extremely useful for functions with borrow checker errors or complex
 lifetime patterns. Less useful for simple functions. Mitigation: Show a "complexity badge" on
 entities where Polonius detects >2 overlapping loans.
+
+---
+
+### Surface 13: Focus Lens Renderer (NEW — powers all surfaces)
+
+**What it shows:** Not a separate panel — this is the rendering model applied to every visual
+surface. When the user selects any entity, the renderer applies the focus lens: selected = full
+saturation, 1-hop = visible + ranked by PPR, 2-hop = faint, unrelated = ghosted, boundary nodes
+= exit portals.
+
+**When it appears:** Always. This is the default rendering behavior.
+
+**APIs:** `/focus?entity={id}&depth=2` returns `{ focus: {id, metrics}, ring_1: [{id, name, ppr_score, bfs_distance, edge_kind}], ring_2: [{id, name, ppr_score}], boundaries: [{id, name, community}], ghosted_count: int }`.
+
+**Useful vs decorative:** Definitionally useful — without it, every graph surface is an
+unreadable hairball. The focus lens is what makes the graph legible.
+
+### Surface 14: Variant Overlay Panel
+
+**What it shows:** A split or tabbed view showing the base graph alongside one or more variant
+overlays. Proposed edges are dotted lines. Removed edges are struck through. Affected entities show
+consequence badges (PageRank delta, k-core shift, new/broken cycles).
+
+**When it appears:** When the user creates or selects a variant from the Architecture Variant
+Explorer (Mode 17).
+
+**APIs:** `/variant/{id}/diff` returns `{ added_edges: [...], removed_edges: [...], changed_edges: [...], consequences: { pagerank_delta: [...], scc_changes: [...], kcore_delta: [...], community_changes: [...], hotspot_shifts: [...] } }`.
+
+**Useful vs decorative:** Extremely useful for architecture decision-making. Decorative if the user
+never makes architectural changes. Mitigation: This is a v1.3 feature — by then the user trusts
+the base graph and wants to explore alternatives.
 
 ---
 
@@ -798,6 +1183,91 @@ GET /entity/{id}/unsafe-analysis
               operations: [{kind: "raw_ptr_deref"|"ffi_call"|"union_access",
                             line, explanation}] }] }
   Source: MIR UnsafetyCheckResult. Precomputed. ~50-200 tokens.
+```
+
+### FOCUS LENS
+
+```
+GET /focus?entity={id}&depth=2
+  Returns: { focus: {id, name, metrics},
+             ring_1: [{id, name, ppr_score, bfs_distance, edge_kind,
+                        global_pagerank}],
+             ring_2: [{id, name, ppr_score, bfs_distance}],
+             boundaries: [{id, name, community_name, exit_edge_kind}],
+             ghosted_count: int,
+             zoom_level: "workspace"|"subsystem"|"entity"|"flow" }
+  Source: PPR from focus node, BFS distance, global PageRank, edge type
+  weights. Query-time PPR + precomputed PageRank. ~100-500 tokens.
+
+  Ranking within each ring:
+    1. ppr_score (local relevance — highest weight)
+    2. bfs_distance (structural proximity — tiebreaker)
+    3. global_pagerank (importance — second tiebreaker)
+    4. edge_kind weight: calls=1.0, impls=0.9, type_refs=0.7,
+       contains=0.5, public_boundary=0.8
+
+GET /focus?entity={id}&level=flow
+  Returns: { focus: {id, name},
+             cfg: { blocks: [...], edges: [...] },
+             borrows: { loans: [...], conflicts: [...] },
+             exit_boundaries: [{id, name, edge_kind}] }
+  The "flow level" — zooms INTO the entity's internal structure (CFG,
+  borrows) and treats callers/callees as boundary exits.
+```
+
+### VARIANT GRAPH OVERLAYS
+
+```
+POST /variant
+  Body: { name: "Add Interface Layer",
+          deltas: [
+            { op: "add_edge", src: "server::handle", dst: "consumer_api::process",
+              kind: "calls", rationale: "Decouple Server from Consumer" },
+            { op: "remove_edge", src: "server::handle", dst: "consumer::poll",
+              kind: "calls", rationale: "Replace direct call with interface" },
+            { op: "add_edge", src: "consumer_api::process", dst: "consumer::poll",
+              kind: "calls", rationale: "Interface delegates to impl" }
+          ] }
+  Returns: { variant_id, name, delta_count, status: "created" }
+
+GET /variant/{id}
+  Returns: { id, name, deltas: [...], created_at, status }
+
+GET /variant/{id}/diff
+  Returns: { added_edges: [{src, dst, kind, rationale}],
+             removed_edges: [{src, dst, kind, rationale}],
+             changed_edges: [{src, dst, old_kind, new_kind, rationale}],
+             consequences: {
+               pagerank_delta: [{entity, old, new, change_pct}],
+               scc_changes: { new_cycles: [...], broken_cycles: [...] },
+               kcore_delta: [{entity, old_shell, new_shell}],
+               community_changes: [{entity, old_community, new_community}],
+               hotspot_shifts: [{entity, old_rank, new_rank}],
+               public_boundary_changes: [{entity, old_visibility, new_exposure}]
+             } }
+  Source: Recompute Leiden, PageRank, k-core, SCC on base_graph + delta.
+  Cached per variant. ~500-2000 tokens.
+
+GET /variant/compare?a={id}&b={id}
+  Returns: { variant_a: {name, consequences_summary},
+             variant_b: {name, consequences_summary},
+             comparative: {
+               which_adds_more_coupling: "a"|"b",
+               which_creates_cycles: "a"|"b"|"neither",
+               which_changes_hotspots_more: "a"|"b",
+               which_splits_communities: "a"|"b"|"neither"
+             } }
+
+DELETE /variant/{id}
+  Removes a variant and its cached consequences.
+
+# Querying any existing API with a variant overlay:
+GET /communities?variant={id}&layout=true
+GET /hotspots?variant={id}&top=50
+GET /entity/{id}/context?variant={id}
+  All existing APIs accept an optional ?variant= parameter.
+  When present, they compute results on base_graph + variant_delta.
+  Proposed edges are tagged with { proposed: true, variant_id }.
 ```
 
 ### UPDATED ENDPOINTS
@@ -882,6 +1352,39 @@ Bad UX If Misused: Fully-qualified type names can be very long
 
 ---
 
+```
+────────────────────────────────────────
+Analysis: Focus-Relative Ranking (Semantic Focus Lens)
+Reading/Browsing Experience: Every visual surface. Determines what is
+  saturated, visible, faint, or ghosted at every zoom level.
+Compute Mode: Query-time (PPR is the bottleneck, ~10-50ms per focus change)
+Library: python-igraph (personalized_pagerank) + precomputed global PageRank
+Expected Data Shape: PPR vector from focus node + BFS distance + global
+  PageRank + edge type weights
+Bad UX If Misused: If PPR is too slow, the focus transition feels laggy.
+  Pre-cache PPR for the top-20 entities per community. For cold entities,
+  compute on click and show a 50ms transition animation to mask latency.
+  If ranking treats all edge types equally, type_ref edges drown out call
+  edges. Weight: calls=1.0, impls=0.9, public_boundary=0.8, type_refs=0.7,
+  contains=0.5.
+────────────────────────────────────────
+Analysis: Variant Consequence Engine (Graph Overlays)
+Reading/Browsing Experience: Architecture variant comparison, "what-if"
+  analysis, consequence tables, variant overlay on maps
+Compute Mode: On-demand (recompute when variant is created or modified)
+Library: python-igraph (Leiden, PageRank, SCC, k-core on modified graph)
+Expected Data Shape: Base graph + delta operations → modified graph →
+  recomputed metrics → diff against base metrics
+Bad UX If Misused: If consequence computation is slow (>5s), the variant
+  explorer feels broken. Mitigation: cache consequences per variant. Only
+  recompute when the variant is modified. For large graphs (>50K entities),
+  approximate PageRank delta by only recomputing in the affected subgraph.
+  CRITICAL: never show variant consequences as truth. Always label as
+  "projected" or "hypothetical."
+```
+
+---
+
 ## 10. LLM-Guided Reading Patterns (Updated)
 
 All 6 v1 patterns carry forward. The LLM now receives richer context:
@@ -941,6 +1444,41 @@ via a trait object — the compiler can't resolve it at compile time."
 
 ---
 
+### New Pattern 9: Architecture Advisor
+
+**Behavior:** When the user creates a variant or asks "what if I moved this?", the LLM receives
+the consequence diff and narrates the architectural trade-offs.
+
+```
+LLM: "Adding a ConsumerAPI trait between Server and Consumer would:
+- Reduce direct coupling (Server's out-degree drops from 8 to 7)
+- Create a new hotspot (ConsumerAPI becomes the 4th most central entity)
+- Split the 'Streaming Pipeline' community into two sub-communities
+
+Trade-off: better testability and flexibility, but one more abstraction
+to maintain. Worth it if you plan to add alternative consumer
+implementations. Not worth it if Consumer is the only implementation."
+```
+
+The LLM narrates **consequences**, not opinions. The data comes from the consequence engine.
+
+### New Pattern 10: Focus Context Narrator
+
+**Behavior:** When the focus lens transitions, the LLM receives the focus context (what's in
+ring 1, what's in ring 2, what's at the boundary) and generates a 1-sentence orientation.
+
+```
+LLM: "You're looking at Consumer::poll. Its most important neighbor is
+consumer_loop::run (calls it 3x). The boundary to the Storage community
+is through offset_tracker::advance. You've already read the caller —
+read the offset tracker next to understand how progress is persisted."
+```
+
+This combines the focus lens ranking with reading history to produce navigation guidance that
+is **relative to where you are**, not globally generic.
+
+---
+
 ## 11. Risks and Failure Modes (Updated)
 
 ### Eliminated risks:
@@ -993,6 +1531,49 @@ Mitigation: This is a feature, not a bug. The product thesis is "compiler truth
   "The best Rust code reading tool" > "a mediocre multi-language tool."
 ```
 
+```
+────────────────────────────────────────
+Risk: Focus lens feels like tunnel vision
+What Goes Wrong: User can only see the focused entity's neighborhood.
+  They lose awareness of the broader codebase.
+How It Manifests: User complains "I can't see the big picture anymore."
+Mitigation: Ghosted nodes are always visible and clickable. Breadcrumbs
+  show the containment hierarchy. A "zoom out" button (or Escape key)
+  immediately re-centers at the parent level. The lens controls salience,
+  not visibility — nothing is truly hidden, just dimmed.
+────────────────────────────────────────
+Risk: PPR latency breaks focus transitions
+What Goes Wrong: Computing PPR from a cold node takes >200ms. The focus
+  transition feels sluggish.
+How It Manifests: User clicks an entity and sees a lag before the
+  neighborhood renders.
+Mitigation: Pre-cache PPR for the top-20 entities per community (~80%
+  of clicks). For cold entities, show the entity + its 1-hop BFS neighbors
+  immediately (from precomputed edge list, <10ms), then replace with
+  PPR-ranked ordering when it arrives (~50ms later). The user sees
+  content instantly; ranking refines after a beat.
+────────────────────────────────────────
+Risk: Variant overlays become fiction
+What Goes Wrong: User (or LLM) creates variants with nonsensical edges.
+  The consequence engine dutifully computes metrics on garbage input.
+How It Manifests: User sees "removing all edges makes everything a
+  periphery node" — technically correct, useless.
+Mitigation: Variants must use typed edges (calls, impls, type_refs —
+  not "relates_to"). Each delta requires a rationale field. The UI shows
+  a "validity score" based on whether proposed edges connect entities that
+  are in the same or adjacent communities. LLM-proposed variants are
+  reviewed before creation. Clearly mark everything as "proposed."
+────────────────────────────────────────
+Risk: Too many variants create confusion
+What Goes Wrong: User creates 10 variants and can't remember what each
+  one represents.
+How It Manifests: Variant panel becomes a junk drawer.
+Mitigation: Limit to 5 active variants per workspace. Each variant has
+  a required name and description. Archive (don't delete) old variants.
+  Show a 1-line summary of each variant's key consequence on the list
+  view.
+```
+
 All v1 risks (too much text, fake visual novelty, stale snapshot, bad tours, overwhelming
 newcomers, LLM over-explaining, meaningless hotspots, slow LLM, reading pressure) remain
 unchanged.
@@ -1028,6 +1609,12 @@ compiler-verified accuracy."
 ├──────────────────────────────────────────────────────┼─────────────────────────┤
 │ Breadcrumb trail (containment chain)                 │ "You are here"          │
 ├──────────────────────────────────────────────────────┼─────────────────────────┤
+│ Semantic Focus Lens renderer (PPR + BFS + PageRank   │ THE navigation model.   │
+│ ranking, 1-hop visible, 2-hop faint, ghosted rest)   │ Every click triggers it.│
+├──────────────────────────────────────────────────────┼─────────────────────────┤
+│ 4-level zoom: workspace → subsystem → entity → flow │ Abstraction-level       │
+│                                                      │ navigation              │
+├──────────────────────────────────────────────────────┼─────────────────────────┤
 │ Neighborhood mini-map (ego network, PPR)             │ Spatial context         │
 ├──────────────────────────────────────────────────────┼─────────────────────────┤
 │ Search bar (RRF: FTS5 + trie + trigram)              │ Find things by name     │
@@ -1039,7 +1626,7 @@ compiler-verified accuracy."
 └──────────────────────────────────────────────────────┴─────────────────────────┘
 ```
 
-v1 endpoints: 12 (v1 original 10 + /resolve-dispatch + /entity/{id}/cfg)
+v1 endpoints: 14 (v1 original 10 + /resolve-dispatch + /entity/{id}/cfg + /focus + /focus?level=flow)
 
 ### v1.1 — "The App Guides Me" (same as v1 original)
 
@@ -1079,11 +1666,29 @@ User feels: "I finally understand ownership, control flow, and trait dispatch in
 v1.2 adds: 9 endpoints (/impls, /traits, /call-chain, /compare, /cycles, /dead-code,
 /core-periphery, /entity/{id}/borrows, /entity/{id}/dataflow, /entity/{id}/async-flow)
 
-### v1.3 — "I Can Understand Everything" (power features)
+### v1.3 — "I Can Reason About Architecture" (THE MOAT)
+
+User feels: "I can explore what-if scenarios and compare architectural options with real data."
 
 ```
 ┌──────────────────────────────────────────────────────┬─────────────────────────┐
 │                    What ships                        │   Experience enabled    │
+├──────────────────────────────────────────────────────┼─────────────────────────┤
+│ Variant Graph Overlays (create, diff, compare)       │ Architectural           │
+│                                                      │ what-if analysis        │
+├──────────────────────────────────────────────────────┼─────────────────────────┤
+│ Consequence Engine (PageRank delta, SCC changes,     │ Data-driven             │
+│ k-core delta, community boundary shifts, hotspot     │ architecture decisions  │
+│ changes)                                             │                         │
+├──────────────────────────────────────────────────────┼─────────────────────────┤
+│ Variant overlay on architecture map (dotted proposed │ Visual impact           │
+│ edges, strikethrough removed, consequence badges)    │ assessment              │
+├──────────────────────────────────────────────────────┼─────────────────────────┤
+│ LLM Architecture Advisor pattern (narrates trade-    │ Guided architectural    │
+│ offs from consequence data)                          │ reasoning               │
+├──────────────────────────────────────────────────────┼─────────────────────────┤
+│ ?variant= parameter on all existing APIs             │ Query any view in       │
+│                                                      │ hypothetical mode       │
 ├──────────────────────────────────────────────────────┼─────────────────────────┤
 │ Generic instantiation viewer                         │ Monomorphization        │
 │                                                      │ clarity                 │
@@ -1096,22 +1701,36 @@ v1.2 adds: 9 endpoints (/impls, /traits, /call-chain, /compare, /cycles, /dead-c
 ├──────────────────────────────────────────────────────┼─────────────────────────┤
 │ Dependency ladder (with type dependencies)           │ Module boundary         │
 │                                                      │ understanding           │
-├──────────────────────────────────────────────────────┼─────────────────────────┤
-│ Architecture simulation (mutate → diff → explain)    │ What-if analysis        │
 └──────────────────────────────────────────────────────┴─────────────────────────┘
 ```
+
+v1.3 adds: 8 endpoints (POST /variant, GET /variant/{id}, GET /variant/{id}/diff,
+GET /variant/compare, DELETE /variant/{id}, + ?variant= parameter on existing APIs,
+/entity/{id}/monomorphizations, /entity/{id}/unsafe-analysis)
 
 ---
 
 ## 13. Final Synthesis (Updated)
 
-The single best newcomer workflow: **Architecture Overview → Community Zoom → Read the Most
-Important Entity → Click a Call → See the Resolved Target → View CFG.** In 60 seconds, the user
-goes from "I have no idea what this codebase is" to reading the most critical function AND seeing
-its exact control flow graph with compiler-verified call targets. No other tool provides this path.
+The single best newcomer workflow: **Focus Lens → Architecture Overview → Community Zoom → Read
+the Most Important Entity → Click a Call → See the Resolved Target → View CFG.** In 60 seconds,
+the user goes from "I have no idea what this codebase is" to reading the most critical function
+AND seeing its exact control flow graph with compiler-verified call targets. The focus lens makes
+every step legible — the selected thing is bright, its neighborhood is visible, everything else
+fades. No other tool provides this path.
 
-The best visual workflow: **The architecture map with community zoom** — same as v1, but built on
-a graph with zero false edges.
+The core UX problem solved: **The Semantic Focus Lens.** You don't zoom the graph — you zoom the
+representation. Four levels of abstraction (workspace → subsystem → entity → flow), importance
+always relative to where you're standing (PPR → BFS → PageRank → edge semantics), boundary nodes
+as exit portals not clutter. This is not a feature. This is how the product navigates.
+
+The moat: **Variant Graph Overlays.** No other tool lets you create structured architectural
+alternatives as typed, justified deltas on a compiler-verified base graph, then compare their
+consequences (PageRank shifts, cycle creation, community splits, hotspot migration) side by side
+with an LLM narrating the trade-offs. This is the feature that makes Parseltongue irreplaceable.
+
+The best visual workflow: **The architecture map with focus lens and community zoom** — built on
+a graph with zero false edges, rendered with focus-relative salience.
 
 The best Rust-specific workflow: **Trait/Impl Browser with dispatch resolution.** Click a trait
 method call, see exactly which implementation the compiler chose, see all call sites grouped by
@@ -1120,20 +1739,26 @@ concrete type. No IDE, no tool, nothing else shows this.
 The best LLM-guided workflow: **The guided tour** — same as v1, but now the "Ownership Patterns
 Tour" is real (Polonius-verified), not syntactic.
 
-The most dangerous gimmick to avoid: **Showing CFG for simple functions.** A 3-line function
-doesn't need a control flow graph. Gate complex visualizations behind complexity thresholds.
+The most dangerous gimmick to avoid: **Variant overlays without trust constraints.** If the LLM
+can insert arbitrary edges with no structure, the system becomes fiction fast. Every proposed edge
+must be typed, variant-scoped, justified with rationale, and clearly marked as "proposed" — never
+"truth."
 
 The biggest constraint eliminated: **"Edge quality caps explanation depth."** No longer true. The
 compiler's edges ARE the truth. The only remaining uncertainty is dynamic dispatch, which is
 honestly labeled. Everything else is exact.
 
+**Priority order for the two foundational ideas:**
+1. Build the Semantic Focus Lens first — it IS the navigation
+2. Build Variant Graph Overlays second — it IS the moat
+3. Build "compare architecture options" views on top
+
 The one-sentence product thesis (updated):
 
 **Parseltongue is a reading environment that uses the Rust compiler's own graph — exact call
-targets, verified borrow scopes, real control flow — to turn a large Rust codebase into something
-that feels like an explorable, guided, structured book where every edge is true, every ownership
-annotation is compiler-verified, and a companion is ready to explain exactly what the borrow
-checker sees when you can't.**
+targets, verified borrow scopes, real control flow — viewed through a semantic focus lens that
+makes the local neighborhood legible and the rest fade away, with variant overlays that let you
+explore architectural what-ifs as structured, comparable hypotheticals on top of compiler truth.**
 
 ---
 
@@ -1168,7 +1793,104 @@ checker sees when you can't.**
 └──────────────────────────────────────────────────────────────┘
 ```
 
-## Appendix B: Indexing Time Budget
+## Appendix B: Semantic Focus Lens — Ranking Formula
+
+```
+┌────────────────────────────────────────────────────────────────┐
+│                    FOCUS-RELATIVE RANKING                       │
+├────────────────────────────────────────────────────────────────┤
+│                                                                │
+│  For a focus node F, each entity E gets a composite score:     │
+│                                                                │
+│  score(E) = w1 * PPR(F→E)                                     │
+│           + w2 * (1 / BFS_dist(F, E))                          │
+│           + w3 * GlobalPageRank(E)                              │
+│           + w4 * EdgeKindWeight(best_edge(F, E))               │
+│                                                                │
+│  Default weights:                                              │
+│    w1 = 0.50  (local relevance dominates)                      │
+│    w2 = 0.25  (proximity matters)                              │
+│    w3 = 0.15  (global importance is a tiebreaker)              │
+│    w4 = 0.10  (edge semantics refine)                          │
+│                                                                │
+│  Edge kind weights:                                            │
+│    calls          = 1.0                                        │
+│    impls          = 0.9                                        │
+│    public_boundary = 0.8                                       │
+│    type_refs      = 0.7                                        │
+│    contains       = 0.5                                        │
+│                                                                │
+│  Ring assignment:                                              │
+│    Ring 0 (focus): E == F                                       │
+│    Ring 1 (visible): BFS_dist ≤ 1 AND score > threshold_1      │
+│    Ring 2 (faint): BFS_dist ≤ 2 AND score > threshold_2        │
+│    Boundary: BFS_dist == max_depth AND crosses community       │
+│    Ghosted: everything else                                    │
+│                                                                │
+│  Max ring 1 size: 15 entities (ranked by score, truncated)     │
+│  Max ring 2 size: 30 entities (ranked by score, truncated)     │
+│                                                                │
+│  Performance:                                                  │
+│    PPR computation: ~10-50ms (igraph, sparse graph)             │
+│    BFS 2-hop: <5ms                                              │
+│    Total focus transition: <100ms target                        │
+│    Pre-cached for top-20 entities per community: <10ms          │
+└────────────────────────────────────────────────────────────────┘
+```
+
+## Appendix C: Variant Graph Overlay Schema
+
+```
+┌────────────────────────────────────────────────────────────────┐
+│                    VARIANT OVERLAY SCHEMA                       │
+├────────────────────────────────────────────────────────────────┤
+│                                                                │
+│  SQLite table: variants                                        │
+│  ──────────────────────────────                                │
+│  variant_id    TEXT PRIMARY KEY                                 │
+│  name          TEXT NOT NULL                                    │
+│  description   TEXT                                             │
+│  created_at    TIMESTAMP                                       │
+│  workspace_id  TEXT NOT NULL (FK → workspaces)                 │
+│                                                                │
+│  SQLite table: variant_deltas                                  │
+│  ──────────────────────────────                                │
+│  delta_id      INTEGER PRIMARY KEY                             │
+│  variant_id    TEXT NOT NULL (FK → variants)                   │
+│  op            TEXT NOT NULL ("add_edge"|"remove_edge"|         │
+│                               "change_edge_kind")              │
+│  src_entity    TEXT NOT NULL                                    │
+│  dst_entity    TEXT NOT NULL                                    │
+│  edge_kind     TEXT NOT NULL ("calls"|"impls"|"type_ref"|      │
+│                               "contains"|"public_boundary")    │
+│  old_edge_kind TEXT (only for change_edge_kind)                │
+│  rationale     TEXT NOT NULL                                    │
+│  proposed_by   TEXT ("human"|"llm")                             │
+│                                                                │
+│  SQLite table: variant_consequences (cached)                   │
+│  ──────────────────────────────────────────                    │
+│  variant_id    TEXT NOT NULL (FK → variants)                   │
+│  metric        TEXT NOT NULL ("pagerank"|"kcore"|"scc"|         │
+│                               "leiden"|"hotspot")              │
+│  entity_id     TEXT                                             │
+│  old_value     REAL                                             │
+│  new_value     REAL                                             │
+│  change_pct    REAL                                             │
+│  computed_at   TIMESTAMP                                       │
+│                                                                │
+│  Trust constraints (enforced at API level):                    │
+│  • op must be one of the 3 allowed operations                  │
+│  • edge_kind must be a known type (no "relates_to")            │
+│  • rationale must be non-empty                                 │
+│  • Max 5 active variants per workspace                         │
+│  • Max 20 deltas per variant                                   │
+│  • All proposed edges render as dotted lines, never solid      │
+│  • Base graph edges NEVER modified by variants                 │
+│                                                                │
+└────────────────────────────────────────────────────────────────┘
+```
+
+## Appendix D: Indexing Time Budget (unchanged from Appendix B)
 
 ```
 ┌────────────────────────────────────────────────────────────────┐
