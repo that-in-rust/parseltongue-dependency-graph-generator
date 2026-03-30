@@ -1,0 +1,2155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Parseltongue — Product Design Thesis</title>
+<style>
+/* ============================================
+   CSS RESET & BASE
+   ============================================ */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg-primary: #0d1117;
+  --bg-secondary: #161b22;
+  --bg-tertiary: #1c2128;
+  --bg-card: #21262d;
+  --border-primary: #30363d;
+  --border-secondary: #484f58;
+  --text-primary: #e6edf3;
+  --text-secondary: #8b949e;
+  --text-muted: #656d76;
+  --accent-blue: #58a6ff;
+  --accent-green: #3fb950;
+  --accent-purple: #bc8cff;
+  --accent-orange: #d29922;
+  --accent-red: #f85149;
+  --accent-cyan: #39d2c0;
+  --accent-pink: #f778ba;
+  --accent-yellow: #e3b341;
+  --glow-blue: rgba(88, 166, 255, 0.15);
+  --glow-green: rgba(63, 185, 80, 0.15);
+  --glow-purple: rgba(188, 140, 255, 0.15);
+  --font-mono: 'SF Mono', 'Cascadia Code', 'Fira Code', 'JetBrains Mono', Consolas, monospace;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+html {
+  scroll-behavior: smooth;
+  font-size: 16px;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.7;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ============================================
+   PROGRESS BAR
+   ============================================ */
+.progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple), var(--accent-cyan));
+  z-index: 1000;
+  transition: width 0.1s linear;
+  box-shadow: 0 0 10px var(--accent-blue);
+}
+
+/* ============================================
+   TABLE OF CONTENTS SIDEBAR
+   ============================================ */
+.toc-toggle {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 999;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  color: var(--text-primary);
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  transition: var(--transition);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+.toc-toggle:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--accent-blue);
+}
+
+.toc-sidebar {
+  position: fixed;
+  top: 0;
+  left: -320px;
+  width: 300px;
+  height: 100vh;
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border-primary);
+  z-index: 998;
+  transition: left var(--transition);
+  overflow-y: auto;
+  padding: 70px 20px 30px;
+  box-shadow: 4px 0 20px rgba(0,0,0,0.4);
+}
+.toc-sidebar.open {
+  left: 0;
+}
+.toc-sidebar h3 {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+.toc-sidebar a {
+  display: block;
+  color: var(--text-secondary);
+  text-decoration: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  transition: var(--transition);
+  border-left: 2px solid transparent;
+  margin-bottom: 2px;
+}
+.toc-sidebar a:hover {
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
+  border-left-color: var(--accent-blue);
+}
+.toc-sidebar a.active {
+  color: var(--accent-blue);
+  background: var(--glow-blue);
+  border-left-color: var(--accent-blue);
+}
+.toc-sidebar .layer-num {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  line-height: 24px;
+  text-align: center;
+  border-radius: 50%;
+  background: var(--bg-card);
+  color: var(--accent-blue);
+  font-size: 0.7rem;
+  font-weight: 700;
+  margin-right: 8px;
+  font-family: var(--font-mono);
+}
+.toc-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.5);
+  z-index: 997;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition);
+}
+.toc-overlay.visible {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* ============================================
+   MAIN CONTENT LAYOUT
+   ============================================ */
+.main-content {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 40px 24px 120px;
+}
+
+/* ============================================
+   HERO SECTION
+   ============================================ */
+.hero {
+  text-align: center;
+  padding: 80px 0 60px;
+  position: relative;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -100px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 600px;
+  height: 400px;
+  background: radial-gradient(ellipse, var(--glow-blue), transparent 70%);
+  opacity: 0.4;
+  pointer-events: none;
+}
+.hero-badge {
+  display: inline-block;
+  padding: 4px 14px;
+  border-radius: 20px;
+  background: var(--glow-blue);
+  border: 1px solid rgba(88, 166, 255, 0.3);
+  color: var(--accent-blue);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+  font-family: var(--font-mono);
+}
+.hero h1 {
+  font-size: clamp(2.2rem, 5vw, 3.6rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  margin-bottom: 16px;
+  background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-blue) 50%, var(--accent-purple) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero .subtitle {
+  font-size: 1.2rem;
+  color: var(--text-secondary);
+  max-width: 600px;
+  margin: 0 auto 30px;
+  line-height: 1.6;
+}
+.hero .tagline {
+  display: inline-block;
+  padding: 10px 24px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  color: var(--accent-green);
+}
+
+/* ============================================
+   LAYER SECTIONS
+   ============================================ */
+.layer-section {
+  margin-bottom: 24px;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  background: var(--bg-secondary);
+  overflow: hidden;
+  transition: border-color var(--transition);
+}
+.layer-section:hover {
+  border-color: var(--border-secondary);
+}
+
+.layer-header {
+  display: flex;
+  align-items: center;
+  padding: 20px 24px;
+  cursor: pointer;
+  user-select: none;
+  transition: background var(--transition);
+  gap: 16px;
+}
+.layer-header:hover {
+  background: var(--bg-tertiary);
+}
+
+.layer-number {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1rem;
+  font-family: var(--font-mono);
+}
+.layer-1 .layer-number { background: var(--glow-blue); color: var(--accent-blue); border: 1px solid rgba(88,166,255,0.3); }
+.layer-2 .layer-number { background: var(--glow-green); color: var(--accent-green); border: 1px solid rgba(63,185,80,0.3); }
+.layer-3 .layer-number { background: var(--glow-purple); color: var(--accent-purple); border: 1px solid rgba(188,140,255,0.3); }
+.layer-4 .layer-number { background: rgba(210,153,34,0.15); color: var(--accent-orange); border: 1px solid rgba(210,153,34,0.3); }
+.layer-5 .layer-number { background: rgba(57,210,192,0.15); color: var(--accent-cyan); border: 1px solid rgba(57,210,192,0.3); }
+.layer-6 .layer-number { background: rgba(247,120,186,0.15); color: var(--accent-pink); border: 1px solid rgba(247,120,186,0.3); }
+.layer-7 .layer-number { background: rgba(227,179,65,0.15); color: var(--accent-yellow); border: 1px solid rgba(227,179,65,0.3); }
+.layer-8 .layer-number { background: rgba(248,81,73,0.15); color: var(--accent-red); border: 1px solid rgba(248,81,73,0.3); }
+.layer-9 .layer-number { background: linear-gradient(135deg, var(--glow-blue), var(--glow-purple)); color: var(--accent-blue); border: 1px solid rgba(88,166,255,0.3); }
+
+.layer-title-group {
+  flex: 1;
+  min-width: 0;
+}
+.layer-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+.layer-subtitle {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.layer-chevron {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  transition: transform var(--transition);
+  font-size: 0.8rem;
+}
+.layer-section.open .layer-chevron {
+  transform: rotate(180deg);
+}
+
+.layer-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.layer-section.open .layer-body {
+  max-height: 15000px;
+}
+.layer-content {
+  padding: 0 24px 28px;
+  border-top: 1px solid var(--border-primary);
+}
+
+/* ============================================
+   ASCII DIAGRAM BLOCKS
+   ============================================ */
+.ascii-diagram {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin: 20px 0;
+  overflow-x: auto;
+  position: relative;
+}
+.ascii-diagram pre {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: var(--text-secondary);
+  white-space: pre;
+  margin: 0;
+}
+.ascii-diagram .label {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* Syntax colors for ASCII diagrams */
+.ascii-diagram .c-blue { color: var(--accent-blue); }
+.ascii-diagram .c-green { color: var(--accent-green); }
+.ascii-diagram .c-purple { color: var(--accent-purple); }
+.ascii-diagram .c-orange { color: var(--accent-orange); }
+.ascii-diagram .c-cyan { color: var(--accent-cyan); }
+.ascii-diagram .c-pink { color: var(--accent-pink); }
+.ascii-diagram .c-red { color: var(--accent-red); }
+.ascii-diagram .c-yellow { color: var(--accent-yellow); }
+.ascii-diagram .c-dim { color: var(--text-muted); }
+.ascii-diagram .c-bright { color: var(--text-primary); font-weight: 600; }
+.ascii-diagram .c-border { color: #484f58; }
+
+/* ============================================
+   METAPHOR BOX
+   ============================================ */
+.metaphor-box {
+  background: linear-gradient(135deg, var(--bg-tertiary), var(--bg-card));
+  border: 1px solid var(--border-primary);
+  border-left: 3px solid var(--accent-blue);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin: 20px 0;
+}
+.metaphor-box .metaphor-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent-blue);
+  font-weight: 700;
+  margin-bottom: 8px;
+  font-family: var(--font-mono);
+}
+.metaphor-box p {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+.metaphor-box strong {
+  color: var(--text-primary);
+}
+
+/* ============================================
+   KEY INSIGHT CALLOUT
+   ============================================ */
+.insight {
+  background: var(--glow-blue);
+  border: 1px solid rgba(88, 166, 255, 0.2);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  margin: 20px 0;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  position: relative;
+  padding-left: 48px;
+}
+.insight::before {
+  content: '!';
+  position: absolute;
+  left: 16px;
+  top: 16px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--accent-blue);
+  color: var(--bg-primary);
+  font-weight: 800;
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  text-align: center;
+}
+
+/* ============================================
+   FEATURE GRID
+   ============================================ */
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin: 20px 0;
+}
+.feature-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius);
+  padding: 18px;
+  transition: var(--transition);
+}
+.feature-card:hover {
+  border-color: var(--border-secondary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+}
+.feature-card .icon {
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+}
+.feature-card h4 {
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: var(--text-primary);
+}
+.feature-card p {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* ============================================
+   CORE LOOP ANIMATION
+   ============================================ */
+.core-loop-container {
+  display: flex;
+  justify-content: center;
+  margin: 24px 0;
+}
+
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 8px rgba(88,166,255,0.2); }
+  50% { box-shadow: 0 0 20px rgba(88,166,255,0.4); }
+}
+@keyframes cycleArrow {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+.loop-step {
+  background: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  text-align: center;
+  animation: pulseGlow 3s ease-in-out infinite;
+  min-width: 160px;
+}
+.loop-step.step-1 { animation-delay: 0s; border-color: rgba(88,166,255,0.4); }
+.loop-step.step-2 { animation-delay: 1s; border-color: rgba(63,185,80,0.4); }
+.loop-step.step-3 { animation-delay: 2s; border-color: rgba(188,140,255,0.4); }
+
+.loop-step h4 {
+  font-size: 0.9rem;
+  margin-bottom: 4px;
+}
+.loop-step p {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+.loop-arrow {
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 1.2rem;
+  animation: cycleArrow 2s ease-in-out infinite;
+}
+
+/* ============================================
+   ALGORITHM TABLE
+   ============================================ */
+.algo-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+}
+.algo-table th {
+  text-align: left;
+  padding: 12px 16px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border-primary);
+  font-family: var(--font-mono);
+}
+.algo-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border-primary);
+  font-size: 0.88rem;
+  vertical-align: top;
+  transition: background var(--transition);
+}
+.algo-table tr:hover td {
+  background: var(--bg-tertiary);
+}
+.algo-table .algo-name {
+  font-weight: 700;
+  color: var(--accent-cyan);
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+.algo-table .algo-metaphor {
+  color: var(--text-secondary);
+  font-style: italic;
+}
+.algo-table .algo-powers {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
+/* ============================================
+   WARNING/RISK CARDS
+   ============================================ */
+.risk-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
+  margin: 20px 0;
+}
+.risk-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius);
+  padding: 18px 18px 18px 22px;
+  position: relative;
+  overflow: hidden;
+  transition: var(--transition);
+}
+.risk-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+}
+.risk-card.amber::before { background: var(--accent-orange); }
+.risk-card.red::before { background: var(--accent-red); }
+.risk-card:hover {
+  border-color: var(--border-secondary);
+  transform: translateY(-1px);
+}
+.risk-card h4 {
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.risk-card h4 .risk-icon {
+  font-size: 0.8rem;
+}
+.risk-card .risk-problem {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+.risk-card .risk-fix {
+  font-size: 0.8rem;
+  color: var(--accent-green);
+  font-family: var(--font-mono);
+}
+
+/* ============================================
+   TIMELINE / ROADMAP
+   ============================================ */
+.roadmap {
+  position: relative;
+  margin: 30px 0;
+}
+.roadmap-track {
+  display: flex;
+  gap: 0;
+  position: relative;
+  overflow-x: auto;
+  padding-bottom: 16px;
+}
+.roadmap-phase {
+  flex: 1;
+  min-width: 250px;
+  position: relative;
+  padding: 0 12px;
+}
+.roadmap-phase::before {
+  content: '';
+  position: absolute;
+  top: 20px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--border-primary);
+}
+.roadmap-phase:first-child::before {
+  left: 50%;
+}
+.roadmap-phase:last-child::before {
+  right: 50%;
+}
+.roadmap-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  margin: 14px auto 16px;
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 0 12px;
+}
+.roadmap-phase:nth-child(1) .roadmap-dot { background: var(--accent-blue); box-shadow: 0 0 12px rgba(88,166,255,0.4); }
+.roadmap-phase:nth-child(2) .roadmap-dot { background: var(--accent-purple); box-shadow: 0 0 12px rgba(188,140,255,0.4); }
+.roadmap-phase:nth-child(3) .roadmap-dot { background: var(--accent-cyan); box-shadow: 0 0 12px rgba(57,210,192,0.4); }
+
+.roadmap-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius);
+  padding: 18px;
+}
+.roadmap-card h4 {
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.roadmap-card .phase-subtitle {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  font-style: italic;
+}
+.roadmap-card ul {
+  list-style: none;
+  padding: 0;
+}
+.roadmap-card li {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  padding: 3px 0;
+  padding-left: 16px;
+  position: relative;
+}
+.roadmap-card li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 10px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-muted);
+}
+
+/* ============================================
+   LLM COMPARISON
+   ============================================ */
+.llm-compare {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin: 20px 0;
+}
+.llm-example {
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.llm-example.good { border-color: rgba(63,185,80,0.3); }
+.llm-example.bad { border-color: rgba(248,81,73,0.3); }
+.llm-example-header {
+  padding: 10px 16px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-family: var(--font-mono);
+}
+.llm-example.good .llm-example-header { background: rgba(63,185,80,0.1); color: var(--accent-green); }
+.llm-example.bad .llm-example-header { background: rgba(248,81,73,0.1); color: var(--accent-red); }
+.llm-example-body {
+  padding: 14px 16px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  background: var(--bg-card);
+}
+
+/* ============================================
+   LENS GRID
+   ============================================ */
+.lens-section-title {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  margin: 24px 0 12px;
+  font-family: var(--font-mono);
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border-primary);
+}
+.lens-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.lens-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  transition: var(--transition);
+  cursor: default;
+}
+.lens-card:hover {
+  border-color: var(--border-secondary);
+  transform: translateY(-1px);
+}
+.lens-card .lens-num {
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  line-height: 22px;
+  text-align: center;
+  border-radius: 50%;
+  background: var(--bg-primary);
+  color: var(--accent-blue);
+  font-size: 0.7rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  margin-right: 8px;
+}
+.lens-card h5 {
+  display: inline;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+.lens-card p {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 6px;
+  line-height: 1.5;
+}
+
+/* ============================================
+   LLM PATTERNS
+   ============================================ */
+.pattern-list {
+  list-style: none;
+  margin: 16px 0;
+}
+.pattern-list li {
+  background: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius);
+  padding: 14px 18px;
+  margin-bottom: 8px;
+  transition: var(--transition);
+}
+.pattern-list li:hover {
+  border-color: var(--border-secondary);
+}
+.pattern-list .pattern-name {
+  font-weight: 700;
+  color: var(--accent-pink);
+  font-size: 0.88rem;
+  margin-right: 6px;
+}
+.pattern-list .pattern-desc {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+/* ============================================
+   THESIS CALLOUT
+   ============================================ */
+.thesis-callout {
+  margin: 40px 0 20px;
+  padding: 40px 36px;
+  background: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary));
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--radius-lg);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.thesis-callout::before {
+  content: '';
+  position: absolute;
+  top: -100px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 500px;
+  height: 300px;
+  background: radial-gradient(ellipse, rgba(88,166,255,0.08), transparent 70%);
+  pointer-events: none;
+}
+.thesis-callout blockquote {
+  font-size: 1.15rem;
+  line-height: 1.8;
+  color: var(--text-primary);
+  font-style: italic;
+  max-width: 700px;
+  margin: 0 auto 24px;
+  position: relative;
+}
+.thesis-callout .thesis-insight {
+  font-size: 1rem;
+  color: var(--accent-blue);
+  font-weight: 600;
+  font-style: normal;
+}
+.thesis-callout .thesis-workflow {
+  margin-top: 20px;
+  font-family: var(--font-mono);
+  font-size: 0.88rem;
+  color: var(--accent-green);
+}
+
+/* ============================================
+   EXPANDABLE / DETAILS
+   ============================================ */
+.expandable {
+  margin: 16px 0;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.expandable-trigger {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  cursor: pointer;
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  transition: var(--transition);
+  user-select: none;
+}
+.expandable-trigger:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+.expandable-trigger .exp-icon {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--accent-blue);
+  transition: transform var(--transition);
+  width: 16px;
+  text-align: center;
+}
+.expandable.open .expandable-trigger .exp-icon {
+  transform: rotate(90deg);
+}
+.expandable-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.expandable.open .expandable-body {
+  max-height: 5000px;
+}
+.expandable-content {
+  padding: 16px;
+  border-top: 1px solid var(--border-primary);
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+/* ============================================
+   SECTION PROSE
+   ============================================ */
+.prose {
+  margin: 16px 0;
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  line-height: 1.8;
+}
+.prose strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+.prose code {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  background: var(--bg-primary);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--accent-cyan);
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 768px) {
+  .main-content { padding: 20px 16px 80px; }
+  .hero { padding: 50px 0 40px; }
+  .llm-compare { grid-template-columns: 1fr; }
+  .risk-grid { grid-template-columns: 1fr; }
+  .feature-grid { grid-template-columns: 1fr; }
+  .core-loop-container { flex-direction: column; align-items: center; }
+  .loop-arrow { transform: rotate(90deg); padding: 4px 0; }
+  .roadmap-track { flex-direction: column; gap: 12px; }
+  .roadmap-phase::before { display: none; }
+  .roadmap-phase { min-width: auto; }
+  .toc-sidebar { width: 260px; }
+  .layer-content { padding: 0 16px 20px; }
+  .lens-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- Progress Bar -->
+<div class="progress-bar" id="progressBar"></div>
+
+<!-- Table of Contents Toggle -->
+<button class="toc-toggle" id="tocToggle" aria-label="Toggle table of contents">
+  &#9776;
+</button>
+
+<!-- TOC Overlay -->
+<div class="toc-overlay" id="tocOverlay"></div>
+
+<!-- TOC Sidebar -->
+<nav class="toc-sidebar" id="tocSidebar">
+  <h3>Table of Contents</h3>
+  <a href="#layer1"><span class="layer-num">1</span> The Big Idea</a>
+  <a href="#layer2"><span class="layer-num">2</span> The Core Loop</a>
+  <a href="#layer3"><span class="layer-num">3</span> Three System Layers</a>
+  <a href="#layer4"><span class="layer-num">4</span> 12 Reading Modes</a>
+  <a href="#layer5"><span class="layer-num">5</span> Graph Algorithms</a>
+  <a href="#layer6"><span class="layer-num">6</span> LLM Personality</a>
+  <a href="#layer7"><span class="layer-num">7</span> Build Roadmap</a>
+  <a href="#layer8"><span class="layer-num">8</span> Biggest Risks</a>
+  <a href="#layer9"><span class="layer-num">9</span> The Thesis</a>
+</nav>
+
+<!-- ============================================
+     MAIN CONTENT
+     ============================================ -->
+<main class="main-content">
+
+  <!-- HERO -->
+  <header class="hero">
+    <div class="hero-badge">Product Design Thesis</div>
+    <h1>Parseltongue</h1>
+    <p class="subtitle">
+      A reading environment for code. Not another IDE.
+      Graph-powered navigation. LLM-assisted comprehension.
+      Like having a local guide in a foreign city.
+    </p>
+    <div class="tagline">"Grep returns files. Parseltongue returns understanding."</div>
+  </header>
+
+  <!-- ============================================
+       LAYER 1: THE BIG IDEA
+       ============================================ -->
+  <section class="layer-section layer-1 open" id="layer1">
+    <div class="layer-header" onclick="toggleLayer(this)">
+      <div class="layer-number">1</div>
+      <div class="layer-title-group">
+        <div class="layer-title">The Big Idea</div>
+        <div class="layer-subtitle">ELI5 -- what Parseltongue is and why it exists</div>
+      </div>
+      <div class="layer-chevron">&#9660;</div>
+    </div>
+    <div class="layer-body">
+      <div class="layer-content">
+
+        <div class="metaphor-box">
+          <div class="metaphor-label">The Metaphor</div>
+          <p>
+            <strong>Parseltongue is Google Maps, but for code.</strong><br><br>
+            Right now, getting a new codebase is like being dropped in a foreign city with no map --
+            just a phone book (the file tree). You flip through 400 entries hoping to find something relevant.
+          </p>
+        </div>
+
+        <div class="ascii-diagram">
+          <span class="label">before vs after</span>
+<pre>
+<span class="c-dim">  WITHOUT PARSELTONGUE              WITH PARSELTONGUE</span>
+
+<span class="c-red">  You, lost in a city:</span>              <span class="c-green">You, with a map:</span>
+
+<span class="c-border">  +-----------------+</span>              <span class="c-border">+-----------------------+</span>
+<span class="c-border">  |</span> <span class="c-dim">main.rs          </span><span class="c-border">|</span>              <span class="c-border">|</span> <span class="c-blue">  [Auth]---[API]</span>       <span class="c-border">|</span>
+<span class="c-border">  |</span> <span class="c-dim">config.rs        </span><span class="c-border">|</span>              <span class="c-border">|</span> <span class="c-blue">    |    /   |</span>         <span class="c-border">|</span>
+<span class="c-border">  |</span> <span class="c-dim">utils.rs         </span><span class="c-border">|</span>              <span class="c-border">|</span> <span class="c-blue">  [DB]--[Models]</span>       <span class="c-border">|</span>
+<span class="c-border">  |</span> <span class="c-dim">handler.rs       </span><span class="c-border">|</span>              <span class="c-border">|</span>                       <span class="c-border">|</span>
+<span class="c-border">  |</span> <span class="c-dim">service.rs       </span><span class="c-border">|</span>   <span class="c-bright">vs</span>        <span class="c-border">|</span>  <span class="c-green">You are here: [API]</span>   <span class="c-border">|</span>
+<span class="c-border">  |</span> <span class="c-dim">mod.rs           </span><span class="c-border">|</span>              <span class="c-border">|</span>  <span class="c-cyan">"handles POST /users"</span> <span class="c-border">|</span>
+<span class="c-border">  |</span> <span class="c-dim">types.rs         </span><span class="c-border">|</span>              <span class="c-border">|</span>  <span class="c-purple">Read next: [Auth]</span>     <span class="c-border">|</span>
+<span class="c-border">  |</span> <span class="c-dim">... 392 more     </span><span class="c-border">|</span>              <span class="c-border">+-----------------------+</span>
+<span class="c-border">  +-----------------+</span>
+<span class="c-red">     "where do I even start?"</span>       <span class="c-green">   "I see the whole picture"</span>
+</pre>
+        </div>
+
+        <p class="prose">
+          Parseltongue gives you four things that a file tree never will:
+        </p>
+
+        <div class="feature-grid">
+          <div class="feature-card">
+            <div class="icon">&#127758;</div>
+            <h4>Satellite View</h4>
+            <p>Architecture map showing 8-15 "neighborhoods" (community clusters) so you see the shape of the whole system.</p>
+          </div>
+          <div class="feature-card">
+            <div class="icon">&#128270;</div>
+            <h4>Street-Level View</h4>
+            <p>Source code with clickable links to neighbors -- callers, callees, trait implementations.</p>
+          </div>
+          <div class="feature-card">
+            <div class="icon">&#129489;&#127891;</div>
+            <h4>Local Guide</h4>
+            <p>An LLM that sits beside you and explains what you're looking at. 2-3 sentences, not a lecture.</p>
+          </div>
+          <div class="feature-card">
+            <div class="icon">&#128214;</div>
+            <h4>Travel Journal</h4>
+            <p>Reading history that remembers where you've been, suggests where to go next, and lets you resume.</p>
+          </div>
+        </div>
+
+        <div class="insight">
+          <strong>The key insight:</strong> The app is for READING code, not writing it.
+          Like a Kindle for codebases -- not an IDE.
+        </div>
+
+        <div class="expandable" onclick="toggleExpandable(this)">
+          <div class="expandable-trigger">
+            <span class="exp-icon">&#9654;</span>
+            <span>Why "reading" is the underserved use case</span>
+          </div>
+          <div class="expandable-body">
+            <div class="expandable-content">
+              IDEs are built for <strong>writing</strong> code. They optimize for autocomplete, refactoring, debugging.
+              But most engineering time is spent <strong>reading and understanding</strong> code someone else wrote.
+              Studies show developers spend 58-70% of their time reading code, yet no tool is purpose-built for that.
+              Parseltongue fills that gap: it treats a codebase as a structured book to be explored, not a file system to be edited.
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================
+       LAYER 2: THE CORE LOOP
+       ============================================ -->
+  <section class="layer-section layer-2" id="layer2">
+    <div class="layer-header" onclick="toggleLayer(this)">
+      <div class="layer-number">2</div>
+      <div class="layer-title-group">
+        <div class="layer-title">The Core Loop</div>
+        <div class="layer-subtitle">Orient -- Comprehend -- Navigate, on repeat</div>
+      </div>
+      <div class="layer-chevron">&#9660;</div>
+    </div>
+    <div class="layer-body">
+      <div class="layer-content">
+
+        <p class="prose">
+          Every interaction follows the same three-step micro-loop. Think of exploring a city:
+          you check the map, look around the neighborhood, then decide which street to take.
+        </p>
+
+        <!-- Animated Core Loop -->
+        <div class="core-loop-container">
+          <div class="loop-step step-1">
+            <h4 style="color: var(--accent-blue);">ORIENT</h4>
+            <p>"Where am I?<br>What's nearby?"</p>
+          </div>
+          <div class="loop-arrow">&#10230;</div>
+          <div class="loop-step step-2">
+            <h4 style="color: var(--accent-green);">COMPREHEND</h4>
+            <p>"What does this<br>code do?"</p>
+          </div>
+          <div class="loop-arrow">&#10230;</div>
+          <div class="loop-step step-3">
+            <h4 style="color: var(--accent-purple);">NAVIGATE</h4>
+            <p>"Where should I<br>go next?"</p>
+          </div>
+        </div>
+
+        <div class="ascii-diagram">
+          <span class="label">the reading loop</span>
+<pre>
+<span class="c-blue">  ┌─────────────────┐</span>
+<span class="c-blue">  │     ORIENT       │</span>  <span class="c-dim">"Where am I? What's nearby?"</span>
+<span class="c-blue">  │     (Graph)      │</span>  <span class="c-dim">Architecture map, breadcrumbs, mini-map</span>
+<span class="c-blue">  └────────┬────────┘</span>
+<span class="c-dim">           │</span>
+<span class="c-dim">           ▼</span>
+<span class="c-green">  ┌─────────────────┐</span>
+<span class="c-green">  │   COMPREHEND     │</span>  <span class="c-dim">"What does this code do?"</span>
+<span class="c-green">  │    (Source)      │</span>  <span class="c-dim">Source pane with LLM annotations</span>
+<span class="c-green">  └────────┬────────┘</span>
+<span class="c-dim">           │</span>
+<span class="c-dim">           ▼</span>
+<span class="c-purple">  ┌─────────────────┐</span>
+<span class="c-purple">  │    NAVIGATE      │</span>  <span class="c-dim">"Where should I go next?"</span>
+<span class="c-purple">  │     (Links)      │</span>  <span class="c-dim">Clickable chips, suggestions, tours</span>
+<span class="c-purple">  └────────┬────────┘</span>
+<span class="c-dim">           │</span>
+<span class="c-dim">           └──────────────────────┐</span>
+<span class="c-dim">                                  │</span>
+<span class="c-blue">  ┌─────────────────┐</span>             <span class="c-dim">│</span>
+<span class="c-blue">  │     ORIENT       │◀────────────┘</span>
+<span class="c-blue">  └─────────────────┘</span>  <span class="c-dim">land somewhere new, repeat</span>
+</pre>
+        </div>
+
+        <div class="metaphor-box">
+          <div class="metaphor-label">The Pattern</div>
+          <p>
+            <strong>Land somewhere, understand the neighborhood, decide where to go next.</strong>
+            This is how humans naturally explore unfamiliar territory.
+            Every screen in Parseltongue supports at least one step of this loop.
+          </p>
+        </div>
+
+        <div class="expandable" onclick="toggleExpandable(this)">
+          <div class="expandable-trigger">
+            <span class="exp-icon">&#9654;</span>
+            <span>The killer 30-second workflow in action</span>
+          </div>
+          <div class="expandable-body">
+            <div class="expandable-content">
+              <div class="ascii-diagram">
+<pre>
+<span class="c-dim">  SECOND 0-5:</span>   <span class="c-bright">Architecture Overview</span>
+<span class="c-border">  ┌──────────────────────────────────────┐</span>
+<span class="c-border">  │</span> <span class="c-blue"> [Auth] </span><span class="c-dim">───</span><span class="c-green"> [API] </span><span class="c-dim">───</span><span class="c-purple"> [Stream] </span>    <span class="c-border">│</span>
+<span class="c-border">  │</span> <span class="c-dim">   │         │          │</span>        <span class="c-border">│</span>
+<span class="c-border">  │</span> <span class="c-orange"> [Users]</span><span class="c-dim">──</span><span class="c-cyan"> [Models]</span><span class="c-dim">──</span><span class="c-pink"> [Queue] </span>   <span class="c-border">│</span>
+<span class="c-border">  └──────────────────────────────────────┘</span>
+<span class="c-dim">    "I see 6 subsystems. API looks central."</span>
+
+<span class="c-dim">  SECOND 5-15:</span>  <span class="c-bright">Click [API] cluster, zoom in</span>
+<span class="c-border">  ┌──────────────────────────────────────┐</span>
+<span class="c-border">  │</span> <span class="c-green">  API Module (PageRank sorted):</span>       <span class="c-border">│</span>
+<span class="c-border">  │</span> <span class="c-bright">  1. handle_request()</span>  <span class="c-yellow">★ hotspot</span>     <span class="c-border">│</span>
+<span class="c-border">  │</span> <span class="c-dim">  2. validate_input()</span>                <span class="c-border">│</span>
+<span class="c-border">  │</span> <span class="c-dim">  3. build_response()</span>                <span class="c-border">│</span>
+<span class="c-border">  │</span> <span class="c-dim">  4. route_dispatch()</span>                <span class="c-border">│</span>
+<span class="c-border">  └──────────────────────────────────────┘</span>
+<span class="c-dim">    "handle_request is most important."</span>
+
+<span class="c-dim">  SECOND 15-30:</span> <span class="c-bright">Read source + LLM explains</span>
+<span class="c-border">  ┌──────────────────────────────────────┐</span>
+<span class="c-border">  │</span> <span class="c-purple">  fn handle_request(req: Request)</span>    <span class="c-border">│</span>
+<span class="c-border">  │</span> <span class="c-dim">    -> validates -> routes -> responds</span><span class="c-border">│</span>
+<span class="c-border">  │</span>                                      <span class="c-border">│</span>
+<span class="c-border">  │</span>  <span class="c-cyan">LLM: "Entry point for all HTTP</span>      <span class="c-border">│</span>
+<span class="c-border">  │</span>  <span class="c-cyan">requests. Dispatches to 4 route</span>     <span class="c-border">│</span>
+<span class="c-border">  │</span>  <span class="c-cyan">handlers. Read validate_input next."</span><span class="c-border">│</span>
+<span class="c-border">  └──────────────────────────────────────┘</span>
+<span class="c-green">    From "no idea" to "reading the most</span>
+<span class="c-green">    critical function" in 30 seconds.</span>
+</pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================
+       LAYER 3: THREE SYSTEM LAYERS
+       ============================================ -->
+  <section class="layer-section layer-3" id="layer3">
+    <div class="layer-header" onclick="toggleLayer(this)">
+      <div class="layer-number">3</div>
+      <div class="layer-title-group">
+        <div class="layer-title">The Three Layers of the System</div>
+        <div class="layer-subtitle">Human layer -- LLM layer -- Engine layer</div>
+      </div>
+      <div class="layer-chevron">&#9660;</div>
+    </div>
+    <div class="layer-body">
+      <div class="layer-content">
+
+        <p class="prose">
+          The system is a three-layer sandwich. The top layer is what you see and click.
+          The middle layer is the LLM that explains things. The bottom layer is the database and algorithms.
+        </p>
+
+        <div class="ascii-diagram">
+          <span class="label">system architecture</span>
+<pre>
+<span class="c-blue">  ┌─────────────────────────────────────────────────┐</span>
+<span class="c-blue">  │  LAYER 1: HUMAN</span> <span class="c-dim">(70% visual, 30% LLM)</span>            <span class="c-blue">│</span>
+<span class="c-blue">  │</span>                                                   <span class="c-blue">│</span>
+<span class="c-blue">  │</span>  <span class="c-border">┌──────────┐</span> <span class="c-border">┌──────────┐</span> <span class="c-border">┌────────┐</span> <span class="c-border">┌───────┐</span>  <span class="c-blue">│</span>
+<span class="c-blue">  │</span>  <span class="c-border">│</span> <span class="c-bright">Click on</span> <span class="c-border">│</span> <span class="c-border">│</span> <span class="c-bright"> Search </span> <span class="c-border">│</span> <span class="c-border">│</span> <span class="c-bright">Right-</span> <span class="c-border">│</span> <span class="c-border">│</span> <span class="c-bright">Chat </span> <span class="c-border">│</span>  <span class="c-blue">│</span>
+<span class="c-blue">  │</span>  <span class="c-border">│</span> <span class="c-bright">  Map   </span> <span class="c-border">│</span> <span class="c-border">│</span> <span class="c-bright">  Bar   </span> <span class="c-border">│</span> <span class="c-border">│</span> <span class="c-bright">Click </span> <span class="c-border">│</span> <span class="c-border">│</span> <span class="c-bright">Panel</span> <span class="c-border">│</span>  <span class="c-blue">│</span>
+<span class="c-blue">  │</span>  <span class="c-border">└──────────┘</span> <span class="c-border">└──────────┘</span> <span class="c-border">└────────┘</span> <span class="c-border">└───────┘</span>  <span class="c-blue">│</span>
+<span class="c-blue">  ├─────────────────────────────────────────────────┤</span>
+<span class="c-green">  │  LAYER 2: LLM</span> <span class="c-dim">(the reading companion)</span>             <span class="c-green">│</span>
+<span class="c-green">  │</span>                                                   <span class="c-green">│</span>
+<span class="c-green">  │</span>  <span class="c-border">┌──────────┐</span> <span class="c-border">┌──────────┐</span> <span class="c-border">┌────────┐</span> <span class="c-border">┌───────┐</span>  <span class="c-green">│</span>
+<span class="c-green">  │</span>  <span class="c-border">│</span> <span class="c-bright"> Silent </span> <span class="c-border">│</span> <span class="c-border">│</span> <span class="c-bright">Reactive</span> <span class="c-border">│</span> <span class="c-border">│</span> <span class="c-bright"> Tour </span> <span class="c-border">│</span> <span class="c-border">│</span> <span class="c-bright">Conf-</span> <span class="c-border">│</span>  <span class="c-green">│</span>
+<span class="c-green">  │</span>  <span class="c-border">│</span> <span class="c-bright">Annotat.</span> <span class="c-border">│</span> <span class="c-border">│</span> <span class="c-bright">Explain </span> <span class="c-border">│</span> <span class="c-border">│</span> <span class="c-bright">Plnner</span> <span class="c-border">│</span> <span class="c-border">│</span> <span class="c-bright">usion</span> <span class="c-border">│</span>  <span class="c-green">│</span>
+<span class="c-green">  │</span>  <span class="c-border">└──────────┘</span> <span class="c-border">└──────────┘</span> <span class="c-border">└────────┘</span> <span class="c-border">└───────┘</span>  <span class="c-green">│</span>
+<span class="c-green">  ├─────────────────────────────────────────────────┤</span>
+<span class="c-purple">  │  LAYER 3: APIs + Graph Engine</span>                    <span class="c-purple">│</span>
+<span class="c-purple">  │</span>                                                   <span class="c-purple">│</span>
+<span class="c-purple">  │</span>  <span class="c-border">┌──────────┐</span> <span class="c-border">┌──────────┐</span> <span class="c-border">┌────────┐</span> <span class="c-border">┌───────┐</span>  <span class="c-purple">│</span>
+<span class="c-purple">  │</span>  <span class="c-border">│</span> <span class="c-bright"> SQLite </span> <span class="c-border">│</span> <span class="c-border">│</span> <span class="c-bright"> Python </span> <span class="c-border">│</span> <span class="c-border">│</span> <span class="c-bright"> Graph</span> <span class="c-border">│</span> <span class="c-border">│</span> <span class="c-bright">Sourc</span> <span class="c-border">│</span>  <span class="c-purple">│</span>
+<span class="c-purple">  │</span>  <span class="c-border">│</span> <span class="c-bright"> Store  </span> <span class="c-border">│</span> <span class="c-border">│</span> <span class="c-bright">Metrics</span> <span class="c-border">│</span> <span class="c-border">│</span> <span class="c-bright">Algos</span> <span class="c-border">│</span> <span class="c-border">│</span> <span class="c-bright"> Disk</span> <span class="c-border">│</span>  <span class="c-purple">│</span>
+<span class="c-purple">  │</span>  <span class="c-border">└──────────┘</span> <span class="c-border">└──────────┘</span> <span class="c-border">└────────┘</span> <span class="c-border">└───────┘</span>  <span class="c-purple">│</span>
+<span class="c-purple">  └─────────────────────────────────────────────────┘</span>
+</pre>
+        </div>
+
+        <div class="insight">
+          <strong>Critical rule:</strong> The LLM never blocks navigation. Source code appears instantly (~100ms).
+          The LLM explanation arrives asynchronously (~2s). You never wait for AI to start reading.
+        </div>
+
+        <div class="expandable" onclick="toggleExpandable(this)">
+          <div class="expandable-trigger">
+            <span class="exp-icon">&#9654;</span>
+            <span>How the layers talk to each other</span>
+          </div>
+          <div class="expandable-body">
+            <div class="expandable-content">
+              <div class="ascii-diagram">
+<pre>
+<span class="c-bright">  User clicks [Auth] on the map</span>
+<span class="c-dim">          │</span>
+<span class="c-dim">          ▼</span>
+<span class="c-blue">  ┌─────────────────────────────────────┐</span>
+<span class="c-blue">  │  HUMAN LAYER                        │</span>
+<span class="c-blue">  │  "Show me the Auth module"          │</span>
+<span class="c-blue">  └──────────┬──────────────────────────┘</span>
+<span class="c-dim">             │</span>
+<span class="c-dim">    ┌────────┴────────┐</span>
+<span class="c-dim">    │                 │</span>
+<span class="c-dim">    ▼</span> <span class="c-green">instant</span>         <span class="c-dim">▼</span> <span class="c-orange">async (~2s)</span>
+<span class="c-purple">  ┌────────────┐</span>    <span class="c-green">┌────────────┐</span>
+<span class="c-purple">  │  ENGINE:   │</span>    <span class="c-green">│  LLM:      │</span>
+<span class="c-purple">  │  fetch     │</span>    <span class="c-green">│  explain   │</span>
+<span class="c-purple">  │  source    │</span>    <span class="c-green">│  Auth      │</span>
+<span class="c-purple">  │  + edges   │</span>    <span class="c-green">│  module    │</span>
+<span class="c-purple">  └─────┬──────┘</span>    <span class="c-green">└─────┬──────┘</span>
+<span class="c-dim">        │                   │</span>
+<span class="c-dim">        ▼</span> <span class="c-bright">~100ms</span>           <span class="c-dim">▼</span> <span class="c-bright">~2000ms</span>
+<span class="c-blue">  ┌────────────┐</span>    <span class="c-blue">┌────────────┐</span>
+<span class="c-blue">  │  Source    │</span>    <span class="c-blue">│  LLM panel │</span>
+<span class="c-blue">  │  appears   │</span>    <span class="c-blue">│  fills in  │</span>
+<span class="c-blue">  │  NOW       │</span>    <span class="c-blue">│  later     │</span>
+<span class="c-blue">  └────────────┘</span>    <span class="c-blue">└────────────┘</span>
+</pre>
+              </div>
+              <p class="prose">
+                This split is intentional. The source code is the primary reading surface.
+                The LLM is a <strong>companion</strong>, not a gatekeeper. You can read perfectly well
+                without it -- but it enriches the experience when it arrives.
+              </p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================
+       LAYER 4: 12 READING MODES
+       ============================================ -->
+  <section class="layer-section layer-4" id="layer4">
+    <div class="layer-header" onclick="toggleLayer(this)">
+      <div class="layer-number">4</div>
+      <div class="layer-title-group">
+        <div class="layer-title">The 12 Reading Modes</div>
+        <div class="layer-subtitle">Different lenses for different questions about the code</div>
+      </div>
+      <div class="layer-chevron">&#9660;</div>
+    </div>
+    <div class="layer-body">
+      <div class="layer-content">
+
+        <p class="prose">
+          Think of these as <strong>12 different lenses</strong> you can put on the codebase.
+          Each one answers a different kind of question.
+        </p>
+
+        <div class="ascii-diagram">
+          <span class="label">the lens metaphor</span>
+<pre>
+<span class="c-dim">         same codebase, different lens</span>
+
+<span class="c-border">  ┌───────────────────────────────────────────────┐</span>
+<span class="c-border">  │</span>                                               <span class="c-border">│</span>
+<span class="c-border">  │</span>    <span class="c-blue">[Orientation]</span>  <span class="c-green">[Deep Reading]</span>  <span class="c-purple">[Navigation]</span><span class="c-border">│</span>
+<span class="c-border">  │</span>     <span class="c-blue">3 lenses</span>       <span class="c-green">4 lenses</span>       <span class="c-purple">3 lenses</span>   <span class="c-border">│</span>
+<span class="c-border">  │</span>                                               <span class="c-border">│</span>
+<span class="c-border">  │</span>                <span class="c-orange">[Compare/History]</span>              <span class="c-border">│</span>
+<span class="c-border">  │</span>                   <span class="c-orange">2 lenses</span>                    <span class="c-border">│</span>
+<span class="c-border">  │</span>                                               <span class="c-border">│</span>
+<span class="c-border">  │</span>           <span class="c-dim">= 12 ways to look at code</span>          <span class="c-border">│</span>
+<span class="c-border">  └───────────────────────────────────────────────┘</span>
+</pre>
+        </div>
+
+        <!-- Orientation -->
+        <div class="lens-section-title">Orientation Lenses -- "Where am I?"</div>
+        <div class="lens-grid">
+          <div class="lens-card">
+            <span class="lens-num">1</span>
+            <h5>Architecture Overview</h5>
+            <p>Satellite view of the whole codebase as 8-15 community clusters. The first thing you see.</p>
+          </div>
+          <div class="lens-card">
+            <span class="lens-num">2</span>
+            <h5>"You Are Here"</h5>
+            <p>Breadcrumb trail + neighborhood graph showing exactly where you are right now.</p>
+          </div>
+          <div class="lens-card">
+            <span class="lens-num">3</span>
+            <h5>Hotspot Heatmap</h5>
+            <p>Heat overlay showing structural importance via PageRank + in-degree + k-core.</p>
+          </div>
+        </div>
+
+        <!-- Deep Reading -->
+        <div class="lens-section-title">Deep Reading Lenses -- "What does this do?"</div>
+        <div class="lens-grid">
+          <div class="lens-card">
+            <span class="lens-num">4</span>
+            <h5>Module Deep Read</h5>
+            <p>Sorted entity list + source code + mini-map for one module at a time.</p>
+          </div>
+          <div class="lens-card">
+            <span class="lens-num">5</span>
+            <h5>Call Chain Explorer</h5>
+            <p>Vertical waterfall showing execution flow, 5 hops deep.</p>
+          </div>
+          <div class="lens-card">
+            <span class="lens-num">6</span>
+            <h5>Trait / Impl Browser</h5>
+            <p>Split view connecting abstract traits to their concrete implementations.</p>
+          </div>
+          <div class="lens-card">
+            <span class="lens-num">7</span>
+            <h5>Ownership Visualizer</h5>
+            <p>Color-coded ownership/borrowing annotations. Syntactic only, honest about limits.</p>
+          </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="lens-section-title">Navigation Lenses -- "Where should I go next?"</div>
+        <div class="lens-grid">
+          <div class="lens-card">
+            <span class="lens-num">8</span>
+            <h5>Guided Tour</h5>
+            <p>Numbered chapter list generated by LLM from graph structure. With checkmarks for progress.</p>
+          </div>
+          <div class="lens-card">
+            <span class="lens-num">9</span>
+            <h5>"What to Read Next?"</h5>
+            <p>Personalized PageRank suggestions filtered by your reading history.</p>
+          </div>
+          <div class="lens-card">
+            <span class="lens-num">10</span>
+            <h5>Dependency Ladder</h5>
+            <p>Upstream/downstream tree centered on the entity you're currently viewing.</p>
+          </div>
+        </div>
+
+        <!-- Comparison -->
+        <div class="lens-section-title">Compare & History -- "How do these relate?"</div>
+        <div class="lens-grid">
+          <div class="lens-card">
+            <span class="lens-num">11</span>
+            <h5>Side-by-Side Comparison</h5>
+            <p>Structural diff of two entities: shared callers, unique traits, coupling.</p>
+          </div>
+          <div class="lens-card">
+            <span class="lens-num">12</span>
+            <h5>Reading History & Bookmarks</h5>
+            <p>Timeline + resume + coverage overlay showing what you've explored.</p>
+          </div>
+        </div>
+
+        <div class="expandable" onclick="toggleExpandable(this)">
+          <div class="expandable-trigger">
+            <span class="exp-icon">&#9654;</span>
+            <span>How the lenses map to the core loop</span>
+          </div>
+          <div class="expandable-body">
+            <div class="expandable-content">
+              <div class="ascii-diagram">
+<pre>
+<span class="c-blue">  ORIENT</span>            <span class="c-green">COMPREHEND</span>         <span class="c-purple">NAVIGATE</span>
+<span class="c-blue">  ──────</span>            <span class="c-green">──────────</span>         <span class="c-purple">────────</span>
+<span class="c-blue">  #1 Architecture</span>   <span class="c-green">#4 Module Read</span>    <span class="c-purple">#8  Guided Tour</span>
+<span class="c-blue">  #2 You Are Here</span>   <span class="c-green">#5 Call Chain</span>     <span class="c-purple">#9  Read Next?</span>
+<span class="c-blue">  #3 Heatmap</span>        <span class="c-green">#6 Trait/Impl</span>     <span class="c-purple">#10 Dep. Ladder</span>
+<span class="c-dim">                    </span> <span class="c-green">#7 Ownership</span>
+
+<span class="c-orange">  COMPARE</span>
+<span class="c-orange">  ───────</span>
+<span class="c-orange">  #11 Side-by-Side</span>
+<span class="c-orange">  #12 History</span>
+</pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================
+       LAYER 5: GRAPH ALGORITHMS
+       ============================================ -->
+  <section class="layer-section layer-5" id="layer5">
+    <div class="layer-header" onclick="toggleLayer(this)">
+      <div class="layer-number">5</div>
+      <div class="layer-title-group">
+        <div class="layer-title">The Graph Algorithms</div>
+        <div class="layer-subtitle">10 algorithms explained like you're 5</div>
+      </div>
+      <div class="layer-chevron">&#9660;</div>
+    </div>
+    <div class="layer-body">
+      <div class="layer-content">
+
+        <p class="prose">
+          Each algorithm does one job. Here is what it does and <strong>why Parseltongue needs it</strong>,
+          explained with real-world metaphors.
+        </p>
+
+        <table class="algo-table">
+          <thead>
+            <tr>
+              <th>Algorithm</th>
+              <th>ELI5 Metaphor</th>
+              <th>Powers</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="algo-name">Leiden</td>
+              <td class="algo-metaphor">"Finding friend groups at a party" -- who talks to whom most</td>
+              <td class="algo-powers">Community clusters on the architecture map</td>
+            </tr>
+            <tr>
+              <td class="algo-name">PageRank</td>
+              <td class="algo-metaphor">"Who's the most popular kid" -- importance by who links to you</td>
+              <td class="algo-powers">Sorting entities by importance, hotspot detection</td>
+            </tr>
+            <tr>
+              <td class="algo-name">PPR</td>
+              <td class="algo-metaphor">"Who's important TO ME right now" -- importance relative to where I stand</td>
+              <td class="algo-powers">"What to read next?" suggestions</td>
+            </tr>
+            <tr>
+              <td class="algo-name">BFS</td>
+              <td class="algo-metaphor">"Ripples in a pond" -- explore outward from a drop, capped at 5 hops / 50 nodes</td>
+              <td class="algo-powers">Call chains, blast radius, neighborhoods</td>
+            </tr>
+            <tr>
+              <td class="algo-name">k-core</td>
+              <td class="algo-metaphor">"Peeling an onion" -- remove outer layers to find the dense core</td>
+              <td class="algo-powers">Core vs periphery overlay</td>
+            </tr>
+            <tr>
+              <td class="algo-name">SCC</td>
+              <td class="algo-metaphor">"Finding circular highways" -- groups where A&#8594;B&#8594;C&#8594;A</td>
+              <td class="algo-powers">Cycle detection (filter trivial size=1)</td>
+            </tr>
+            <tr>
+              <td class="algo-name">RRF</td>
+              <td class="algo-metaphor">"Asking 3 friends and combining their answers" -- fusion of FTS5 + trie + trigram</td>
+              <td class="algo-powers">Search results ranking</td>
+            </tr>
+            <tr>
+              <td class="algo-name">In/Out Degree</td>
+              <td class="algo-metaphor">"Counting incoming/outgoing phone calls"</td>
+              <td class="algo-powers">Fan-in/fan-out badges on source code</td>
+            </tr>
+            <tr>
+              <td class="algo-name">Betweenness</td>
+              <td class="algo-metaphor">"Finding the bridge everyone must cross"</td>
+              <td class="algo-powers">Bridge entity highlighting (precomputed)</td>
+            </tr>
+            <tr>
+              <td class="algo-name">Ego Network</td>
+              <td class="algo-metaphor">"Your immediate circle of friends" -- 1-hop neighbors around you</td>
+              <td class="algo-powers">Neighborhood mini-map, LLM context</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="expandable" onclick="toggleExpandable(this)">
+          <div class="expandable-trigger">
+            <span class="exp-icon">&#9654;</span>
+            <span>Visual: how Leiden finds communities</span>
+          </div>
+          <div class="expandable-body">
+            <div class="expandable-content">
+              <div class="ascii-diagram">
+<pre>
+<span class="c-dim">  BEFORE: a tangled mess of connections</span>
+
+    <span class="c-bright">A</span> <span class="c-dim">---</span> <span class="c-bright">B</span> <span class="c-dim">---</span> <span class="c-bright">C</span>     <span class="c-bright">G</span> <span class="c-dim">---</span> <span class="c-bright">H</span>
+    <span class="c-dim">|</span>   <span class="c-dim">/</span>       <span class="c-dim">|</span>     <span class="c-dim">|</span>   <span class="c-dim">/</span>
+    <span class="c-bright">D</span> <span class="c-dim">-</span>    <span class="c-dim">---</span> <span class="c-bright">E</span> <span class="c-dim">---</span> <span class="c-bright">F</span> <span class="c-dim">---</span> <span class="c-bright">I</span>
+
+<span class="c-dim">  AFTER LEIDEN: "oh, there are 2 friend groups!"</span>
+
+  <span class="c-blue">  ┌─────────────┐</span>     <span class="c-green">┌─────────┐</span>
+  <span class="c-blue">  │ A ─── B ─ C │</span>     <span class="c-green">│ G ── H  │</span>
+  <span class="c-blue">  │ |   /     | │</span><span class="c-dim">─────</span><span class="c-green">│ |  /    │</span>
+  <span class="c-blue">  │ D ─    ─ E │</span>     <span class="c-green">│ F ── I  │</span>
+  <span class="c-blue">  └─────────────┘</span>     <span class="c-green">└─────────┘</span>
+  <span class="c-blue">   "Auth cluster"</span>     <span class="c-green">"API cluster"</span>
+
+<span class="c-dim">  The thin line between clusters = the connection</span>
+<span class="c-dim">  point. Few cross-cluster edges = good modularity.</span>
+</pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="expandable" onclick="toggleExpandable(this)">
+          <div class="expandable-trigger">
+            <span class="exp-icon">&#9654;</span>
+            <span>Visual: how BFS creates a blast radius</span>
+          </div>
+          <div class="expandable-body">
+            <div class="expandable-content">
+              <div class="ascii-diagram">
+<pre>
+<span class="c-dim">  "If I change handle_request, what gets affected?"</span>
+<span class="c-dim">   BFS radiates outward, hop by hop:</span>
+
+<span class="c-dim">                  hop 0 (you changed this)</span>
+<span class="c-dim">                    │</span>
+<span class="c-red">               ┌────┴────┐</span>
+<span class="c-red">               │ handle_ │</span>
+<span class="c-red">               │ request │</span>
+<span class="c-red">               └─┬───┬───┘</span>
+<span class="c-dim">            hop 1 │   │ hop 1</span>
+<span class="c-orange">          ┌───────┘   └───────┐</span>
+<span class="c-orange">     ┌────┴────┐         ┌────┴────┐</span>
+<span class="c-orange">     │validate_│         │  route_ │</span>
+<span class="c-orange">     │ input   │         │dispatch │</span>
+<span class="c-orange">     └────┬────┘         └────┬────┘</span>
+<span class="c-dim">     hop 2│                   │hop 2</span>
+<span class="c-yellow">     ┌────┴────┐         ┌────┴────┐</span>
+<span class="c-yellow">     │ parse_  │         │  auth_  │</span>
+<span class="c-yellow">     │ headers │         │ check   │</span>
+<span class="c-yellow">     └─────────┘         └─────────┘</span>
+
+<span class="c-dim">  Red = ground zero. Orange = 1 hop. Yellow = 2 hops.</span>
+<span class="c-dim">  Capped at 5 hops or 50 nodes, whichever comes first.</span>
+</pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="expandable" onclick="toggleExpandable(this)">
+          <div class="expandable-trigger">
+            <span class="exp-icon">&#9654;</span>
+            <span>Visual: how PPR powers "read next" suggestions</span>
+          </div>
+          <div class="expandable-body">
+            <div class="expandable-content">
+              <div class="ascii-diagram">
+<pre>
+<span class="c-dim">  Regular PageRank says:</span>
+<span class="c-dim">    "main() is the most important function overall"</span>
+
+<span class="c-dim">  Personalized PageRank (PPR) says:</span>
+<span class="c-dim">    "Given that YOU are reading Consumer::poll right</span>
+<span class="c-dim">     now, the most relevant next thing is..."</span>
+
+<span class="c-bright">  You are here:</span> <span class="c-blue">Consumer::poll</span>
+<span class="c-dim">                   │</span>
+<span class="c-dim">     PPR radiates importance from YOUR position:</span>
+<span class="c-dim">                   │</span>
+<span class="c-dim">         ┌─────────┼─────────┐</span>
+<span class="c-dim">         ▼         ▼         ▼</span>
+<span class="c-green">  ConsumerGroup  MessageBuf  TopicMeta</span>
+<span class="c-green">  ::rebalance    ::flush     ::partitions</span>
+<span class="c-green">    score: 0.8    score: 0.5  score: 0.3</span>
+
+<span class="c-cyan">  Suggestion: "Read ConsumerGroup::rebalance</span>
+<span class="c-cyan">  next -- it coordinates the consumer you</span>
+<span class="c-cyan">  just read, and it has 8 callers."</span>
+</pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================
+       LAYER 6: THE LLM's PERSONALITY
+       ============================================ -->
+  <section class="layer-section layer-6" id="layer6">
+    <div class="layer-header" onclick="toggleLayer(this)">
+      <div class="layer-number">6</div>
+      <div class="layer-title-group">
+        <div class="layer-title">The LLM's Personality</div>
+        <div class="layer-subtitle">Not a chatbot. A senior engineer sitting next to you.</div>
+      </div>
+      <div class="layer-chevron">&#9660;</div>
+    </div>
+    <div class="layer-body">
+      <div class="layer-content">
+
+        <p class="prose">
+          The LLM is a <strong>reading companion</strong>, not a search engine.
+          It behaves like a senior engineer who's already read the codebase and is
+          sitting next to you, pointing things out.
+        </p>
+
+        <div class="ascii-diagram">
+          <span class="label">the personality</span>
+<pre>
+<span class="c-border">  ┌─────────────────────────────────────────┐</span>
+<span class="c-border">  │</span>                                         <span class="c-border">│</span>
+<span class="c-border">  │</span>       <span class="c-bright">NOT THIS:</span>          <span class="c-bright">THIS:</span>          <span class="c-border">│</span>
+<span class="c-border">  │</span>                                         <span class="c-border">│</span>
+<span class="c-border">  │</span>   <span class="c-red">A lecturer at</span>      <span class="c-green">A colleague who</span>   <span class="c-border">│</span>
+<span class="c-border">  │</span>   <span class="c-red">a podium giving</span>    <span class="c-green">leans over and</span>    <span class="c-border">│</span>
+<span class="c-border">  │</span>   <span class="c-red">a 30-min talk</span>      <span class="c-green">says "look at</span>    <span class="c-border">│</span>
+<span class="c-border">  │</span>   <span class="c-red">you didn't ask</span>     <span class="c-green">line 156, that's</span>  <span class="c-border">│</span>
+<span class="c-border">  │</span>   <span class="c-red">for</span>                <span class="c-green">the key part"</span>     <span class="c-border">│</span>
+<span class="c-border">  │</span>                                         <span class="c-border">│</span>
+<span class="c-border">  └─────────────────────────────────────────┘</span>
+</pre>
+        </div>
+
+        <div class="llm-compare">
+          <div class="llm-example good">
+            <div class="llm-example-header">Good -- 2-3 sentences, specific, graph-aware</div>
+            <div class="llm-example-body">
+              "This function handles both single and batch modes because it's called from two places -- the consumer loop and the batch flusher. Notice the <code>match</code> on line 156."
+            </div>
+          </div>
+          <div class="llm-example bad">
+            <div class="llm-example-header">Bad -- 500 words, generic, lecture-style</div>
+            <div class="llm-example-body">
+              "This function is responsible for processing messages in a streaming pipeline. In Rust, streaming is typically implemented using the Stream trait which provides an asynchronous iterator pattern. The poll_next method..."
+            </div>
+          </div>
+        </div>
+
+        <div class="insight">
+          <strong>The 150-word rule:</strong> Automatic explanations are capped at 150 words.
+          The user must explicitly ask for more. Brevity is respect for attention.
+        </div>
+
+        <div class="expandable" onclick="toggleExpandable(this)">
+          <div class="expandable-trigger">
+            <span class="exp-icon">&#9654;</span>
+            <span>The 6 LLM behavior patterns</span>
+          </div>
+          <div class="expandable-body">
+            <div class="expandable-content">
+              <ol class="pattern-list">
+                <li>
+                  <span class="pattern-name">Narrated Companion</span>
+                  <span class="pattern-desc">-- Auto-explains on navigation. 2-3 sentences: why it exists + what to notice. Triggers when you click to a new entity.</span>
+                </li>
+                <li>
+                  <span class="pattern-name">Codebase Tutor</span>
+                  <span class="pattern-desc">-- "The streaming module has 3 key concepts. Let's start with MessageEnvelope..." Structured learning on request.</span>
+                </li>
+                <li>
+                  <span class="pattern-name">Confusion Resolver</span>
+                  <span class="pattern-desc">-- Explains THIS specific <code>Pin&lt;Box&lt;dyn Future&gt;&gt;</code>, not a generic Rust tutorial. Context-specific help.</span>
+                </li>
+                <li>
+                  <span class="pattern-name">"Ask Before Dump"</span>
+                  <span class="pattern-desc">-- Broad question? Ask which part. "Message delivery has 3 stages. Which one?" Never dumps everything at once.</span>
+                </li>
+                <li>
+                  <span class="pattern-name">Next-Best-Reading</span>
+                  <span class="pattern-desc">-- "You just read Consumer::poll. Read ConsumerGroup::rebalance next because..." Graph-informed navigation aid.</span>
+                </li>
+                <li>
+                  <span class="pattern-name">Compare Two Things</span>
+                  <span class="pattern-desc">-- Structural diff with graph data: "ConsumerGroup has 8 callers vs TopicConsumer's 2." Numbers, not opinions.</span>
+                </li>
+              </ol>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================
+       LAYER 7: THE BUILD ROADMAP
+       ============================================ -->
+  <section class="layer-section layer-7" id="layer7">
+    <div class="layer-header" onclick="toggleLayer(this)">
+      <div class="layer-number">7</div>
+      <div class="layer-title-group">
+        <div class="layer-title">The Build Roadmap</div>
+        <div class="layer-subtitle">Three phases from MVP to full experience</div>
+      </div>
+      <div class="layer-chevron">&#9660;</div>
+    </div>
+    <div class="layer-body">
+      <div class="layer-content">
+
+        <p class="prose">
+          Three versions, each delivering a complete, usable product.
+          Each version answers a harder question.
+        </p>
+
+        <div class="roadmap">
+          <div class="roadmap-track">
+            <!-- Phase 1 -->
+            <div class="roadmap-phase">
+              <div class="roadmap-dot"></div>
+              <div class="roadmap-card">
+                <h4 style="color: var(--accent-blue);">v1.0</h4>
+                <div class="phase-subtitle">"I can browse this codebase"</div>
+                <ul>
+                  <li>Tauri app shell with drag-and-drop</li>
+                  <li>Tree-sitter entity + edge extraction</li>
+                  <li>SQLite schema</li>
+                  <li>Architecture overview map (Leiden)</li>
+                  <li>Community zoom with PageRank sort</li>
+                  <li>Source pane with caller/callee chips</li>
+                  <li>Breadcrumb trail</li>
+                  <li>Neighborhood mini-map (ego, PPR)</li>
+                  <li>Search bar (RRF: FTS5 + trie + trigram)</li>
+                  <li>Hotspot overlay toggle</li>
+                </ul>
+              </div>
+            </div>
+            <!-- Phase 2 -->
+            <div class="roadmap-phase">
+              <div class="roadmap-dot"></div>
+              <div class="roadmap-card">
+                <h4 style="color: var(--accent-purple);">v1.1</h4>
+                <div class="phase-subtitle">"The app guides me"</div>
+                <ul>
+                  <li>LLM companion panel</li>
+                  <li>Guided tour generation</li>
+                  <li>"What to read next?" suggestions</li>
+                  <li>Reading history + coverage overlay</li>
+                  <li>Resume from last session</li>
+                  <li>Bookmarks and pins</li>
+                </ul>
+              </div>
+            </div>
+            <!-- Phase 3 -->
+            <div class="roadmap-phase">
+              <div class="roadmap-dot"></div>
+              <div class="roadmap-card">
+                <h4 style="color: var(--accent-cyan);">v1.2</h4>
+                <div class="phase-subtitle">"I understand Rust patterns"</div>
+                <ul>
+                  <li>Trait/impl browser</li>
+                  <li>Call chain explorer</li>
+                  <li>Side-by-side comparison</li>
+                  <li>Cycle detection, dead code dimming</li>
+                  <li>k-core overlay, dependency ladder</li>
+                  <li>Confusion resolver LLM pattern</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="expandable" onclick="toggleExpandable(this)">
+          <div class="expandable-trigger">
+            <span class="exp-icon">&#9654;</span>
+            <span>The progression visualized as user capability</span>
+          </div>
+          <div class="expandable-body">
+            <div class="expandable-content">
+              <div class="ascii-diagram">
+<pre>
+<span class="c-dim">  User capability over versions:</span>
+
+<span class="c-dim">  v1.0</span>  <span class="c-blue">|################</span>..................|
+       <span class="c-dim">"I can find things and read them"</span>
+
+<span class="c-dim">  v1.1</span>  <span class="c-blue">|################</span><span class="c-purple">########</span>..........|
+       <span class="c-dim">"The app helps me decide what to</span>
+       <span class="c-dim"> read and remembers my progress"</span>
+
+<span class="c-dim">  v1.2</span>  <span class="c-blue">|################</span><span class="c-purple">########</span><span class="c-cyan">########</span>..|
+       <span class="c-dim">"I understand complex Rust patterns</span>
+       <span class="c-dim"> and can compare code structures"</span>
+
+<span class="c-dim">  Each version is shippable and useful on its own.</span>
+<span class="c-dim">  No version depends on the next to feel complete.</span>
+</pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================
+       LAYER 8: THE BIGGEST RISKS
+       ============================================ -->
+  <section class="layer-section layer-8" id="layer8">
+    <div class="layer-header" onclick="toggleLayer(this)">
+      <div class="layer-number">8</div>
+      <div class="layer-title-group">
+        <div class="layer-title">The Biggest Risks</div>
+        <div class="layer-subtitle">9 failure modes and how to prevent each one</div>
+      </div>
+      <div class="layer-chevron">&#9660;</div>
+    </div>
+    <div class="layer-body">
+      <div class="layer-content">
+
+        <p class="prose">
+          Every product has ways it can fail. These are the 9 most dangerous ones,
+          each with a specific mitigation built into the design.
+        </p>
+
+        <div class="risk-grid">
+          <div class="risk-card red">
+            <h4><span class="risk-icon">&#9888;</span> "Wall of Text"</h4>
+            <p class="risk-problem">LLM talks too much. User ignores the companion panel entirely.</p>
+            <p class="risk-fix">Fix: 150-word hard cap on auto-explanations</p>
+          </div>
+          <div class="risk-card red">
+            <h4><span class="risk-icon">&#9888;</span> "Fake Map"</h4>
+            <p class="risk-problem">Leiden communities don't match real subsystems. Map misleads instead of helps.</p>
+            <p class="risk-fix">Fix: modularity &gt; 0.3 gate, fallback to folder tree</p>
+          </div>
+          <div class="risk-card amber">
+            <h4><span class="risk-icon">&#9888;</span> "Stale Graph"</h4>
+            <p class="risk-problem">Code changed but graph didn't update. User reads outdated structure.</p>
+            <p class="risk-fix">Fix: file hash check + "stale" badge + one-click re-index</p>
+          </div>
+          <div class="risk-card amber">
+            <h4><span class="risk-icon">&#9888;</span> "Wrong Path"</h4>
+            <p class="risk-problem">Tree-sitter picks wrong call target. Edges point to the wrong function.</p>
+            <p class="risk-fix">Fix: dashed lines for ambiguous edges, "3 possible targets" tooltip</p>
+          </div>
+          <div class="risk-card amber">
+            <h4><span class="risk-icon">&#9888;</span> "Boring Tour"</h4>
+            <p class="risk-problem">Tour starts with utility functions. User gets bored before reaching the good parts.</p>
+            <p class="risk-fix">Fix: PageRank-prioritized entry points</p>
+          </div>
+          <div class="risk-card red">
+            <h4><span class="risk-icon">&#9888;</span> "Info Overload"</h4>
+            <p class="risk-problem">500 nodes on first open. User is overwhelmed and closes the app.</p>
+            <p class="risk-fix">Fix: community-level default (8-15 clusters), zoom is opt-in</p>
+          </div>
+          <div class="risk-card amber">
+            <h4><span class="risk-icon">&#9888;</span> "Meaningless Hotspot"</h4>
+            <p class="risk-problem">Logging module shows as #1 because everything calls it. Misleading signal.</p>
+            <p class="risk-fix">Fix: exclude infrastructure entities from ranking</p>
+          </div>
+          <div class="risk-card red">
+            <h4><span class="risk-icon">&#9888;</span> "Slow Navigation"</h4>
+            <p class="risk-problem">Every click waits for LLM. Navigation feels sluggish and frustrating.</p>
+            <p class="risk-fix">Fix: async LLM, source renders instantly (~100ms)</p>
+          </div>
+          <div class="risk-card amber">
+            <h4><span class="risk-icon">&#9888;</span> "Reading Anxiety"</h4>
+            <p class="risk-problem">"15% complete" feels overwhelming. User feels they'll never finish.</p>
+            <p class="risk-fix">Fix: frame as coverage ("explored 3 key subsystems") not completion</p>
+          </div>
+        </div>
+
+        <div class="expandable" onclick="toggleExpandable(this)">
+          <div class="expandable-trigger">
+            <span class="exp-icon">&#9654;</span>
+            <span>Why "Fake Map" is the most dangerous risk</span>
+          </div>
+          <div class="expandable-body">
+            <div class="expandable-content">
+              <div class="ascii-diagram">
+<pre>
+<span class="c-dim">  If Leiden produces bad clusters:</span>
+
+<span class="c-red">  ┌────────────────────┐  ┌─────────────────┐</span>
+<span class="c-red">  │ "Auth cluster"     │  │ "Data cluster"  │</span>
+<span class="c-red">  │                    │  │                 │</span>
+<span class="c-red">  │  login()           │  │  validate()     │</span>
+<span class="c-red">  │  parse_csv()  (?!) │  │  hash_pwd() (?!)│</span>
+<span class="c-red">  │  encrypt()         │  │  read_file()    │</span>
+<span class="c-red">  └────────────────────┘  └─────────────────┘</span>
+<span class="c-red">   parse_csv in Auth?        hash_pwd in Data?</span>
+<span class="c-red">   The map lies. Trust collapses.</span>
+
+<span class="c-green">  The fix: check modularity score.</span>
+<span class="c-green">  If modularity &lt; 0.3, the communities</span>
+<span class="c-green">  are noise. Fall back to the folder tree</span>
+<span class="c-green">  (which is always honest).</span>
+</pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================
+       LAYER 9: THE THESIS
+       ============================================ -->
+  <section class="layer-section layer-9" id="layer9">
+    <div class="layer-header" onclick="toggleLayer(this)">
+      <div class="layer-number">9</div>
+      <div class="layer-title-group">
+        <div class="layer-title">The One-Sentence Thesis</div>
+        <div class="layer-subtitle">The fundamental insight behind everything</div>
+      </div>
+      <div class="layer-chevron">&#9660;</div>
+    </div>
+    <div class="layer-body">
+      <div class="layer-content">
+
+        <div class="thesis-callout">
+          <blockquote>
+            "Parseltongue is a reading environment that uses graph structure to turn a large codebase
+            into something that feels like an explorable, guided, structured book -- where every page
+            has context, every concept has neighbors, and a companion is ready to explain exactly what
+            you need when you need it."
+          </blockquote>
+
+          <p class="thesis-insight">
+            A search tool answers questions. A reading companion helps you FORM questions.
+          </p>
+          <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 12px; max-width: 600px; margin-left: auto; margin-right: auto;">
+            It shows you things you didn't know to ask about. It says "you've read the Consumer trait
+            but not the ConsumerGroup that coordinates them -- that's probably why the ownership model
+            seems confusing."
+          </p>
+          <p class="thesis-workflow">
+            Architecture Overview &#8594; Community Zoom &#8594; Read Most Important Entity
+          </p>
+          <p style="color: var(--text-muted); font-size: 0.82rem; margin-top: 4px;">
+            From "I have no idea" to "I'm reading the most critical function" in 30 seconds.
+          </p>
+        </div>
+
+        <div class="ascii-diagram">
+          <span class="label">the fundamental difference</span>
+<pre>
+<span class="c-dim">    SEARCH TOOL                    READING COMPANION</span>
+
+<span class="c-border">  ┌──────────────────┐</span>          <span class="c-border">┌──────────────────┐</span>
+<span class="c-border">  │</span>                  <span class="c-border">│</span>          <span class="c-border">│</span>                  <span class="c-border">│</span>
+<span class="c-border">  │</span> <span class="c-red"> You ask a</span>       <span class="c-border">│</span>          <span class="c-border">│</span> <span class="c-green"> You explore,</span>    <span class="c-border">│</span>
+<span class="c-border">  │</span> <span class="c-red"> question</span>        <span class="c-border">│</span>          <span class="c-border">│</span> <span class="c-green"> it shows you</span>    <span class="c-border">│</span>
+<span class="c-border">  │</span>   <span class="c-dim">│</span>              <span class="c-border">│</span>          <span class="c-border">│</span> <span class="c-green"> what's nearby</span>   <span class="c-border">│</span>
+<span class="c-border">  │</span>   <span class="c-dim">▼</span>              <span class="c-border">│</span>          <span class="c-border">│</span>   <span class="c-dim">│</span>              <span class="c-border">│</span>
+<span class="c-border">  │</span> <span class="c-red"> You get an</span>      <span class="c-border">│</span>          <span class="c-border">│</span>   <span class="c-dim">▼</span>              <span class="c-border">│</span>
+<span class="c-border">  │</span> <span class="c-red"> answer</span>          <span class="c-border">│</span>          <span class="c-border">│</span> <span class="c-green"> You form</span>        <span class="c-border">│</span>
+<span class="c-border">  │</span>   <span class="c-dim">│</span>              <span class="c-border">│</span>          <span class="c-border">│</span> <span class="c-green"> NEW questions</span>   <span class="c-border">│</span>
+<span class="c-border">  │</span>   <span class="c-dim">▼</span>              <span class="c-border">│</span>          <span class="c-border">│</span> <span class="c-green"> you didn't</span>      <span class="c-border">│</span>
+<span class="c-border">  │</span> <span class="c-red"> Dead end.</span>       <span class="c-border">│</span>          <span class="c-border">│</span> <span class="c-green"> know to ask</span>     <span class="c-border">│</span>
+<span class="c-border">  │</span>                  <span class="c-border">│</span>          <span class="c-border">│</span>   <span class="c-dim">│</span>              <span class="c-border">│</span>
+<span class="c-border">  │</span>                  <span class="c-border">│</span>          <span class="c-border">│</span>   <span class="c-dim">▼</span>              <span class="c-border">│</span>
+<span class="c-border">  │</span>                  <span class="c-border">│</span>          <span class="c-border">│</span> <span class="c-green"> Understanding</span>   <span class="c-border">│</span>
+<span class="c-border">  │</span>                  <span class="c-border">│</span>          <span class="c-border">│</span> <span class="c-green"> deepens.</span>        <span class="c-border">│</span>
+<span class="c-border">  │</span>                  <span class="c-border">│</span>          <span class="c-border">│</span>                  <span class="c-border">│</span>
+<span class="c-border">  └──────────────────┘</span>          <span class="c-border">└──────────────────┘</span>
+</pre>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer style="text-align: center; padding: 40px 0 20px; color: var(--text-muted); font-size: 0.8rem;">
+    <p>Parseltongue Product Design Thesis</p>
+    <p style="font-family: var(--font-mono); font-size: 0.75rem; margin-top: 4px; color: var(--text-muted);">
+      "Grep returns files. Parseltongue returns understanding."
+    </p>
+  </footer>
+
+</main>
+
+<!-- ============================================
+     JAVASCRIPT
+     ============================================ -->
+<script>
+(function() {
+  'use strict';
+
+  // ---- Progress Bar ----
+  const progressBar = document.getElementById('progressBar');
+  function updateProgress() {
+    const scrollTop = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+    progressBar.style.width = progress + '%';
+  }
+  window.addEventListener('scroll', updateProgress, { passive: true });
+
+  // ---- TOC Sidebar ----
+  const tocToggle = document.getElementById('tocToggle');
+  const tocSidebar = document.getElementById('tocSidebar');
+  const tocOverlay = document.getElementById('tocOverlay');
+
+  function openToc() {
+    tocSidebar.classList.add('open');
+    tocOverlay.classList.add('visible');
+  }
+  function closeToc() {
+    tocSidebar.classList.remove('open');
+    tocOverlay.classList.remove('visible');
+  }
+  tocToggle.addEventListener('click', function() {
+    if (tocSidebar.classList.contains('open')) {
+      closeToc();
+    } else {
+      openToc();
+    }
+  });
+  tocOverlay.addEventListener('click', closeToc);
+
+  // Close TOC on link click
+  tocSidebar.querySelectorAll('a').forEach(function(link) {
+    link.addEventListener('click', closeToc);
+  });
+
+  // ---- Active TOC highlight ----
+  const tocLinks = tocSidebar.querySelectorAll('a');
+  const sections = document.querySelectorAll('.layer-section');
+  function updateActiveToc() {
+    let current = '';
+    sections.forEach(function(section) {
+      const rect = section.getBoundingClientRect();
+      if (rect.top <= 120) {
+        current = section.id;
+      }
+    });
+    tocLinks.forEach(function(link) {
+      link.classList.remove('active');
+      if (link.getAttribute('href') === '#' + current) {
+        link.classList.add('active');
+      }
+    });
+  }
+  window.addEventListener('scroll', updateActiveToc, { passive: true });
+
+  // ---- Layer expand/collapse ----
+  window.toggleLayer = function(header) {
+    var section = header.parentElement;
+    section.classList.toggle('open');
+  };
+
+  // ---- Expandable sections ----
+  window.toggleExpandable = function(el) {
+    el.classList.toggle('open');
+  };
+
+  // Initial calls
+  updateProgress();
+  updateActiveToc();
+})();
+</script>
+
+</body>
+</html>
