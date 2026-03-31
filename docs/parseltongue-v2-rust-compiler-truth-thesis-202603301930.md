@@ -335,273 +335,427 @@ v2 thesis: "The LLM narrates what the compiler already knows."
 
 ---
 
-## 2.5. Three-Level Dependency Aggregation Model
+## 2.5. Typed Boundary Aggregation Model
 
-The dependency graph is just an edge table. Most architectural reasoning — "what's in this folder,
-what does it depend on, how coupled are these two modules" — is pure relational queries. No graph
-algorithms required. The aggregation model produces three views of the same data by grouping at
-progressively coarser keys.
+The dependency graph is just an edge table. Most architectural reasoning — "what's in this module,
+what does it depend on, how coupled are these two crates" — is pure relational queries. No graph
+algorithms required.
 
-### The Three Levels
+**But the original "three-level GROUP BY dirname()" model was wrong.** Validated against the iggy
+codebase (1,313 Rust files, 23 crates, 338 directories), it revealed critical gaps:
+
+1. Crate boundaries (Cargo.toml) are compiler-enforced HARD boundaries. Folder boundaries within
+   a crate are SOFT. Treating them identically loses the most important architectural signal.
+2. `server/binary/ → server/shard/` (intra-crate, can access pub(crate)) and
+   `server/ → common/` (cross-crate, can only access pub) are fundamentally different kinds of
+   coupling. An LLM must know which one it's looking at.
+3. Counting `use` statements is not the same as counting imported items. `use X::{A, B, C}` is
+   one statement importing three items. 48 files importing `IggyError` is 48 uses of one item.
+4. Internal cohesion matters as much as external coupling.
+5. Structural symmetry (tcp/, quic/, websocket/ all having identical dependency profiles) is
+   architecturally significant and detectable with pure SQL.
+6. Re-exports (facade crates) hide real dependencies.
+
+### Converged Design: Three Tables, Typed Boundaries
 
 ```
 ┌──────────────────────────────────────────────────────────────────────┐
-│           THREE-LEVEL DEPENDENCY AGGREGATION                         │
+│              TYPED BOUNDARY AGGREGATION MODEL                        │
 ├──────────────────────────────────────────────────────────────────────┤
 │                                                                      │
-│  L1: ENTITY-TO-ENTITY (raw edge table)                               │
-│  ─────────────────────────────────────                               │
-│  consumer::poll ──calls──► msg_queue::dequeue                        │
-│  consumer::poll ──calls──► offset::advance                           │
-│  server::handle ──calls──► consumer::poll                            │
-│  batch::flush   ──calls──► consumer::poll                            │
-│  batch::flush   ──calls──► storage::write                            │
+│  Three tables:                                                       │
 │                                                                      │
-│  This is what you already have. Every tree-sitter or MIR edge.       │
-│  Use for: reading code, tracing calls, understanding one function.   │
+│  1. entities       (unchanged — id, name, kind, file_path, etc.)     │
+│  2. edges          (unchanged — src_id, dst_id, edge_kind)           │
+│  3. boundaries     (NEW — the aggregation layer)                     │
 │                                                                      │
-│                          │                                           │
-│                    GROUP BY file_path                                 │
-│                          ▼                                           │
-│                                                                      │
-│  L2: FILE-TO-FILE (aggregated)                                       │
-│  ─────────────────────────────                                       │
-│  consumer.rs ──(2 calls)──► queue.rs                                 │
-│  consumer.rs ──(1 call)───► offset.rs                                │
-│  handler.rs  ──(1 call)───► consumer.rs                              │
-│  processor.rs──(1 call)───► consumer.rs                              │
-│  processor.rs──(1 call)───► writer.rs                                │
-│                                                                      │
-│  Use for: which files are coupled, file-level dependency tracking,   │
-│  "this file depends on 3 other files."                               │
-│                                                                      │
-│                          │                                           │
-│                    GROUP BY dirname(file_path)                        │
-│                          ▼                                           │
-│                                                                      │
-│  L3: FOLDER-TO-FOLDER (aggregated)                                   │
-│  ──────────────────────────────────                                  │
-│  src/streaming/ ──(1 edge, 1 pair)──► src/config/                    │
-│  src/server/    ──(1 edge, 1 pair)──► src/streaming/                 │
-│  src/batch/     ──(1 edge, 1 pair)──► src/streaming/                 │
-│  src/batch/     ──(1 edge, 1 pair)──► src/storage/                   │
-│                                                                      │
-│  Use for: module-level architecture, LLM architectural reasoning,    │
-│  "server/ depends on streaming/ via 3 edges across 2 files."         │
-│  THIS is the public interface level.                                 │
+│  A boundary is a named container with:                               │
+│    - a path (crate root or module directory)                         │
+│    - a type: "crate" | "module" | "folder"                          │
+│    - a parent boundary (nesting)                                     │
+│    - computed metrics (pub surface, cohesion, coupling)               │
 │                                                                      │
 └──────────────────────────────────────────────────────────────────────┘
 ```
 
-### Why This Matters
+### Boundary Types
 
 ```
 ┌──────────────────────────────────────────────────────────────────────┐
-│  WHAT EACH LEVEL IS FOR                                              │
+│  THREE BOUNDARY TYPES                                                │
 ├──────────────────────────────────────────────────────────────────────┤
 │                                                                      │
-│  Level   Who uses it         What it answers                         │
-│  ─────   ──────────────────  ─────────────────────────────────────   │
-│  L1      Human reading code  "consumer::poll calls msg_queue::       │
-│          Entity-level UX      dequeue" — one function, one call      │
+│  "crate"    Has Cargo.toml. Compiler-enforced boundary.              │
+│             Only pub items accessible from outside.                  │
+│             Declared dependencies in [dependencies].                 │
+│             Changing a cross-crate edge = changing a public API.     │
+│             Cost of change: HIGH.                                    │
 │                                                                      │
-│  L2      File-level diffs    "consumer.rs depends on queue.rs and    │
-│          Code review          offset.rs" — which files change        │
-│          Impact analysis      together                               │
+│  "module"   Has mod.rs or is declared in parent's mod tree.          │
+│             pub(crate) items accessible within crate.                │
+│             pub items accessible from outside crate.                 │
+│             Changing an intra-crate edge = internal refactor.        │
+│             Cost of change: LOW.                                     │
 │                                                                      │
-│  L3      LLM architecture    "streaming/ depends on config/ (1       │
-│          reasoning             edge). server/ depends on streaming/   │
-│          Module decisions      (3 edges, 2 file pairs)" — the        │
-│          Variant analysis      abstraction level where architecture   │
-│                                decisions happen                      │
-│                                                                      │
-│  The LLM doesn't need to see 500 entity edges.                      │
-│  It needs: "server/ → streaming/ (3 edges across 2 files)"          │
+│  "folder"   Any directory containing .rs files with no mod           │
+│             declaration. No compiler significance.                   │
+│             Organizational only.                                     │
+│             Cost of change: TRIVIAL.                                │
 │                                                                      │
 └──────────────────────────────────────────────────────────────────────┘
 ```
 
-### The Implementation: Just GROUP BY
+### Real-World Boundary Tree (iggy)
 
-No graph algorithms. No igraph. No NetworkX. Just SQL or Polars `filter`, `join`, `group_by`.
+Validated against the iggy streaming platform (23 crates, 1313 .rs files):
 
-**L2 (file-to-file) — one SQL query:**
-
-```sql
-SELECT
-    e1.file_path AS src_file,
-    e2.file_path AS dst_file,
-    COUNT(*)     AS edge_count,
-    GROUP_CONCAT(DISTINCT edges.edge_kind) AS edge_kinds
-FROM edges
-JOIN entities e1 ON edges.src_id = e1.id
-JOIN entities e2 ON edges.dst_id = e2.id
-WHERE e1.file_path != e2.file_path
-GROUP BY e1.file_path, e2.file_path
+```
+workspace (root)
+├── server/           [crate]     ← Cargo.toml, 228 files
+│   ├── binary/       [module]    ← 61 files, handles wire protocol
+│   │   └── handlers/ [module]    ← one handler per command type
+│   ├── shard/        [module]    ← 52 files, THE internal hub
+│   ├── streaming/    [module]    ← 49 files, core domain (well-isolated)
+│   ├── http/         [module]    ← 24 files, HTTP transport
+│   ├── metadata/     [module]    ← 12 files
+│   ├── tcp/          [module]    ← 6 files, TCP transport
+│   ├── quic/         [module]    ← 4 files, QUIC transport
+│   ├── websocket/    [module]    ← 5 files, WebSocket transport
+│   ├── state/        [module]
+│   ├── compat/       [module]
+│   ├── io/           [module]
+│   └── log/          [module]
+├── common/           [crate]     ← 120 entities, THE hub crate
+│   ├── commands/     [module]
+│   ├── error/        [module]
+│   ├── types/        [module]
+│   └── traits/       [module]
+├── binary_protocol/  [crate]     ← wire format, second hub
+├── sdk/              [crate]     ← client library
+├── cli/              [crate]     ← CLI tool
+├── partitions/       [crate]
+├── metadata/         [crate]
+├── shard/            [crate]
+├── consensus/        [crate]
+├── journal/          [crate]
+├── message_bus/      [crate]
+├── clock/            [crate]
+├── configs/          [crate]
+└── ...               [crate × 23 total]
 ```
 
-**L3 (folder-to-folder) — same query, coarser key:**
-
-```sql
-SELECT
-    dirname(e1.file_path) AS src_folder,
-    dirname(e2.file_path) AS dst_folder,
-    COUNT(*)              AS edge_count,
-    COUNT(DISTINCT e1.file_path || '->' || e2.file_path) AS file_pairs,
-    GROUP_CONCAT(DISTINCT edges.edge_kind) AS edge_kinds
-FROM edges
-JOIN entities e1 ON edges.src_id = e1.id
-JOIN entities e2 ON edges.dst_id = e2.id
-WHERE dirname(e1.file_path) != dirname(e2.file_path)
-GROUP BY dirname(e1.file_path), dirname(e2.file_path)
-```
-
-**Polars version (for the Python compute layer):**
-
-```python
-import polars as pl
-
-entities = pl.read_parquet("entities.parquet")
-edges = pl.read_parquet("edges.parquet")
-
-# Enrich edges with paths from both sides
-enriched = (
-    edges
-    .join(entities.select(["id", "file_path"]), left_on="src_id", right_on="id")
-    .rename({"file_path": "src_file"})
-    .join(entities.select(["id", "file_path"]), left_on="dst_id", right_on="id")
-    .rename({"file_path": "dst_file"})
-    .with_columns([
-        pl.col("src_file").str.replace(r"/[^/]+$", "/").alias("src_folder"),
-        pl.col("dst_file").str.replace(r"/[^/]+$", "/").alias("dst_folder"),
-    ])
-)
-
-# L2: file-to-file
-file_deps = (
-    enriched
-    .filter(pl.col("src_file") != pl.col("dst_file"))
-    .group_by(["src_file", "dst_file"])
-    .agg([
-        pl.count().alias("edge_count"),
-        pl.col("edge_kind").n_unique().alias("kind_count"),
-        pl.col("edge_kind").unique().alias("kinds"),
-    ])
-    .sort("edge_count", descending=True)
-)
-
-# L3: folder-to-folder
-folder_deps = (
-    enriched
-    .filter(pl.col("src_folder") != pl.col("dst_folder"))
-    .group_by(["src_folder", "dst_folder"])
-    .agg([
-        pl.count().alias("edge_count"),
-        (pl.col("src_file") + "->" + pl.col("dst_file")).n_unique().alias("file_pairs"),
-        pl.col("edge_kind").unique().alias("kinds"),
-        pl.col("src_id").unique().alias("src_entities"),
-        pl.col("dst_id").unique().alias("dst_entities"),
-    ])
-    .sort("edge_count", descending=True)
-)
-```
-
-### What You Can Query Without Graph Algorithms
+### Edge Classification by Boundary Crossing
 
 ```
 ┌──────────────────────────────────────────────────────────────────────┐
-│  RELATIONAL QUERIES ONLY (no igraph, no NetworkX)                    │
+│  EDGES CARRY THEIR CROSSING TYPE                                     │
 ├──────────────────────────────────────────────────────────────────────┤
 │                                                                      │
-│  Query                              Level   How                      │
-│  ──────────────────────────────     ─────   ──────────────────────   │
-│  "What's in this folder?"           L3      filter entities by path  │
-│  "What does this folder depend on?" L3      group_by src_folder      │
-│  "What depends on this folder?"     L3      group_by dst_folder      │
-│  "Public API surface of a folder?"  L3      filter vis=pub + path   │
-│  "How coupled are folder A and B?"  L3      count edges between sets │
-│  "Which files are coupled?"         L2      group_by file pairs     │
-│  "Cross-module edges?"              L2/L3   src and dst in diff path │
-│  "Trait impls that cross modules?"  L2/L3   filter kind=impls+paths │
-│  "Fan-in / fan-out of a file?"      L2      group_by src/dst, count │
-│  "Unused public functions?"         L1      pub + 0 incoming edges  │
-│  "Who calls this specific fn?"      L1      filter dst_id = X       │
-│  "What does this fn call?"          L1      filter src_id = X       │
+│  Edge                                    Crossing type               │
+│  ────────────────────────────────────    ─────────────────────────   │
+│  server/binary/ → server/shard/          INTRA-CRATE (module→module) │
+│  server/ → common/                       CROSS-CRATE (crate→crate)   │
+│  server/shard/tasks/ → server/shard/     INTRA-MODULE (child→parent) │
 │                                                                      │
-│  This covers ~80% of what an LLM needs for architectural reasoning. │
+│  Why this matters for LLMs:                                          │
 │                                                                      │
-│  WHAT ACTUALLY NEEDS GRAPH ALGORITHMS (the other 20%)                │
-│  ─────────────────────────────────────────────────────               │
-│  "Find communities"                 → Leiden (precomputed)           │
-│  "Rank by importance"               → PageRank (precomputed)        │
-│  "What's near me right now?"        → PPR (query-time)              │
-│  "Find cycles"                      → SCC (precomputed)             │
-│  "Core vs periphery"                → k-core (precomputed)          │
-│  "Reachability / blast radius"      → BFS (query-time)              │
+│  An LLM saying "decouple A from B" means very different things       │
+│  depending on whether A→B crosses a crate boundary or not:           │
 │                                                                      │
-│  The first group powers the LLM.                                     │
-│  The second group powers the visual experience.                      │
+│  CROSS-CRATE: "Change the public API of the dependency crate,       │
+│    update Cargo.toml, potentially break all downstream consumers."   │
+│    → The LLM should warn about blast radius.                        │
+│                                                                      │
+│  INTRA-CRATE: "Move some use crate:: imports. Internal refactor."   │
+│    → The LLM can recommend this freely.                             │
+│                                                                      │
+│  INTRA-MODULE: "Rearrange code within one module."                  │
+│    → Almost trivial. The LLM shouldn't even mention cost.           │
 │                                                                      │
 └──────────────────────────────────────────────────────────────────────┘
 ```
 
-### Variants Work At Every Level
-
-The same GROUP BY produces variant consequences at the folder level — no extra machinery:
+### Boundary Metrics (all GROUP BY, no graph algorithms)
 
 ```
 ┌──────────────────────────────────────────────────────────────────────┐
-│  VARIANT CONSEQUENCES VIA AGGREGATION                                │
+│  PER-BOUNDARY METRICS                                                │
 ├──────────────────────────────────────────────────────────────────────┤
 │                                                                      │
-│  Base (L3):                                                          │
-│    src/server/ ──(3 edges, 2 file pairs)──► src/streaming/           │
+│  Metric            How computed                What it tells you     │
+│  ────────────────  ──────────────────────────  ────────────────────  │
+│  entity_count      COUNT entities in boundary  Size                  │
+│  pub_surface       COUNT WHERE vis = pub       Interface width       │
+│  internal_edges    COUNT WHERE src+dst inside  Internal wiring       │
+│  outgoing_edges    COUNT WHERE src in, dst out Dependency load       │
+│  incoming_edges    COUNT WHERE dst in, src out Dependent load        │
+│  cohesion          internal / entity_count     How well-connected    │
+│  coupling_out      outgoing / entity_count     How dependent         │
+│  coupling_in       incoming / entity_count     How depended upon     │
+│  fan_in            COUNT DISTINCT src bounds   How many consumers    │
+│  fan_out           COUNT DISTINCT dst bounds   How many dependencies │
+│  import_breadth    DISTINCT items / pub_surf   Width of coupling     │
+│                    of the target               (what % of API used)  │
+│  import_spread     DISTINCT importing files /  Spread of coupling    │
+│                    total files in consumer     (how pervasive)       │
+│  is_facade         >60% of items are pub use   Facade/re-export crate│
 │                                                                      │
-│  Variant A: add ConsumerAPI trait between server/ and streaming/     │
-│    Deltas: + server→consumer_api (calls)                             │
-│            + consumer_api→consumer (calls)                           │
-│            - server→consumer (calls)                                 │
-│                                                                      │
-│  Variant A (L3, recomputed):                                         │
-│    src/server/ ──(0 edges)──► src/streaming/     ← DECOUPLED        │
-│    src/server/ ──(1 edge)───► src/consumer_api/  ← NEW dependency   │
-│    src/consumer_api/ ──(1 edge)──► src/streaming/ ← interface       │
-│                                                                      │
-│  The LLM sees:                                                       │
-│    "Variant A moved server/'s dependency from streaming/ (3 edges)   │
-│     to consumer_api/ (1 edge). Direct coupling to streaming/ is      │
-│     now 0. Total dependency chain: server/→consumer_api/→streaming/" │
-│                                                                      │
-│  This is just the L3 GROUP BY query run on (base_edges + deltas).   │
-│  No graph algorithms. Same SQL, different input.                     │
+│  ALL of these are GROUP BY + COUNT. No graph algorithms.             │
 │                                                                      │
 └──────────────────────────────────────────────────────────────────────┘
+```
+
+### Real Metrics on iggy (validated)
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│  IGGY BOUNDARY METRICS — REAL DATA                                   │
+├──────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  Boundary: common/ [crate]                                           │
+│    entity_count:   ~120                                              │
+│    pub_surface:    ~80 (most things are pub — it's a library)        │
+│    outgoing_edges: 0 (depends on nothing internal)                   │
+│    incoming_edges: ~900 (everyone depends on it)                     │
+│    coupling_in:    7.50 (900/120) ← extremely depended upon         │
+│    fan_in:         14 (14 crates depend on it)                       │
+│    fan_out:        0 (leaf dependency)                               │
+│    Insight: Hub crate. Pure library. No outgoing dependencies.       │
+│                                                                      │
+│  Boundary: server/ [crate]                                           │
+│    entity_count:   ~800                                              │
+│    pub_surface:    ~40 (most things are pub(crate))                  │
+│    outgoing_edges: ~445 (330 to common, 115 to binary_protocol)      │
+│    incoming_edges: ~20 (cli and integration tests)                   │
+│    cohesion:       0.50 (400/800)                                    │
+│    coupling_out:   0.56 (445/800) ← high external dependency        │
+│    fan_out:        2 (depends on 2 crates)                           │
+│    fan_in:         2 (cli + integration depend on it)                │
+│    Insight: Big consumer. Most deps are on common/.                  │
+│                                                                      │
+│  Boundary: server/streaming/ [module]                                │
+│    entity_count:   ~80                                               │
+│    internal_edges: ~50                                               │
+│    outgoing_edges: 2 (only to server/shard/)                         │
+│    incoming_edges: ~120 (binary, http, shard, metadata, all call it) │
+│    cohesion:       0.63 ← HIGH, well-structured module              │
+│    coupling_out:   0.025 ← almost no outgoing deps = well isolated  │
+│    coupling_in:    1.50 ← everyone depends on it                    │
+│    Insight: Core domain. High cohesion, low outgoing coupling.       │
+│    This is the best-designed module in server/.                      │
+│                                                                      │
+│  Boundary: server/shard/ [module]                                    │
+│    entity_count:   ~90                                               │
+│    outgoing_edges: ~43 (streaming=34, metadata=5, http=2, ...)       │
+│    incoming_edges: ~147 (binary=98, http=25, tcp=9, websocket=9,...) │
+│    cohesion:       0.45                                              │
+│    coupling_out:   0.48 ← moderate                                  │
+│    coupling_in:    1.63 ← THE internal hub                          │
+│    fan_in:         8 (8 modules depend on it)                        │
+│    Insight: Orchestrator. Everything routes through shard/.          │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+### Structural Symmetry Detection (pure SQL)
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│  SYMMETRY: BOUNDARIES WITH IDENTICAL DEPENDENCY PROFILES             │
+├──────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  Query: group boundaries by their sorted list of outgoing targets.   │
+│  Any group with >1 member = structural symmetry.                    │
+│                                                                      │
+│  SELECT                                                              │
+│    GROUP_CONCAT(src_boundary) AS symmetric_set,                      │
+│    dep_profile                                                       │
+│  FROM (                                                              │
+│    SELECT src_boundary,                                              │
+│      GROUP_CONCAT(dst_boundary ORDER BY dst_boundary) AS dep_profile │
+│    FROM boundary_edges                                               │
+│    WHERE crossing_type = 'INTRA-CRATE'                              │
+│    GROUP BY src_boundary                                             │
+│  )                                                                   │
+│  GROUP BY dep_profile HAVING COUNT(*) > 1                            │
+│                                                                      │
+│  Iggy result:                                                        │
+│  ─────────────                                                       │
+│  symmetric_set:  "tcp/, quic/, websocket/"                           │
+│  dep_profile:    "binary/, shard/, streaming/"                        │
+│                                                                      │
+│  → "tcp/, quic/, and websocket/ are structurally interchangeable.    │
+│     They all depend on the same 3 modules. They are transport        │
+│     layer implementations with identical architectural roles."       │
+│                                                                      │
+│  This is a GROUP BY + HAVING query. No graph algorithm.              │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+### Facade Crate Detection
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│  RE-EXPORTS: DETECTING FACADE CRATES                                 │
+├──────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  Problem: cli/ uses `iggy::Client` but iggy/ re-exports from sdk/.   │
+│  The REAL dependency is cli/ → sdk/, not cli/ → iggy/.               │
+│                                                                      │
+│  Strategy 1 (tree-sitter, Phase 0):                                  │
+│    Count `pub use` vs total items per crate.                        │
+│    IF > 60% of a crate's pub items are `pub use` re-exports         │
+│    THEN mark is_facade = true.                                      │
+│    Show: "cli/ depends on iggy/ (facade for sdk/ + common/)."       │
+│    Good enough for LLM reasoning.                                   │
+│                                                                      │
+│  Strategy 2 (MIR, Phase 4):                                         │
+│    Instance::try_resolve() traces through re-exports.                │
+│    Show both declared AND resolved dependency.                      │
+│    "cli/ imports from iggy/ which re-exports from sdk/."            │
+│                                                                      │
+│  Decision: Start with Strategy 1. Upgrade with MIR later.           │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+### How Boundaries Are Discovered (at index time)
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│  BOUNDARY DISCOVERY PIPELINE                                         │
+├──────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  Step 1: Scan for Cargo.toml files                                   │
+│    → Create "crate" boundary for each                               │
+│    → Parse [dependencies] for declared crate-to-crate deps          │
+│                                                                      │
+│  Step 2: Scan for mod.rs / mod declarations                          │
+│    → Create "module" boundary for each                              │
+│    → Parse visibility: pub mod, pub(crate) mod                      │
+│                                                                      │
+│  Step 3: Any remaining directory with .rs files                      │
+│    → Create "folder" boundary (no compiler significance)            │
+│                                                                      │
+│  Step 4: Set parent_id by path containment                           │
+│    → server/shard/ parent = server/                                 │
+│    → server/ parent = workspace                                     │
+│                                                                      │
+│  Step 5: Compute boundary_edges by classifying entity edges          │
+│    → For each entity edge (src→dst):                                │
+│      Find src boundary and dst boundary                             │
+│      If same boundary: internal_edge++                               │
+│      If different boundary, same crate: INTRA-CRATE crossing        │
+│      If different crate: CROSS-CRATE crossing                       │
+│    → GROUP BY (src_boundary, dst_boundary)                          │
+│                                                                      │
+│  Step 6: Compute per-boundary metrics                                │
+│    → entity_count, pub_surface, cohesion, coupling, fan_in/out      │
+│    → All GROUP BY. No graph algorithms.                             │
+│                                                                      │
+│  Total time: <1 second for iggy (1313 files).                       │
+│  These are materialized tables, recomputed on re-index.              │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+### What the LLM Gets (before vs after)
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│  LLM CONTEXT PACKET: BEFORE vs AFTER                                 │
+├──────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  BEFORE (flat folder GROUP BY):                                      │
+│    "{crate_a}/ depends on {crate_b}/ ({N} uses)"                    │
+│                                                                      │
+│  AFTER (typed boundary with metrics):                                │
+│    "{crate_a}/ [crate, {file_count} files, pub_surface={M}]         │
+│     depends on:                                                      │
+│      {crate_b}/ [crate, leaf, pub_surface={P}] — {N} edges,        │
+│        CROSS-CRATE, imports {K} of {P} pub items                    │
+│        ({breadth}% breadth) from {F} files ({spread}% spread)       │
+│                                                                      │
+│    Internal structure:                                               │
+│      {module_x}/ [module, cohesion={C}] — internal hub              │
+│        (fan_in={I})                                                  │
+│      {module_y}/ [module, cohesion={C}] — well-isolated core        │
+│        (coupling_out={D})                                            │
+│      {mod_a}/, {mod_b}/, {mod_c}/ — SYMMETRIC                      │
+│        (identical dep profile: {shared_deps})                        │
+│                                                                      │
+│  The second version is what the LLM needs for architectural         │
+│  reasoning. It's all GROUP BY. No PageRank, no Leiden."             │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+**Example (iggy codebase):**
+
+```
+  BEFORE: "server/ depends on common/ (330 uses)"
+
+  AFTER:  "server/ [crate, 228 files, pub_surface=40] depends on:
+            common/ [crate, leaf, pub_surface=80] — 330 edges,
+              CROSS-CRATE, imports 12 of 80 pub items (15% breadth)
+              from 48 files (21% spread)
+            binary_protocol/ [crate] — 115 edges, CROSS-CRATE
+
+          Internal structure:
+            shard/ [module, cohesion=0.45] — internal hub (fan_in=8)
+            streaming/ [module, cohesion=0.63] — well-isolated core
+              (coupling_out=0.025)
+            tcp/, quic/, websocket/ — SYMMETRIC
+              (identical dep profile: binary+shard+streaming)
+
+          Architectural insight: streaming/ is the cleanest module.
+          shard/ is the orchestrator. The transport layers are
+          interchangeable."
 ```
 
 ### Relationship to the Semantic Focus Lens
 
-The three aggregation levels map directly to the focus lens zoom levels:
+The boundary tree maps directly to the focus lens zoom levels:
 
 ```
-  Focus Lens Zoom Level     Aggregation Level     What the lens shows
-  ─────────────────────     ─────────────────     ─────────────────────────
-  Workspace level           L3 (folder)           folder dependencies
-  Subsystem level           L2 (file)             file dependencies within
-                                                  a folder
-  Entity level              L1 (entity)           raw entity edges
-  Flow level                L1 (sub-entity)       CFG/borrows within one fn
+  Focus Lens Zoom Level     Boundary Level               What's shown
+  ─────────────────────     ──────────────────────────   ─────────────
+  Workspace                 Crate boundaries (depth=1)   crate-to-crate
+  Subsystem                 Module boundaries within     module-to-module
+                            focused crate (depth=2)      within one crate
+  Entity                    Entities within focused      entity-to-entity
+                            module                       raw edges
+  Flow                      CFG/borrows within one fn    sub-entity
+
+  When the user zooms from workspace to subsystem, the query switches
+  from boundary_edges WHERE boundary_type='crate' to boundary_edges
+  WHERE parent='server/' AND boundary_type='module'. Same table,
+  different filter.
 ```
 
-When the user zooms from workspace to subsystem, the data source changes from L3 to L2.
-When they zoom to entity level, it switches to L1. The focus lens ranking (PPR + BFS +
-PageRank) operates at whatever level is currently active.
+### Relationship to Variants
+
+Variant deltas operate on entity edges (L1). Boundary metrics are RECOMPUTED from the modified
+edge table — same GROUP BY, different input:
+
+```
+  /boundary/{id}?variant={variant_id}
+    → Metrics recomputed on base_edges + variant deltas
+    → Crossing types and coupling counts reflect the hypothetical graph
+    → New boundaries may appear if a variant introduces a new crate/module
+
+  The consequence engine now speaks in boundary-level changes,
+  not just entity-level edge diffs.
+```
 
 ### Relationship to tree-sitter vs MIR
 
-The aggregation model works identically regardless of edge source:
+The boundary model works identically regardless of edge source. The boundary discovery
+(Cargo.toml scanning, mod detection) is independent of how entity edges are extracted:
 
 ```
-  Edge source        L1 quality          L2/L3 quality
+  Edge source        Entity edges (L1)   Boundary metrics
   ──────────────     ──────────────────  ──────────────────────────
   tree-sitter        approximate edges   approximate coupling counts
                      ("3 possible bar")  (may overcount if ambiguous)
@@ -610,7 +764,7 @@ The aggregation model works identically regardless of edge source:
                      ("this specific     (every edge is real)
                       bar, resolved")
 
-  Same schema. Same queries. Same GROUP BY. Different data quality.
+  Same boundary tables. Same queries. Different data quality.
   Start with tree-sitter. Upgrade to MIR. The interface doesn't change.
 ```
 
@@ -1532,67 +1686,93 @@ GET /entity/{id}/unsafe-analysis
   Source: MIR UnsafetyCheckResult. Precomputed. ~50-200 tokens.
 ```
 
-### DEPENDENCY AGGREGATION (L1/L2/L3)
+### BOUNDARY QUERIES (typed aggregation)
+
+```
+GET /boundary/{id}
+  Returns: { boundary: {id, name, type: "crate"|"module"|"folder",
+                         parent_id, depth, path},
+             metrics: {entity_count, pub_surface, internal_edges,
+                       outgoing_edges, incoming_edges, cohesion,
+                       coupling_out, coupling_in, fan_in, fan_out,
+                       is_facade},
+             depends_on: [
+               { boundary: string, type: "crate"|"module"|"folder",
+                 crossing: "CROSS-CRATE"|"INTRA-CRATE"|"INTRA-MODULE",
+                 edges: int, file_pairs: int,
+                 distinct_items: int, import_breadth: float,
+                 kinds: [string] }
+             ],
+             depended_on_by: [
+               { boundary: string, type: string,
+                 crossing: string,
+                 edges: int, file_pairs: int }
+             ],
+             public_surface: [
+               { entity: string, kind: string, callers_outside: int }
+             ] }
+  Source: boundaries + boundary_edges tables. Precomputed. ~300-1000 tokens.
+  THIS is the packet the LLM needs for architectural reasoning.
+
+GET /boundary/{id}?expand=true
+  Returns: same as above, plus:
+    children: [
+      { id: string, type: "module"|"folder",
+        entity_count: int, cohesion: float,
+        coupling_in: float, coupling_out: float }
+    ]
+  Shows the internal structure of a boundary.
+
+GET /boundary/{id}?variant={variant_id}
+  Same as above, metrics recomputed on base_edges + variant deltas.
+
+GET /boundary/coupling?a={id}&b={id}
+  Returns: { a_to_b: { crossing: "CROSS-CRATE"|"INTRA-CRATE",
+                        edges: int, file_pairs: int,
+                        distinct_items: int, import_breadth: float,
+                        kinds: [string],
+                        entities: [{src: string, dst: string, kind: string}] },
+             b_to_a: { ... },
+             total_coupling: int,
+             shared_traits: [string],
+             cost_of_change: "HIGH"|"LOW"|"TRIVIAL" }
+  cost_of_change derived from crossing type:
+    CROSS-CRATE = HIGH, INTRA-CRATE = LOW, INTRA-MODULE = TRIVIAL.
+  Query-time. ~100-400 tokens.
+
+GET /boundary/coupling?a={id}&b={id}&variant={variant_id}
+  Same coupling query on the variant graph.
+
+GET /boundary/symmetry?parent={id}
+  Returns: [{ group: [string],
+              shared_deps: [string],
+              dep_profile_hash: string }]
+  Detects child boundaries with identical dependency profiles.
+  Pure SQL GROUP BY + HAVING. ~50-200 tokens.
+
+GET /boundary/tree
+  Returns: full boundary hierarchy as a nested tree.
+  { id: string, type: "workspace", children: [
+    { id: string, type: "crate", children: [
+      { id: string, type: "module", children: [...] },
+      ...
+    ]},
+    ...
+  ]}
+  Powers the breadcrumb trail and zoom level navigation.
+```
+
+### ENTITY QUERIES (unchanged, kept for completeness)
 
 ```
 GET /deps/entity?id={id}
   Returns: { entity: {id, name, kind, file_path, visibility},
              calls: [{id, name, file_path, dispatch_kind}],
              called_by: [{id, name, file_path, dispatch_kind}],
-             impls: [{id, name}], traits: [{id, name}] }
-  Level: L1. Source: filter edges by src_id/dst_id. Query-time. ~100-500 tokens.
-
-GET /deps/file?path={file_path}
-  Returns: { file: {path, entity_count},
-             entities: [{id, name, kind, visibility}],
-             depends_on: [
-               { file: "src/streaming/queue.rs", edges: 2, kinds: ["calls"] },
-               { file: "src/config/loader.rs",   edges: 1, kinds: ["calls"] }
-             ],
-             depended_on_by: [
-               { file: "src/server/handler.rs",  edges: 1, kinds: ["calls"] }
-             ],
-             internal_edges: int }
-  Level: L2. Source: GROUP BY file_path on enriched edges. Query-time. ~200-800 tokens.
-
-GET /deps/folder?path={folder_path}
-  Returns: { folder: {path, file_count, entity_count},
-             internal_files: [{path, entity_count}],
-             depends_on: [
-               { folder: "src/config/", edges: 1, file_pairs: 1,
-                 kinds: ["calls"], entities: ["config::load"] }
-             ],
-             depended_on_by: [
-               { folder: "src/server/", edges: 3, file_pairs: 2,
-                 kinds: ["calls"],
-                 entities: ["consumer::poll", "consumer::new"] }
-             ],
-             public_surface: [
-               { entity: "Consumer::poll", kind: "fn", callers_outside: 2 },
-               { entity: "Consumer::new",  kind: "fn", callers_outside: 1 }
-             ],
-             internal_edges: int }
-  Level: L3. Source: GROUP BY dirname(file_path) on enriched edges.
-  Query-time. ~300-1000 tokens.
-  THIS is the packet the LLM needs for architectural reasoning.
-
-GET /deps/folder?path={folder_path}&variant={variant_id}
-  Same as above, but computed on base_edges + variant deltas.
-  Allows: "How does this folder's coupling change under variant A?"
-
-GET /deps/coupling?a={path_a}&b={path_b}
-  Returns: { a_to_b: { edges: int, file_pairs: int, kinds: [...],
-                        entities: [{src, dst, kind}] },
-             b_to_a: { edges: int, file_pairs: int, kinds: [...],
-                        entities: [{src, dst, kind}] },
-             total_coupling: int,
-             shared_traits: [...] }
-  Works at file or folder level (auto-detected from path).
-  Query-time. ~100-400 tokens.
-
-GET /deps/coupling?a={path_a}&b={path_b}&variant={variant_id}
-  Same coupling query on the variant graph.
-  "Coupling between server/ and streaming/ drops from 3 to 0 under variant A."
+             impls: [{id, name}], traits: [{id, name}],
+             boundary: {id, type, parent_id} }
+  Source: filter edges by src_id/dst_id. Query-time. ~100-500 tokens.
+  Now includes which boundary this entity belongs to.
 ```
 
 ### FOCUS LENS
@@ -2049,7 +2229,7 @@ MIR later — same schema, same queries, better data.
 │  • /deps/coupling?a=&b= → edge count between two paths              │
 │  • /deps/entity?id= → callers + callees at L1                       │
 │  • No graph algorithms. Just filter/join/group_by.                   │
-│  • The LLM can now query: "What does src/streaming/ depend on?"     │
+│  • The LLM can now query: "What does {crate}/ depend on?"          │
 │    and get a structured JSON answer.                                 │
 │                                                                      │
 │  Phase 2: Variant overlays                                           │
@@ -2429,59 +2609,85 @@ interface level with computed consequences instead of pattern-matched analogies.
 └────────────────────────────────────────────────────────────────┘
 ```
 
-## Appendix E: Three-Level Aggregation Tables
+## Appendix E: Typed Boundary Table Schemas
 
 ```
 ┌────────────────────────────────────────────────────────────────┐
-│              AGGREGATION TABLE SCHEMAS                          │
+│              TYPED BOUNDARY TABLE SCHEMAS                       │
 ├────────────────────────────────────────────────────────────────┤
 │                                                                │
-│  These tables are materialized views — precomputed at index    │
-│  time from the base entities + edges tables via GROUP BY.      │
-│  Refreshed on re-index. Queryable instantly.                   │
+│  These tables are materialized at index time from the base     │
+│  entities + edges tables. Refreshed on re-index. Queryable     │
+│  instantly. Replaces the earlier flat folder_deps design.      │
 │                                                                │
 │  ─────────────────────────────────────────────────             │
-│  Table: file_deps (L2)                                         │
+│  Table: boundaries                                             │
+│  ─────────────────────────────────────────────────             │
+│  boundary_id     TEXT PRIMARY KEY  (path-based, e.g. "server/")│
+│  name            TEXT NOT NULL     (leaf name, e.g. "server")  │
+│  boundary_type   TEXT NOT NULL     ("crate"|"module"|"folder") │
+│  parent_id       TEXT              (FK → boundaries, nullable) │
+│  path            TEXT NOT NULL     (filesystem path)           │
+│  depth           INT NOT NULL      (nesting from workspace)   │
+│                                                                │
+│  -- Computed at index time (materialized):                     │
+│  entity_count    INT                                           │
+│  pub_surface     INT                                           │
+│  internal_edges  INT                                           │
+│  outgoing_edges  INT                                           │
+│  incoming_edges  INT                                           │
+│  cohesion        REAL   (internal_edges / entity_count)        │
+│  coupling_out    REAL   (outgoing_edges / entity_count)        │
+│  coupling_in     REAL   (incoming_edges / entity_count)        │
+│  fan_in          INT    (distinct src boundaries incoming)     │
+│  fan_out         INT    (distinct dst boundaries outgoing)     │
+│  is_facade       BOOL   (>60% pub items are pub use re-export)│
+│                                                                │
+│  ─────────────────────────────────────────────────             │
+│  Table: boundary_edges                                         │
+│  ─────────────────────────────────────────────────             │
+│  src_boundary    TEXT NOT NULL  (FK → boundaries)              │
+│  dst_boundary    TEXT NOT NULL  (FK → boundaries)              │
+│  crossing_type   TEXT NOT NULL  ("CROSS-CRATE"|"INTRA-CRATE"| │
+│                                  "INTRA-MODULE")               │
+│  edge_count      INT                                           │
+│  file_pairs      INT                                           │
+│  distinct_items  INT   (how many distinct dst items imported)  │
+│  distinct_files  INT   (how many distinct src files import)   │
+│  kinds           TEXT  (comma-separated edge_kinds)             │
+│  PRIMARY KEY (src_boundary, dst_boundary)                      │
+│                                                                │
+│  ─────────────────────────────────────────────────             │
+│  Table: file_deps (kept for file-level queries)                │
 │  ─────────────────────────────────────────────────             │
 │  src_file      TEXT                                            │
 │  dst_file      TEXT                                            │
 │  edge_count    INT                                             │
-│  kinds         TEXT  (comma-separated: "calls,impls")          │
+│  kinds         TEXT                                            │
 │  PRIMARY KEY (src_file, dst_file)                              │
 │                                                                │
-│  ─────────────────────────────────────────────────             │
-│  Table: folder_deps (L3)                                       │
-│  ─────────────────────────────────────────────────             │
-│  src_folder    TEXT                                            │
-│  dst_folder    TEXT                                            │
-│  edge_count    INT                                             │
-│  file_pairs    INT                                             │
-│  kinds         TEXT  (comma-separated)                          │
-│  src_entities  TEXT  (JSON array of entity IDs)                │
-│  dst_entities  TEXT  (JSON array of entity IDs)                │
-│  PRIMARY KEY (src_folder, dst_folder)                          │
-│                                                                │
-│  ─────────────────────────────────────────────────             │
-│  Table: folder_summary (L3 aggregated)                         │
-│  ─────────────────────────────────────────────────             │
-│  folder_path   TEXT PRIMARY KEY                                │
-│  file_count    INT                                             │
-│  entity_count  INT                                             │
-│  pub_entities  INT                                             │
-│  internal_edges INT                                            │
-│  outgoing_edges INT  (to other folders)                        │
-│  incoming_edges INT  (from other folders)                      │
-│  dependency_folders  INT  (count of distinct dst_folders)      │
-│  dependent_folders   INT  (count of distinct src_folders)      │
-│                                                                │
 │  Query examples:                                               │
-│  • Most coupled folder pair:                                   │
-│    SELECT * FROM folder_deps ORDER BY edge_count DESC LIMIT 5  │
-│  • Most depended-upon folder:                                  │
-│    SELECT dst_folder, SUM(edge_count) FROM folder_deps         │
-│    GROUP BY dst_folder ORDER BY 2 DESC                         │
-│  • Isolated folders (no cross-folder deps):                    │
-│    SELECT * FROM folder_summary WHERE outgoing_edges = 0       │
+│  • Most coupled boundary pair:                                 │
+│    SELECT * FROM boundary_edges                                │
+│    ORDER BY edge_count DESC LIMIT 5                            │
+│  • Most depended-upon boundary:                                │
+│    SELECT dst_boundary, SUM(edge_count)                        │
+│    FROM boundary_edges GROUP BY 1 ORDER BY 2 DESC              │
+│  • Highest cohesion modules:                                   │
+│    SELECT * FROM boundaries                                    │
+│    WHERE boundary_type = 'module'                              │
+│    ORDER BY cohesion DESC LIMIT 10                             │
+│  • Cross-crate coupling only:                                  │
+│    SELECT * FROM boundary_edges                                │
+│    WHERE crossing_type = 'CROSS-CRATE'                         │
+│    ORDER BY edge_count DESC                                    │
+│  • Symmetric boundaries (same dep profile):                    │
+│    SELECT GROUP_CONCAT(src_boundary), dep_profile              │
+│    FROM (SELECT src_boundary,                                  │
+│      GROUP_CONCAT(dst_boundary ORDER BY dst_boundary)          │
+│      AS dep_profile FROM boundary_edges                        │
+│      GROUP BY src_boundary)                                    │
+│    GROUP BY dep_profile HAVING COUNT(*) > 1                    │
 │                                                                │
 └────────────────────────────────────────────────────────────────┘
 ```
