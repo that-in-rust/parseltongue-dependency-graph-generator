@@ -335,6 +335,287 @@ v2 thesis: "The LLM narrates what the compiler already knows."
 
 ---
 
+## 2.5. Three-Level Dependency Aggregation Model
+
+The dependency graph is just an edge table. Most architectural reasoning — "what's in this folder,
+what does it depend on, how coupled are these two modules" — is pure relational queries. No graph
+algorithms required. The aggregation model produces three views of the same data by grouping at
+progressively coarser keys.
+
+### The Three Levels
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│           THREE-LEVEL DEPENDENCY AGGREGATION                         │
+├──────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  L1: ENTITY-TO-ENTITY (raw edge table)                               │
+│  ─────────────────────────────────────                               │
+│  consumer::poll ──calls──► msg_queue::dequeue                        │
+│  consumer::poll ──calls──► offset::advance                           │
+│  server::handle ──calls──► consumer::poll                            │
+│  batch::flush   ──calls──► consumer::poll                            │
+│  batch::flush   ──calls──► storage::write                            │
+│                                                                      │
+│  This is what you already have. Every tree-sitter or MIR edge.       │
+│  Use for: reading code, tracing calls, understanding one function.   │
+│                                                                      │
+│                          │                                           │
+│                    GROUP BY file_path                                 │
+│                          ▼                                           │
+│                                                                      │
+│  L2: FILE-TO-FILE (aggregated)                                       │
+│  ─────────────────────────────                                       │
+│  consumer.rs ──(2 calls)──► queue.rs                                 │
+│  consumer.rs ──(1 call)───► offset.rs                                │
+│  handler.rs  ──(1 call)───► consumer.rs                              │
+│  processor.rs──(1 call)───► consumer.rs                              │
+│  processor.rs──(1 call)───► writer.rs                                │
+│                                                                      │
+│  Use for: which files are coupled, file-level dependency tracking,   │
+│  "this file depends on 3 other files."                               │
+│                                                                      │
+│                          │                                           │
+│                    GROUP BY dirname(file_path)                        │
+│                          ▼                                           │
+│                                                                      │
+│  L3: FOLDER-TO-FOLDER (aggregated)                                   │
+│  ──────────────────────────────────                                  │
+│  src/streaming/ ──(1 edge, 1 pair)──► src/config/                    │
+│  src/server/    ──(1 edge, 1 pair)──► src/streaming/                 │
+│  src/batch/     ──(1 edge, 1 pair)──► src/streaming/                 │
+│  src/batch/     ──(1 edge, 1 pair)──► src/storage/                   │
+│                                                                      │
+│  Use for: module-level architecture, LLM architectural reasoning,    │
+│  "server/ depends on streaming/ via 3 edges across 2 files."         │
+│  THIS is the public interface level.                                 │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+### Why This Matters
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│  WHAT EACH LEVEL IS FOR                                              │
+├──────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  Level   Who uses it         What it answers                         │
+│  ─────   ──────────────────  ─────────────────────────────────────   │
+│  L1      Human reading code  "consumer::poll calls msg_queue::       │
+│          Entity-level UX      dequeue" — one function, one call      │
+│                                                                      │
+│  L2      File-level diffs    "consumer.rs depends on queue.rs and    │
+│          Code review          offset.rs" — which files change        │
+│          Impact analysis      together                               │
+│                                                                      │
+│  L3      LLM architecture    "streaming/ depends on config/ (1       │
+│          reasoning             edge). server/ depends on streaming/   │
+│          Module decisions      (3 edges, 2 file pairs)" — the        │
+│          Variant analysis      abstraction level where architecture   │
+│                                decisions happen                      │
+│                                                                      │
+│  The LLM doesn't need to see 500 entity edges.                      │
+│  It needs: "server/ → streaming/ (3 edges across 2 files)"          │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+### The Implementation: Just GROUP BY
+
+No graph algorithms. No igraph. No NetworkX. Just SQL or Polars `filter`, `join`, `group_by`.
+
+**L2 (file-to-file) — one SQL query:**
+
+```sql
+SELECT
+    e1.file_path AS src_file,
+    e2.file_path AS dst_file,
+    COUNT(*)     AS edge_count,
+    GROUP_CONCAT(DISTINCT edges.edge_kind) AS edge_kinds
+FROM edges
+JOIN entities e1 ON edges.src_id = e1.id
+JOIN entities e2 ON edges.dst_id = e2.id
+WHERE e1.file_path != e2.file_path
+GROUP BY e1.file_path, e2.file_path
+```
+
+**L3 (folder-to-folder) — same query, coarser key:**
+
+```sql
+SELECT
+    dirname(e1.file_path) AS src_folder,
+    dirname(e2.file_path) AS dst_folder,
+    COUNT(*)              AS edge_count,
+    COUNT(DISTINCT e1.file_path || '->' || e2.file_path) AS file_pairs,
+    GROUP_CONCAT(DISTINCT edges.edge_kind) AS edge_kinds
+FROM edges
+JOIN entities e1 ON edges.src_id = e1.id
+JOIN entities e2 ON edges.dst_id = e2.id
+WHERE dirname(e1.file_path) != dirname(e2.file_path)
+GROUP BY dirname(e1.file_path), dirname(e2.file_path)
+```
+
+**Polars version (for the Python compute layer):**
+
+```python
+import polars as pl
+
+entities = pl.read_parquet("entities.parquet")
+edges = pl.read_parquet("edges.parquet")
+
+# Enrich edges with paths from both sides
+enriched = (
+    edges
+    .join(entities.select(["id", "file_path"]), left_on="src_id", right_on="id")
+    .rename({"file_path": "src_file"})
+    .join(entities.select(["id", "file_path"]), left_on="dst_id", right_on="id")
+    .rename({"file_path": "dst_file"})
+    .with_columns([
+        pl.col("src_file").str.replace(r"/[^/]+$", "/").alias("src_folder"),
+        pl.col("dst_file").str.replace(r"/[^/]+$", "/").alias("dst_folder"),
+    ])
+)
+
+# L2: file-to-file
+file_deps = (
+    enriched
+    .filter(pl.col("src_file") != pl.col("dst_file"))
+    .group_by(["src_file", "dst_file"])
+    .agg([
+        pl.count().alias("edge_count"),
+        pl.col("edge_kind").n_unique().alias("kind_count"),
+        pl.col("edge_kind").unique().alias("kinds"),
+    ])
+    .sort("edge_count", descending=True)
+)
+
+# L3: folder-to-folder
+folder_deps = (
+    enriched
+    .filter(pl.col("src_folder") != pl.col("dst_folder"))
+    .group_by(["src_folder", "dst_folder"])
+    .agg([
+        pl.count().alias("edge_count"),
+        (pl.col("src_file") + "->" + pl.col("dst_file")).n_unique().alias("file_pairs"),
+        pl.col("edge_kind").unique().alias("kinds"),
+        pl.col("src_id").unique().alias("src_entities"),
+        pl.col("dst_id").unique().alias("dst_entities"),
+    ])
+    .sort("edge_count", descending=True)
+)
+```
+
+### What You Can Query Without Graph Algorithms
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│  RELATIONAL QUERIES ONLY (no igraph, no NetworkX)                    │
+├──────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  Query                              Level   How                      │
+│  ──────────────────────────────     ─────   ──────────────────────   │
+│  "What's in this folder?"           L3      filter entities by path  │
+│  "What does this folder depend on?" L3      group_by src_folder      │
+│  "What depends on this folder?"     L3      group_by dst_folder      │
+│  "Public API surface of a folder?"  L3      filter vis=pub + path   │
+│  "How coupled are folder A and B?"  L3      count edges between sets │
+│  "Which files are coupled?"         L2      group_by file pairs     │
+│  "Cross-module edges?"              L2/L3   src and dst in diff path │
+│  "Trait impls that cross modules?"  L2/L3   filter kind=impls+paths │
+│  "Fan-in / fan-out of a file?"      L2      group_by src/dst, count │
+│  "Unused public functions?"         L1      pub + 0 incoming edges  │
+│  "Who calls this specific fn?"      L1      filter dst_id = X       │
+│  "What does this fn call?"          L1      filter src_id = X       │
+│                                                                      │
+│  This covers ~80% of what an LLM needs for architectural reasoning. │
+│                                                                      │
+│  WHAT ACTUALLY NEEDS GRAPH ALGORITHMS (the other 20%)                │
+│  ─────────────────────────────────────────────────────               │
+│  "Find communities"                 → Leiden (precomputed)           │
+│  "Rank by importance"               → PageRank (precomputed)        │
+│  "What's near me right now?"        → PPR (query-time)              │
+│  "Find cycles"                      → SCC (precomputed)             │
+│  "Core vs periphery"                → k-core (precomputed)          │
+│  "Reachability / blast radius"      → BFS (query-time)              │
+│                                                                      │
+│  The first group powers the LLM.                                     │
+│  The second group powers the visual experience.                      │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+### Variants Work At Every Level
+
+The same GROUP BY produces variant consequences at the folder level — no extra machinery:
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│  VARIANT CONSEQUENCES VIA AGGREGATION                                │
+├──────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  Base (L3):                                                          │
+│    src/server/ ──(3 edges, 2 file pairs)──► src/streaming/           │
+│                                                                      │
+│  Variant A: add ConsumerAPI trait between server/ and streaming/     │
+│    Deltas: + server→consumer_api (calls)                             │
+│            + consumer_api→consumer (calls)                           │
+│            - server→consumer (calls)                                 │
+│                                                                      │
+│  Variant A (L3, recomputed):                                         │
+│    src/server/ ──(0 edges)──► src/streaming/     ← DECOUPLED        │
+│    src/server/ ──(1 edge)───► src/consumer_api/  ← NEW dependency   │
+│    src/consumer_api/ ──(1 edge)──► src/streaming/ ← interface       │
+│                                                                      │
+│  The LLM sees:                                                       │
+│    "Variant A moved server/'s dependency from streaming/ (3 edges)   │
+│     to consumer_api/ (1 edge). Direct coupling to streaming/ is      │
+│     now 0. Total dependency chain: server/→consumer_api/→streaming/" │
+│                                                                      │
+│  This is just the L3 GROUP BY query run on (base_edges + deltas).   │
+│  No graph algorithms. Same SQL, different input.                     │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+### Relationship to the Semantic Focus Lens
+
+The three aggregation levels map directly to the focus lens zoom levels:
+
+```
+  Focus Lens Zoom Level     Aggregation Level     What the lens shows
+  ─────────────────────     ─────────────────     ─────────────────────────
+  Workspace level           L3 (folder)           folder dependencies
+  Subsystem level           L2 (file)             file dependencies within
+                                                  a folder
+  Entity level              L1 (entity)           raw entity edges
+  Flow level                L1 (sub-entity)       CFG/borrows within one fn
+```
+
+When the user zooms from workspace to subsystem, the data source changes from L3 to L2.
+When they zoom to entity level, it switches to L1. The focus lens ranking (PPR + BFS +
+PageRank) operates at whatever level is currently active.
+
+### Relationship to tree-sitter vs MIR
+
+The aggregation model works identically regardless of edge source:
+
+```
+  Edge source        L1 quality          L2/L3 quality
+  ──────────────     ──────────────────  ──────────────────────────
+  tree-sitter        approximate edges   approximate coupling counts
+                     ("3 possible bar")  (may overcount if ambiguous)
+
+  MIR (rustc)        exact edges         exact coupling counts
+                     ("this specific     (every edge is real)
+                      bar, resolved")
+
+  Same schema. Same queries. Same GROUP BY. Different data quality.
+  Start with tree-sitter. Upgrade to MIR. The interface doesn't change.
+```
+
+---
+
 ## 3. Reading Modes (17 Modes — 12 Upgraded + 3 Compiler + 2 Foundational)
 
 ### Mode 1: Architecture Overview (Upgraded)
@@ -1251,6 +1532,69 @@ GET /entity/{id}/unsafe-analysis
   Source: MIR UnsafetyCheckResult. Precomputed. ~50-200 tokens.
 ```
 
+### DEPENDENCY AGGREGATION (L1/L2/L3)
+
+```
+GET /deps/entity?id={id}
+  Returns: { entity: {id, name, kind, file_path, visibility},
+             calls: [{id, name, file_path, dispatch_kind}],
+             called_by: [{id, name, file_path, dispatch_kind}],
+             impls: [{id, name}], traits: [{id, name}] }
+  Level: L1. Source: filter edges by src_id/dst_id. Query-time. ~100-500 tokens.
+
+GET /deps/file?path={file_path}
+  Returns: { file: {path, entity_count},
+             entities: [{id, name, kind, visibility}],
+             depends_on: [
+               { file: "src/streaming/queue.rs", edges: 2, kinds: ["calls"] },
+               { file: "src/config/loader.rs",   edges: 1, kinds: ["calls"] }
+             ],
+             depended_on_by: [
+               { file: "src/server/handler.rs",  edges: 1, kinds: ["calls"] }
+             ],
+             internal_edges: int }
+  Level: L2. Source: GROUP BY file_path on enriched edges. Query-time. ~200-800 tokens.
+
+GET /deps/folder?path={folder_path}
+  Returns: { folder: {path, file_count, entity_count},
+             internal_files: [{path, entity_count}],
+             depends_on: [
+               { folder: "src/config/", edges: 1, file_pairs: 1,
+                 kinds: ["calls"], entities: ["config::load"] }
+             ],
+             depended_on_by: [
+               { folder: "src/server/", edges: 3, file_pairs: 2,
+                 kinds: ["calls"],
+                 entities: ["consumer::poll", "consumer::new"] }
+             ],
+             public_surface: [
+               { entity: "Consumer::poll", kind: "fn", callers_outside: 2 },
+               { entity: "Consumer::new",  kind: "fn", callers_outside: 1 }
+             ],
+             internal_edges: int }
+  Level: L3. Source: GROUP BY dirname(file_path) on enriched edges.
+  Query-time. ~300-1000 tokens.
+  THIS is the packet the LLM needs for architectural reasoning.
+
+GET /deps/folder?path={folder_path}&variant={variant_id}
+  Same as above, but computed on base_edges + variant deltas.
+  Allows: "How does this folder's coupling change under variant A?"
+
+GET /deps/coupling?a={path_a}&b={path_b}
+  Returns: { a_to_b: { edges: int, file_pairs: int, kinds: [...],
+                        entities: [{src, dst, kind}] },
+             b_to_a: { edges: int, file_pairs: int, kinds: [...],
+                        entities: [{src, dst, kind}] },
+             total_coupling: int,
+             shared_traits: [...] }
+  Works at file or folder level (auto-detected from path).
+  Query-time. ~100-400 tokens.
+
+GET /deps/coupling?a={path_a}&b={path_b}&variant={variant_id}
+  Same coupling query on the variant graph.
+  "Coupling between server/ and streaming/ drops from 3 to 0 under variant A."
+```
+
 ### FOCUS LENS
 
 ```
@@ -1678,6 +2022,75 @@ unchanged.
 
 ## 12. Recommended Build Order (Updated)
 
+### Alternative Build Order: Interface-and-Variant-First
+
+This build order prioritizes getting the dependency graph queryable for LLMs before building
+the full visual experience. It starts with tree-sitter edges (available now) and upgrades to
+MIR later — same schema, same queries, better data.
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│  INTERFACE-AND-VARIANT-FIRST BUILD ORDER                             │
+├──────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  Phase 0: Get the edge table (foundation)                            │
+│  ─────────────────────────────────────────                           │
+│  • tree-sitter extracts entities + edges (already exists in pt01)    │
+│  • Store as SQLite (entities table + edges table)                    │
+│  • Enrich with file_path, dirname for L2/L3 aggregation             │
+│  • This is the foundation. Everything else queries these tables.     │
+│  • Later: swap tree-sitter edges for MIR edges (same schema!)       │
+│                                                                      │
+│  Phase 1: Dependency query interface for LLMs                        │
+│  ────────────────────────────────────────────                        │
+│  • HTTP API wrapping Polars/SQL queries on the two tables            │
+│  • /deps/folder?path= → entities + incoming/outgoing at L3          │
+│  • /deps/file?path= → file-level dependencies at L2                 │
+│  • /deps/coupling?a=&b= → edge count between two paths              │
+│  • /deps/entity?id= → callers + callees at L1                       │
+│  • No graph algorithms. Just filter/join/group_by.                   │
+│  • The LLM can now query: "What does src/streaming/ depend on?"     │
+│    and get a structured JSON answer.                                 │
+│                                                                      │
+│  Phase 2: Variant overlays                                           │
+│  ─────────────────────────                                           │
+│  • POST /variant → create a named delta (add/remove edges)          │
+│  • All /deps/ queries accept ?variant= parameter                    │
+│  • GET /variant/{id}/diff → what changed at L3 level                │
+│  • LLM can now: propose variant, query consequences, compare        │
+│  • Still no graph algorithms. Just relational queries on modified    │
+│    edge tables.                                                      │
+│                                                                      │
+│  Phase 3: Graph algorithms for ranking + visualization               │
+│  ─────────────────────────────────────────────────────               │
+│  • Leiden communities (for the architecture map)                     │
+│  • PageRank (for "most important" ranking)                           │
+│  • PPR (for the semantic focus lens)                                 │
+│  • SCC (for cycle detection — "did this variant create a loop?")    │
+│  • These ENRICH the interface. They don't replace it.               │
+│                                                                      │
+│  Phase 4: Swap tree-sitter → MIR (when ready)                       │
+│  ─────────────────────────────────────────────                       │
+│  • Same schema. Same queries. Better edges.                          │
+│  • dispatch_kind and confidence columns populated by compiler       │
+│  • The interface doesn't change. The data quality does.              │
+│                                                                      │
+│  Phase 5: Full visual experience (Tauri + focus lens + surfaces)     │
+│  ────────────────────────────────────────────────────────────        │
+│  • The v1/v1.1/v1.2/v1.3 milestones below, built on the now-proven │
+│    query interface and variant system.                               │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### Original Build Order (Visual-First)
+
+The following build order assumes the full Tauri visual experience is the priority.
+The Interface-and-Variant-First order above can be used instead if LLM-native querying
+is prioritized.
+
 ### v1 — "I Can Browse This Codebase" (compiler-powered from day 1)
 
 User feels: "I opened a Rust codebase and within 30 seconds I can see its structure with
@@ -2013,5 +2426,62 @@ interface level with computed consequences instead of pattern-matched analogies.
 │  Polonius is opt-in. Default: MIR-only indexing.               │
 │  User can click "Enable borrow analysis" to re-index with     │
 │  Polonius. This is a one-time cost per workspace.              │
+└────────────────────────────────────────────────────────────────┘
+```
+
+## Appendix E: Three-Level Aggregation Tables
+
+```
+┌────────────────────────────────────────────────────────────────┐
+│              AGGREGATION TABLE SCHEMAS                          │
+├────────────────────────────────────────────────────────────────┤
+│                                                                │
+│  These tables are materialized views — precomputed at index    │
+│  time from the base entities + edges tables via GROUP BY.      │
+│  Refreshed on re-index. Queryable instantly.                   │
+│                                                                │
+│  ─────────────────────────────────────────────────             │
+│  Table: file_deps (L2)                                         │
+│  ─────────────────────────────────────────────────             │
+│  src_file      TEXT                                            │
+│  dst_file      TEXT                                            │
+│  edge_count    INT                                             │
+│  kinds         TEXT  (comma-separated: "calls,impls")          │
+│  PRIMARY KEY (src_file, dst_file)                              │
+│                                                                │
+│  ─────────────────────────────────────────────────             │
+│  Table: folder_deps (L3)                                       │
+│  ─────────────────────────────────────────────────             │
+│  src_folder    TEXT                                            │
+│  dst_folder    TEXT                                            │
+│  edge_count    INT                                             │
+│  file_pairs    INT                                             │
+│  kinds         TEXT  (comma-separated)                          │
+│  src_entities  TEXT  (JSON array of entity IDs)                │
+│  dst_entities  TEXT  (JSON array of entity IDs)                │
+│  PRIMARY KEY (src_folder, dst_folder)                          │
+│                                                                │
+│  ─────────────────────────────────────────────────             │
+│  Table: folder_summary (L3 aggregated)                         │
+│  ─────────────────────────────────────────────────             │
+│  folder_path   TEXT PRIMARY KEY                                │
+│  file_count    INT                                             │
+│  entity_count  INT                                             │
+│  pub_entities  INT                                             │
+│  internal_edges INT                                            │
+│  outgoing_edges INT  (to other folders)                        │
+│  incoming_edges INT  (from other folders)                      │
+│  dependency_folders  INT  (count of distinct dst_folders)      │
+│  dependent_folders   INT  (count of distinct src_folders)      │
+│                                                                │
+│  Query examples:                                               │
+│  • Most coupled folder pair:                                   │
+│    SELECT * FROM folder_deps ORDER BY edge_count DESC LIMIT 5  │
+│  • Most depended-upon folder:                                  │
+│    SELECT dst_folder, SUM(edge_count) FROM folder_deps         │
+│    GROUP BY dst_folder ORDER BY 2 DESC                         │
+│  • Isolated folders (no cross-folder deps):                    │
+│    SELECT * FROM folder_summary WHERE outgoing_edges = 0       │
+│                                                                │
 └────────────────────────────────────────────────────────────────┘
 ```
