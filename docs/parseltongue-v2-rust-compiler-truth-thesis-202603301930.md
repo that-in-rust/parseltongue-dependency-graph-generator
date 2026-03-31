@@ -186,9 +186,27 @@ v2 thesis: "The LLM narrates what the compiler already knows."
 └──────────────────────────────────────────────────────────────────────┘
 ```
 
-11. **Architecture what-if analysis uses variant overlays, not fiction (Variant Graph Overlays).**
-    The product's moat is not just reading the current graph — it's letting the user explore
-    architectural alternatives as structured deltas on the base graph, not as LLM-generated fiction.
+11. **Variant overlays give LLMs what they have never had: structured architectural reasoning at
+    the public interface level (Variant Graph Overlays).**
+
+    Today, when you ask an LLM "should I restructure this module?", it sees raw source and
+    pattern-matches against training data. It has no concept of coupling metrics, community
+    boundaries, or what happens to the dependency graph when you move a public API. It reasons
+    about code as text, not as architecture.
+
+    Variants change this. They give the LLM a **graph-level workspace** where it can:
+    - Propose structural changes as typed operations (not prose)
+    - See computed consequences (not hallucinated ones)
+    - Compare options with real metrics (not vibes)
+    - Reason at the public interface level — module boundaries, trait abstractions, dependency
+      direction — the abstraction level where architecture decisions actually happen
+
+    This is the level that LLMs currently cannot reach. They can refactor a function. They cannot
+    reason about whether introducing a trait boundary between two modules reduces coupling enough
+    to justify the abstraction cost — because they have no way to compute "coupling" or "cost."
+    The consequence engine gives them that.
+
+    **How it works:**
 
     An architecture option is not just "add edge." It is often: add edge, remove edge, reroute
     dependency, replace direct dependency with interface dependency, collapse or split a node.
@@ -214,11 +232,59 @@ v2 thesis: "The LLM narrates what the compiler already knows."
     - hotspot shifts
     - public boundary crossings changed
 
-    This turns "graph dump comparison" into an **architectural consequence engine**.
+    This turns "graph dump comparison" into an **architectural consequence engine** — and it
+    gives the LLM a language for architecture that it has never had before.
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│           WHY LLMs CANNOT DO THIS TODAY                              │
+├──────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  What LLMs see today:           What variants give them:             │
+│  ─────────────────────          ──────────────────────────           │
+│  Raw source code                Public interface graph               │
+│  "This function calls that"     "Module A couples to B via 8 edges"  │
+│  Pattern matching on text       Computed coupling metrics             │
+│  "I think you should..."        "Variant A reduces coupling by 26%"  │
+│  No consequence computation     PageRank/SCC/k-core/Leiden diffs     │
+│  Reasoning by analogy           Reasoning by measurement             │
+│                                                                      │
+│  The gap:                                                            │
+│  LLMs reason about code at LINE level.                               │
+│  Architecture decisions happen at MODULE BOUNDARY level.             │
+│  Variants bridge this gap by giving LLMs a structured workspace     │
+│  at the right abstraction level.                                     │
+│                                                                      │
+│  Example:                                                            │
+│  ────────                                                            │
+│  Human: "Should I add a trait boundary between Server and Consumer?" │
+│                                                                      │
+│  Without variants (today):                                           │
+│  LLM: "It depends on your use case. Generally, trait boundaries      │
+│  improve testability but add complexity..." (generic, unhelpful)     │
+│                                                                      │
+│  With variants:                                                      │
+│  LLM creates variant → consequence engine computes →                │
+│  LLM: "Adding ConsumerAPI trait between Server and Consumer:         │
+│    - Reduces Server→Consumer coupling from 8 edges to 1              │
+│    - Consumer's PageRank drops 26% (less central, more isolated)     │
+│    - Creates a new community boundary (streaming splits from server) │
+│    - No cycles introduced ✓                                         │
+│    - Cost: 1 new trait + 1 impl block                               │
+│    Worth it if you plan multiple Consumer implementations.           │
+│    Not worth it if Consumer is the only implementation."             │
+│                                                                      │
+│  The LLM went from "it depends" to a specific, measured             │
+│  recommendation — because it had the consequence data.              │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
+```
 
     **Trust constraint**: proposed edges must be typed, variant-scoped, justified with rationale,
     and clearly marked as `proposed` — never `truth`. The base graph is always compiler-verified.
-    Variants are always human- or LLM-proposed hypotheticals.
+    Variants are always human- or LLM-proposed hypotheticals. The LLM reasons with real metrics
+    but never asserts that a variant IS the codebase — only that it WOULD produce these
+    consequences IF applied.
 
 ```
 ┌──────────────────────────────────────────────────────────────────────┐
@@ -1444,23 +1510,53 @@ via a trait object — the compiler can't resolve it at compile time."
 
 ---
 
-### New Pattern 9: Architecture Advisor
+### New Pattern 9: Architecture Advisor (the pattern that makes variants a moat)
 
-**Behavior:** When the user creates a variant or asks "what if I moved this?", the LLM receives
-the consequence diff and narrates the architectural trade-offs.
+**Behavior:** The LLM operates as an architectural reasoning agent — not by pattern-matching
+against training data, but by proposing structured graph variants and reading the consequence
+engine's output. This is the pattern that gives LLMs what they've never had: the ability to reason
+about public interface boundaries with real metrics.
+
+**The workflow:**
+1. Human asks an architectural question ("Should I decouple Server from Consumer?")
+2. LLM proposes 2-3 variants via `POST /variant` (structured deltas, not prose)
+3. Consequence engine computes metrics on each variant
+4. LLM receives difference packets (PageRank delta, coupling changes, community shifts)
+5. LLM narrates the trade-offs using **measured consequences**, not analogies
 
 ```
-LLM: "Adding a ConsumerAPI trait between Server and Consumer would:
-- Reduce direct coupling (Server's out-degree drops from 8 to 7)
-- Create a new hotspot (ConsumerAPI becomes the 4th most central entity)
-- Split the 'Streaming Pipeline' community into two sub-communities
+Human: "Should I add a trait boundary between Server and Consumer?"
 
-Trade-off: better testability and flexibility, but one more abstraction
-to maintain. Worth it if you plan to add alternative consumer
-implementations. Not worth it if Consumer is the only implementation."
+LLM (internally): Creates two variants via API:
+  Variant A: + Server→ConsumerAPI, + ConsumerAPI→Consumer, - Server→Consumer
+  Variant B: keep current, but + Consumer: pub(crate) → pub
+
+Consequence engine returns:
+  Variant A: coupling -26%, new community boundary, 0 cycles, +1 abstraction
+  Variant B: coupling unchanged, public surface +3 methods, 0 new dependencies
+
+LLM: "I created two variants to compare:
+
+Variant A (add ConsumerAPI trait):
+  - Server→Consumer coupling drops from 8 edges to 1
+  - Consumer's PageRank drops 26% (more isolated, less central)
+  - Creates a new community boundary between server and streaming
+  - Cost: 1 new trait, 1 impl block
+
+Variant B (widen Consumer's visibility):
+  - No structural change — just visibility
+  - Public surface grows by 3 methods
+  - Coupling unchanged
+
+Recommendation: A if you plan multiple Consumer implementations or want
+to test Server independently. B if Consumer is the only implementation
+and you just need cross-module access."
 ```
 
-The LLM narrates **consequences**, not opinions. The data comes from the consequence engine.
+**Why this is different from what LLMs do today:** Today, the LLM says "it depends on your use
+case" because it has no way to compute coupling, centrality, or community structure. With variants,
+it goes from *reasoning by analogy* to *reasoning by measurement*. The consequence data is not
+hallucinated — it's computed on the actual graph.
 
 ### New Pattern 10: Focus Context Narrator
 
@@ -1724,10 +1820,14 @@ representation. Four levels of abstraction (workspace → subsystem → entity �
 always relative to where you're standing (PPR → BFS → PageRank → edge semantics), boundary nodes
 as exit portals not clutter. This is not a feature. This is how the product navigates.
 
-The moat: **Variant Graph Overlays.** No other tool lets you create structured architectural
-alternatives as typed, justified deltas on a compiler-verified base graph, then compare their
-consequences (PageRank shifts, cycle creation, community splits, hotspot migration) side by side
-with an LLM narrating the trade-offs. This is the feature that makes Parseltongue irreplaceable.
+The moat: **Variant Graph Overlays as an LLM architectural reasoning workspace.** Today, LLMs
+reason about code at the line level. Architecture decisions happen at the module boundary level.
+Variants bridge this gap — they give LLMs a structured workspace at the public interface level
+where they can propose changes as typed operations, receive computed consequences (coupling deltas,
+community shifts, cycle creation), and reason by measurement instead of analogy. No other tool
+gives LLMs this capability. An LLM with Parseltongue variants goes from "it depends on your use
+case" to "Variant A reduces coupling 26% but adds one abstraction — worth it if you plan multiple
+implementations." That's the moat.
 
 The best visual workflow: **The architecture map with focus lens and community zoom** — built on
 a graph with zero false edges, rendered with focus-relative salience.
@@ -1757,8 +1857,9 @@ The one-sentence product thesis (updated):
 
 **Parseltongue is a reading environment that uses the Rust compiler's own graph — exact call
 targets, verified borrow scopes, real control flow — viewed through a semantic focus lens that
-makes the local neighborhood legible and the rest fade away, with variant overlays that let you
-explore architectural what-ifs as structured, comparable hypotheticals on top of compiler truth.**
+makes the local neighborhood legible and the rest fade away, with variant overlays that give
+LLMs something they have never had: the ability to reason about architecture at the public
+interface level with computed consequences instead of pattern-matched analogies.**
 
 ---
 
