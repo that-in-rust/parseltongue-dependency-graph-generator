@@ -2456,6 +2456,739 @@ interface level with computed consequences instead of pattern-matched analogies.
 
 ---
 
+## 14. Product Review Through the Lens of Shreyas Doshi
+
+A section-by-section review of this thesis applying Doshi's product thinking frameworks: LNO
+(Leverage/Neutral/Overhead), activation energy, the real job vs stated job, magic moments,
+opinionated defaults, and pre-mortem thinking. Additive — new ideas and options, nothing removed.
+
+### 14.1 The Real Job vs The Stated Job
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│  JOBS-TO-BE-DONE ANALYSIS                                            │
+├──────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  STATED JOB (what the user says):                                    │
+│    "I want to understand this Rust codebase."                        │
+│                                                                      │
+│  REAL JOB (what they actually need):                                 │
+│    "I need to stop feeling lost, incompetent, and anxious about      │
+│     this codebase so I can start contributing."                      │
+│                                                                      │
+│  The emotional journey matters more than the feature list:           │
+│                                                                      │
+│  Minute 0:   ANXIETY     "I have no idea what this is."              │
+│  Minute 1:   RELIEF      "Oh, there are only 5 major subsystems."   │
+│  Minute 5:   CURIOSITY   "I wonder what this streaming module does." │
+│  Minute 15:  COMPETENCE  "I see — it polls from partitions and       │
+│                           dispatches to handlers."                   │
+│  Minute 30:  CONFIDENCE  "I know enough to ask a good question       │
+│                           in the PR review."                         │
+│  Day 2:      OWNERSHIP   "I understand this module well enough       │
+│                           to suggest a refactor."                    │
+│                                                                      │
+│  The product's real job is this emotional arc.                       │
+│  Every feature should be evaluated against:                          │
+│  "Does this reduce anxiety and build confidence?"                   │
+│                                                                      │
+│  IMPLICATION FOR THIS THESIS:                                        │
+│  Sections 3-8 (modes, workflows, APIs) describe WHAT.               │
+│  They don't describe HOW THE USER FEELS at each step.               │
+│  The build order should be sequenced by emotional arc,              │
+│  not by technical dependency.                                       │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+### 14.2 The Magic Moment
+
+Doshi's framework: what is the ONE moment where the user goes "this is different from everything
+else I've tried"? That moment determines retention.
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│  CANDIDATE MAGIC MOMENTS (ranked by uniqueness × emotional impact)   │
+├──────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  #1: "Click a trait method call → see the EXACT implementation"     │
+│      (dispatch resolution)                                           │
+│      Uniqueness: 10/10 — NO other tool does this                    │
+│      Emotional impact: 9/10 — "wait, it KNOWS which one?"           │
+│      Time to reach: 2 minutes (drag folder, click, click)           │
+│      VERDICT: This should be the demo moment. The first thing       │
+│      you show anyone. If this doesn't wow them, nothing will.       │
+│                                                                      │
+│  #2: "Architecture map appears → 8 labeled clusters instead of      │
+│       400 files"                                                     │
+│      Uniqueness: 7/10 — some code viz tools do this (poorly)        │
+│      Emotional impact: 8/10 — "oh, THAT'S what this codebase is"   │
+│      Time to reach: 30 seconds                                      │
+│      VERDICT: This is the first impression. It determines whether   │
+│      the user keeps going. Good but not unique enough to be THE     │
+│      magic moment.                                                  │
+│                                                                      │
+│  #3: "Borrow checker timeline shows WHY your code doesn't compile"  │
+│      Uniqueness: 10/10 — Aquascope exists but is not a reading tool │
+│      Emotional impact: 10/10 — "I finally understand lifetimes"     │
+│      Time to reach: 5+ minutes (need to navigate to a complex fn)   │
+│      VERDICT: Incredible moment but takes too long to reach.        │
+│      Should be a "second session" surprise.                         │
+│                                                                      │
+│  #4: "LLM says: you read A but not B, that's why C is confusing"   │
+│      (reading-history-aware suggestion)                              │
+│      Uniqueness: 10/10 — no tool tracks reading state for LLM       │
+│      Emotional impact: 7/10 — "it knows what I DON'T know?"        │
+│      Time to reach: 10+ minutes (need reading history)              │
+│      VERDICT: Retention moment, not acquisition moment.             │
+│                                                                      │
+│  #5: "Variant overlay shows: decoupling A from B reduces coupling   │
+│       26% but adds a new hotspot"                                   │
+│      Uniqueness: 10/10 — nothing else computes architecture diffs   │
+│      Emotional impact: 8/10 — "it can SIMULATE architecture?"      │
+│      Time to reach: 15+ minutes (need to understand base graph)     │
+│      VERDICT: Power user moment. The moat, but not the hook.        │
+│                                                                      │
+│  RECOMMENDED MAGIC MOMENT SEQUENCE:                                  │
+│  ─────────────────────────────────                                   │
+│  Acquisition:  #2 (architecture map — 30 seconds)                   │
+│  Activation:   #1 (dispatch resolution — 2 minutes)                 │
+│  Retention:    #4 (reading-aware suggestions — session 2)           │
+│  Expansion:    #5 (variant overlays — week 2)                       │
+│  Loyalty:      #3 (borrow checker explained — ongoing)              │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+### 14.3 LNO Classification of Features
+
+Doshi's LNO: every feature is Leverage (10x impact), Neutral (expected), or Overhead (costs more
+than it delivers). Ruthlessly classify everything in this thesis.
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│  LNO CLASSIFICATION                                                  │
+├──────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  LEVERAGE (10x impact — these ARE the product)                       │
+│  ─────────────────────────────────────────────                       │
+│  • Semantic Focus Lens (thesis #10) — without it, everything is     │
+│    an unreadable hairball. WITH it, every surface becomes legible.   │
+│  • Dispatch resolution (Mode 4 upgrade) — the "wait, it KNOWS"     │
+│    moment. Nothing else does this. Zero-ambiguity call chains.      │
+│  • Typed boundary model (Section 2.5) — the LLM goes from          │
+│    "it depends" to measured recommendations. The moat enabler.      │
+│  • Architecture map (Mode 1) — the 30-second first impression.     │
+│    If this is bad, nothing else matters.                             │
+│  • Reading history + "read next" (Modes 7, 10) — retention.        │
+│    Multi-session continuity is what makes users come BACK.           │
+│                                                                      │
+│  NEUTRAL (expected — must be there, but not differentiating)         │
+│  ─────────────────────────────────────────────────────────           │
+│  • Search bar (RRF) — table stakes. Every code tool has search.     │
+│  • Breadcrumb trail — expected orientation. Users don't notice       │
+│    when it's there. They notice when it's missing.                  │
+│  • Bookmarks — standard feature. Not a reason to choose the tool.   │
+│  • Side-by-side comparison (Mode 11) — nice but not unique.        │
+│  • Hotspot heatmap (Mode 9) — useful but not the reason users stay. │
+│  • Dependency ladder (Mode 8) — most users never click this.        │
+│                                                                      │
+│  OVERHEAD (high effort, low user impact — consider cutting/deferring)│
+│  ─────────────────────────────────────────────────────────────────   │
+│  • Async flow visualizer (Mode 33) — extremely complex to build,    │
+│    narrow audience (async-heavy codebases only). Defer to v2.0.     │
+│  • Generic instantiation viewer (Mode 34) — power user feature,     │
+│    very few codebases have complex generic usage. Defer.             │
+│  • Unsafe analysis visualizer (Mode 35) — niche. Most Rust          │
+│    codebases have <5 unsafe blocks. Defer.                          │
+│  • Architecture simulation (v1.3 variant overlays) — HIGH leverage  │
+│    BUT only after trust is established. If shipped too early,       │
+│    users don't trust the base graph enough to explore what-ifs.     │
+│    Not overhead per se, but ORDER matters enormously.               │
+│                                                                      │
+│  IMPLICATION: Ship Leverage features first. Make Neutral features    │
+│  work but don't over-invest. Defer Overhead until proven demand.    │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+### 14.4 Activation Energy Analysis
+
+Doshi's principle: the energy required to reach first value must be as low as possible. Every
+barrier between "download" and "wow" is a potential drop-off.
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│  ACTIVATION ENERGY MAP                                               │
+├──────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  Step          Time     Barrier              Drop-off risk           │
+│  ──────────    ──────   ──────────────────   ──────────────────────  │
+│  Download app  —        Needs macOS          Low (target audience)   │
+│  Drag folder   5s       None                 Very low                │
+│  Indexing      10-60s   WAITING              ⚠ MEDIUM — need          │
+│                                               progress feedback      │
+│  See arch map  1s       None                 Low                     │
+│  Click cluster 1s       None                 Low                     │
+│  Read source   5s       None                 Low                     │
+│  Click a call  1s       UNDERSTANDING what   ⚠ MEDIUM — chips must   │
+│                         the chip means        be self-explanatory    │
+│  See resolved  instant  None                 Low — this is the wow  │
+│  target                                                              │
+│                                                                      │
+│  Total time to "wow": ~60-90 seconds                                │
+│  Biggest barrier: indexing wait time                                 │
+│                                                                      │
+│  OPTION A: Show partial results during indexing                      │
+│    As files are parsed, show them on the map immediately.            │
+│    Communities form and refine as more data arrives.                  │
+│    The user watches the architecture map "crystallize."              │
+│    This turns the wait into an experience.                           │
+│                                                                      │
+│  OPTION B: Instant tree-sitter, background MIR upgrade               │
+│    Show the approximate graph in 3 seconds (tree-sitter).            │
+│    Background-upgrade to MIR edges as compilation finishes.          │
+│    Edges go from dashed (approximate) to solid (verified).           │
+│    The user sees the graph get MORE precise over 30 seconds.         │
+│    Feels like the app is "thinking harder."                          │
+│                                                                      │
+│  OPTION C: Pre-indexed popular crates                                │
+│    Ship with pre-indexed snapshots of popular Rust projects          │
+│    (tokio, axum, iggy, etc.) so users can explore IMMEDIATELY       │
+│    without indexing. "Try it on tokio first, then your own code."   │
+│    This is the onboarding playground.                                │
+│                                                                      │
+│  RECOMMENDED: B + C. Instant approximate graph with progressive     │
+│  MIR upgrade, plus playground crates for zero-barrier exploration.   │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+### 14.5 User Journey — Through the Eyes of Five Personas
+
+The thesis describes features and modes. Doshi would say: "Show me the journey of a SPECIFIC
+person. What do they do at minute 1, minute 5, day 2, week 2?"
+
+**Persona 1: "The New Hire" (Day-1 newcomer joining a Rust team)**
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│  JOURNEY: NEW HIRE AT A RUST COMPANY                                 │
+├──────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  Context: Sarah just joined a fintech startup. The main product is   │
+│  a Rust-based trading engine with 80K lines across 15 crates.       │
+│  Her manager says "get familiar with the order matching module."     │
+│  She has 3 days before her first PR review.                         │
+│                                                                      │
+│  Day 1, Minute 0: Drags the project folder into Parseltongue.       │
+│  Day 1, Minute 1: Architecture map shows 8 communities.             │
+│    She sees "Order Matching" as the 2nd-largest cluster.             │
+│    EMOTION: Relief. "It's not a wall of 200 files."                 │
+│                                                                      │
+│  Day 1, Minute 2: Clicks "Order Matching" cluster.                  │
+│    Module map shows 12 entities, sorted by importance.               │
+│    Top entity: MatchingEngine::process_order (PageRank: 0.07)       │
+│    EMOTION: Direction. "I know where to start."                     │
+│                                                                      │
+│  Day 1, Minute 3: Clicks process_order. Source + annotations.       │
+│    Sees "← 4 callers" badge and "→ calls OrderBook::insert" chip.   │
+│    Clicks OrderBook::insert — SOLID line, "static dispatch."        │
+│    EMOTION: "I can NAVIGATE this. Every call is a link."            │
+│                                                                      │
+│  Day 1, Minute 10: Sees a trait method call. Clicks it.             │
+│    Dispatch resolver: "This calls RedBlackTree::insert because      │
+│    OrderBook<T: TreeImpl> is instantiated with RedBlackTree here."   │
+│    MAGIC MOMENT: "It knows WHICH implementation?"                   │
+│                                                                      │
+│  Day 1, Minute 30: Has read 8 entities following "read next."       │
+│    Coverage overlay shows "Order Matching: 40% explored."           │
+│    EMOTION: Progress. Measurable.                                   │
+│                                                                      │
+│  Day 2: Opens app. "Welcome back. You were reading                  │
+│    MatchingEngine::process_order. You've covered 40% of Order       │
+│    Matching. Next suggested: RiskEngine::validate — this is         │
+│    called before every order and you haven't seen it yet."          │
+│    EMOTION: Continuity. "It remembers where I was."                 │
+│                                                                      │
+│  Day 3: Joins the PR review. The PR modifies OrderBook::remove.     │
+│    She opens Parseltongue, clicks the blast radius.                 │
+│    "6 callers affected. MatchingEngine::cancel_order is the         │
+│    most critical (PageRank: 0.05, 3 downstream dependencies)."     │
+│    She writes a review comment: "Have we tested the cancel flow?    │
+│    It has 3 downstream consumers."                                  │
+│    EMOTION: Competence. She sounds like she's been here a month.    │
+│                                                                      │
+│  MISSING FROM CURRENT THESIS:                                        │
+│  • "What should I read for this PR?" workflow (PR-guided reading)   │
+│  • "Team knowledge map" — who on the team has read what?            │
+│  • "Onboarding checklist" — manager assigns reading goals           │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+**Persona 2: "The Tech Lead" (Architecture decision-maker)**
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│  JOURNEY: TECH LEAD EVALUATING A REFACTOR                            │
+├──────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  Context: Marcus leads a team of 6. The "common" crate has become   │
+│  a dumping ground — 14 crates depend on it, it has 80 pub items.    │
+│  He suspects half are unused. He needs to propose a split at the    │
+│  architecture review next Thursday.                                  │
+│                                                                      │
+│  Minute 0: Opens Parseltongue on the workspace.                     │
+│  Minute 1: Clicks on "common/" in the boundary view.                │
+│    Boundary metrics: pub_surface=80, fan_in=14, coupling_in=7.5     │
+│    "80 pub items used by 14 crates. That's the problem."            │
+│                                                                      │
+│  Minute 3: Clicks "expand" on common/.                              │
+│    Sees child modules: error/ (used by 14), types/ (used by 12),    │
+│    commands/ (used by 3), utils/ (used by 2).                       │
+│    "commands/ and utils/ are only used by 3 crates. Those can       │
+│    be split out."                                                    │
+│                                                                      │
+│  Minute 5: Creates Variant A: "Split common into common-core        │
+│    and common-commands."                                             │
+│    Deltas: move commands/ and utils/ to new crate.                  │
+│    Consequence engine: "common-core pub_surface drops from 80→52.   │
+│    common-commands has fan_in=3. No cycles introduced."             │
+│                                                                      │
+│  Minute 8: Creates Variant B: "Make commands/ pub(crate) only."     │
+│    Consequence engine: "pub_surface drops 80→65. But 3 crates       │
+│    that use commands/ would break. CROSS-CRATE impact: HIGH."       │
+│                                                                      │
+│  Minute 10: Compares A vs B.                                        │
+│    LLM: "Variant A reduces the public surface more (52 vs 65)       │
+│    and isolates the low-use code without breaking consumers.         │
+│    Variant B is simpler but forces 3 crates to vendor their         │
+│    own command definitions."                                        │
+│                                                                      │
+│  Thursday: Presents at architecture review with computed data,      │
+│    not "I think we should." Shows the variant comparison screen.    │
+│    Decision is made in 15 minutes instead of 90.                    │
+│                                                                      │
+│  MISSING FROM CURRENT THESIS:                                        │
+│  • "Unused pub items" detector — pub items with 0 external callers  │
+│  • "Cost of split" estimator — how many files/imports change        │
+│  • Export variant comparison as shareable report (PDF/link)         │
+│  • "Architecture review mode" — present-ready view                  │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+**Persona 3: "The Rust Learner" (coming from Python/Go, learning Rust ownership)**
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│  JOURNEY: RUST NEWCOMER LEARNING OWNERSHIP                           │
+├──────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  Context: Priya is a Go developer learning Rust. She's reading an   │
+│  open-source Rust project to learn patterns. She keeps hitting      │
+│  borrow checker errors in her own code and wants to see how         │
+│  experienced Rustaceans handle ownership.                           │
+│                                                                      │
+│  Session 1: Selects "Ownership Patterns Tour" for the project.      │
+│    Tour: "Chapter 1: The Connection Pool — notice how Arc<Mutex<>>  │
+│    enables shared ownership across threads."                        │
+│    She clicks through 6 stops. Each one highlights a different      │
+│    ownership pattern: owned, borrowed, shared, interior mutability. │
+│    EMOTION: "Oh, THAT'S why they use Arc here."                     │
+│                                                                      │
+│  Session 2: She's reading a function and sees the borrow timeline.  │
+│    "L1: &mut self lives lines 12-45. L2: &self.buffer lives        │
+│    lines 25-30. They coexist because L2 is shared."                 │
+│    She realizes: the issue in HER code is that she borrows mutably  │
+│    and then tries to borrow immutably in the same scope.            │
+│    MAGIC MOMENT: "The borrow checker isn't random. There are        │
+│    RULES, and I can SEE them."                                      │
+│                                                                      │
+│  Session 3: She opens her OWN project in Parseltongue.              │
+│    Drags her failing Rust project. Navigates to the broken function.│
+│    Borrow timeline shows the conflict: "L1 (&mut self, line 10)    │
+│    overlaps with L2 (&self.items, line 15). Fix: collect items      │
+│    before the mutable borrow."                                      │
+│    She fixes the error. First time she understood WHY.              │
+│                                                                      │
+│  MISSING FROM CURRENT THESIS:                                        │
+│  • "Pattern Library" — curated list of Rust patterns (builder,      │
+│    newtype, typestate, RAII guard) detected in the codebase with    │
+│    explanations linked to specific code                             │
+│  • "Compare my code to this project" — side-by-side of the         │
+│    learner's code vs an idiomatic example from the project          │
+│  • "Ownership quiz" — "Why does this function take &mut self?       │
+│    Click to reveal the answer." Gamified learning.                  │
+│  • "Common mistakes" — detect anti-patterns (unnecessary .clone(),  │
+│    Arc<Mutex<>> where Rc<RefCell<>> would suffice, etc.)            │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+**Persona 4: "The OSS Contributor" (wants to contribute to a large project)**
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│  JOURNEY: OSS CONTRIBUTOR — FIRST PR ON A LARGE RUST PROJECT         │
+├──────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  Context: Alex wants to contribute to tokio. They picked an issue   │
+│  labeled "good first issue" — "Add timeout to TcpStream::connect."  │
+│  They need to understand: where is connect()? What does it call?    │
+│  What would a timeout wrapper look like?                            │
+│                                                                      │
+│  Minute 0: Drags tokio/ into Parseltongue.                          │
+│  Minute 1: Searches "TcpStream::connect" in search bar.             │
+│    Result: tokio/src/net/tcp/stream.rs:42, PageRank: 0.03,          │
+│    Community: "TCP Networking", 8 callers.                           │
+│                                                                      │
+│  Minute 2: Focus lens shows connect()'s neighborhood.               │
+│    Callers: 3 internal (tests), 5 external (examples + users).      │
+│    Callees: socket2::Socket::connect, TcpStream::new.               │
+│    Boundary: crosses from "TCP Networking" to "Runtime Core."       │
+│                                                                      │
+│  Minute 5: Clicks "upstream trace" — where is connect exposed?      │
+│    Answer: re-exported via tokio::net::TcpStream (pub).             │
+│    Blast radius: 5 external callers would be affected.              │
+│                                                                      │
+│  Minute 8: Clicks "similar functions" — finds TcpListener::bind()   │
+│    which ALREADY has a timeout wrapper. Side-by-side comparison     │
+│    shows the pattern: wrap the inner call with tokio::time::timeout. │
+│    "I can follow the same pattern."                                 │
+│                                                                      │
+│  Minute 15: Understands the change. Writes the PR.                  │
+│    Confidence: "I know exactly what this touches and what pattern   │
+│    to follow."                                                       │
+│                                                                      │
+│  MISSING FROM CURRENT THESIS:                                        │
+│  • "Issue-guided reading" — paste a GitHub issue URL, Parseltongue  │
+│    highlights the relevant entities and suggests a reading path     │
+│  • "Find similar patterns" — "show me other functions that do X"    │
+│    based on structural similarity (same call pattern, same trait    │
+│    impls, same CFG shape)                                           │
+│  • "PR impact preview" — before submitting, see what the variant    │
+│    overlay looks like for your proposed change                      │
+│  • "Contribution guide" — auto-generated from boundary analysis:    │
+│    "This crate is easy to contribute to (low coupling, high         │
+│    cohesion, good test coverage boundary)"                          │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+**Persona 5: "The Auditor" (security review, compliance, code quality)**
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│  JOURNEY: SECURITY AUDITOR REVIEWING A RUST CODEBASE                 │
+├──────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  Context: Diana is auditing a Rust crypto library for a client.     │
+│  She needs to find: all unsafe blocks, all FFI boundaries, all      │
+│  places where secrets are handled, and the trust boundaries.        │
+│                                                                      │
+│  Minute 0: Drags the project into Parseltongue.                     │
+│  Minute 1: Clicks "unsafe analysis" view.                           │
+│    Shows 12 unsafe blocks across 4 files. Each one tagged with      │
+│    the specific operation: raw_ptr_deref (7), ffi_call (3),         │
+│    union_access (2). LLM explains each invariant.                   │
+│                                                                      │
+│  Minute 5: Clicks boundary view. Looks for CROSS-CRATE edges       │
+│    that cross into external crates (the trust boundary).            │
+│    "This crate calls libsodium via FFI in 3 places."               │
+│    "This crate calls ring:: in 8 places."                           │
+│                                                                      │
+│  Minute 10: Asks LLM: "Where are secrets handled?"                  │
+│    LLM uses data flow: "The type SecretKey appears in 4 functions.  │
+│    It's moved (never cloned) from generate() → encrypt() →         │
+│    zeroize(). The zeroize() call on line 89 ensures memory          │
+│    is cleared. No secret ever crosses a pub boundary."              │
+│                                                                      │
+│  Minute 20: Writes audit report. Every finding is backed by         │
+│    compiler-verified data flow, not grep results.                   │
+│                                                                      │
+│  MISSING FROM CURRENT THESIS:                                        │
+│  • "Trust boundary view" — highlight all edges that cross into      │
+│    external (non-workspace) crates. These are the attack surface.   │
+│  • "Secret tracking" — trace types marked #[zeroize] or containing │
+│    "key", "secret", "password" through the data flow graph          │
+│  • "Audit report export" — generate a structured report of unsafe   │
+│    blocks, FFI boundaries, trust crossings, data flow of sensitive  │
+│    types. PDF or markdown.                                          │
+│  • "Compliance checklist" — "Does every unsafe block have a SAFETY  │
+│    comment? Does every FFI call validate its return?"               │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+### 14.6 Opinionated Defaults
+
+Doshi: "The best products have strong opinions. Weak products give you 50 settings. Strong
+products make the right choice and let you override."
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│  OPINIONS THIS PRODUCT SHOULD HAVE (non-negotiable defaults)         │
+├──────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  1. "The first thing you see is the architecture map, not source."   │
+│     No file tree on first open. The map IS the landing page.        │
+│     Override: users can switch to file tree view. But default = map. │
+│                                                                      │
+│  2. "Importance is relative, never absolute."                        │
+│     Every ranking uses focus-relative PPR, not just global PageRank. │
+│     No setting to "show global ranking." The focus lens is always on.│
+│                                                                      │
+│  3. "The LLM explains in 2 sentences, not 20."                      │
+│     150-word hard cap on auto-explanations. No setting to increase.  │
+│     User can ASK for more. But the default is concise.              │
+│                                                                      │
+│  4. "Solid line = compiler truth. Dashed line = uncertain."          │
+│     This visual language is consistent everywhere, never overridden. │
+│     No setting to "hide uncertainty." Trust requires honesty.        │
+│                                                                      │
+│  5. "You zoom by changing abstraction level, not by scaling."        │
+│     Scroll wheel does NOT zoom in/out like Google Maps. It switches  │
+│     between workspace → subsystem → entity → flow. Pinch-to-zoom   │
+│     does spatial zoom within a level.                               │
+│                                                                      │
+│  6. "Variants are proposed, never truth."                            │
+│     Dotted lines. "Proposed" badge. No way to merge a variant       │
+│     into the base graph. The base is always compiler-verified.      │
+│                                                                      │
+│  7. "Reading progress is shown as coverage, not completion."         │
+│     "You've explored the 3 most important subsystems" — not         │
+│     "You've read 150 of 3000 entities."                             │
+│                                                                      │
+│  8. "Cross-crate edges are always flagged as HIGH cost of change."   │
+│     No setting to treat intra-crate and cross-crate the same.       │
+│     The distinction is architecturally fundamental.                 │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+### 14.7 Pre-Mortem: How This Product Dies
+
+Doshi's pre-mortem: "It's 12 months from now and the product failed. What happened?"
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│  PRE-MORTEM: WAYS THIS PRODUCT COULD FAIL                            │
+├──────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  Death 1: "It never shipped because the scope was too big."         │
+│  ──────────────────────────────────────────────────────────          │
+│  This thesis describes 17 modes, 40 workflows, 14 surfaces,        │
+│  and 2 build orders. That is 2 years of work for a team of 3.      │
+│  A solo founder building this will never finish v1.                 │
+│  FIX: Define a "Minimum Lovable Product" that is 1/4 of this doc.  │
+│  MLP = architecture map + source pane + dispatch resolution +       │
+│  focus lens + search. That's it. Ship in 8 weeks. Everything else   │
+│  is a follow-up.                                                    │
+│                                                                      │
+│  Death 2: "Indexing failed on the user's project."                  │
+│  ──────────────────────────────────────────────────                  │
+│  rustc_private is pinned to one nightly. The user's project uses    │
+│  a different nightly, or has a proc-macro that breaks, or uses a    │
+│  build script that needs env vars. Compilation fails. The user sees │
+│  "Compilation failed" and never comes back.                         │
+│  FIX: Tree-sitter fallback must be INVISIBLE. Not a degraded mode   │
+│  with warnings — a fully functional experience with approximate     │
+│  edges. Upgrade to MIR when it works, silently. The user should     │
+│  never see a compilation error.                                     │
+│                                                                      │
+│  Death 3: "The architecture map was wrong."                         │
+│  ───────────────────────────────────────────                         │
+│  Leiden communities don't match the crate structure. The map shows  │
+│  random-looking clusters. The user says "this is less useful than   │
+│  my file tree." Trust is broken on first open.                      │
+│  FIX: Use CRATE BOUNDARIES as the default top-level grouping, not  │
+│  Leiden communities. Leiden is an overlay option, not the default.   │
+│  The boundary tree from Cargo.toml is always correct.               │
+│                                                                      │
+│  Death 4: "It's a cool demo but I go back to VS Code."             │
+│  ──────────────────────────────────────────────────────              │
+│  The product wows on first try but doesn't integrate into daily     │
+│  workflow. There's no reason to open it INSTEAD of the IDE.        │
+│  It's a separate app that requires context-switching.               │
+│  FIX OPTIONS:                                                       │
+│    Option A: VS Code extension that embeds the focus lens view      │
+│    Option B: CLI that outputs to terminal (LLM workflow only)       │
+│    Option C: "Open in Parseltongue" link from GitHub PR pages       │
+│    Option D: Accept this — Parseltongue is for READING SESSIONS,   │
+│    not daily coding. Like how people use a Kindle separately from   │
+│    their laptop. The product IS the separate reading environment.   │
+│                                                                      │
+│  Death 5: "The Rust community is too small."                        │
+│  ───────────────────────────────────────────                         │
+│  Rust has ~3M developers. If 1% would pay for this, that's 30K     │
+│  users. At $20/month, that's $7.2M ARR. Is that enough?            │
+│  If the market is too small, the product either needs to:          │
+│    A: Expand to other compiled languages (C++, Go) — loses the moat│
+│    B: Go upmarket — enterprise security auditing at $500/seat      │
+│    C: Stay niche but charge more — $50/month for "pro" with        │
+│       variant overlays and team features                            │
+│  This is not a death if you plan for it. It IS a death if you      │
+│  assume the market is bigger than it is.                            │
+│                                                                      │
+│  Death 6: "The LLM companion added no value."                       │
+│  ────────────────────────────────────────────                        │
+│  The user reads the LLM panel for 5 minutes, finds it obvious or    │
+│  wrong, and collapses it permanently. The "senior engineer sitting  │
+│  next to you" turns out to be an intern reading the code back.      │
+│  FIX: The LLM value must come from GRAPH CONTEXT, not source       │
+│  regurgitation. "This is called from 2 places, which is why it     │
+│  handles both batch and single modes" is valuable because the user  │
+│  couldn't see that from the source alone. "This function processes  │
+│  messages" is worthless. Test every LLM prompt against: "Could the  │
+│  user figure this out by reading the source?" If yes, don't say it.│
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+### 14.8 Additional Feature Options (Shreyas-Style: What Else Could This Be?)
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│  IDEAS NOT IN THE CURRENT THESIS — OPTIONS TO CONSIDER               │
+├──────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  OPTION: Team Reading Mode                                           │
+│  ─────────────────────────                                           │
+│  Multiple team members share reading state on the same workspace.    │
+│  The architecture map shows WHO has read WHAT. "Alice has read 80%  │
+│  of streaming/, Bob has read 60% of server/, nobody has read        │
+│  consensus/." Turns individual reading into team coverage mapping.  │
+│  USE CASE: Onboarding sprint. Manager assigns reading territories.  │
+│                                                                      │
+│  OPTION: PR-Guided Reading                                           │
+│  ─────────────────────────                                           │
+│  Paste a PR URL. Parseltongue highlights the modified entities on   │
+│  the architecture map, shows the blast radius, and generates a      │
+│  "reading plan for this PR" — what to read to review it properly.   │
+│  USE CASE: Code review preparation. "Before reviewing this PR,      │
+│  read these 5 entities in this order."                              │
+│                                                                      │
+│  OPTION: Architecture Decision Records (ADR) Integration            │
+│  ────────────────────────────────────────────────────────            │
+│  When the user selects a variant and writes a rationale, export it  │
+│  as a standard ADR (Architecture Decision Record). The variant's    │
+│  consequence data becomes the "evidence" section of the ADR.        │
+│  USE CASE: "ADR-007: Split common into common-core and              │
+│  common-commands. Evidence: reduces pub surface 80→52, isolates     │
+│  low-use code, no cycles introduced."                               │
+│                                                                      │
+│  OPTION: "Explain Like I'm Coming From Go/Python/Java"              │
+│  ──────────────────────────────────────────────────────              │
+│  LLM explanation mode tuned to the user's source language.          │
+│  "This Arc<Mutex<>> is like Go's sync.Mutex but with reference      │
+│  counting. The Arc handles the 'who owns the mutex' question that   │
+│  Go's garbage collector handles automatically."                     │
+│  USE CASE: Rust newcomers from specific language backgrounds.       │
+│                                                                      │
+│  OPTION: Codebase Changelog                                          │
+│  ────────────────────────────                                        │
+│  Re-index after git pull. Show what STRUCTURALLY changed:           │
+│  "Since your last session: 3 new entities in streaming/, 1 edge     │
+│  removed (decoupled handler from storage), 2 new cross-crate deps." │
+│  Not a git diff — a STRUCTURAL diff. How the architecture changed. │
+│  USE CASE: "What happened while I was away?"                        │
+│                                                                      │
+│  OPTION: "Teach Mode" — Record Your Own Tour                        │
+│  ─────────────────────────────────────────────                       │
+│  A senior engineer records a reading tour of the codebase with      │
+│  voice annotations at each stop. Exports as a shareable artifact.   │
+│  New team members play the tour like a podcast with code.           │
+│  USE CASE: Onboarding. "Here's the tour I recorded when I joined.  │
+│  Play it while following along in Parseltongue."                    │
+│                                                                      │
+│  OPTION: Structural Similarity Search                                │
+│  ─────────────────────────────────────                               │
+│  "Find functions that look like this one" — not by name or source,  │
+│  but by GRAPH SHAPE. Same number of callers, similar CFG structure, │
+│  same trait implementations. "These 4 functions are all request     │
+│  handlers with the same shape: validate → process → respond."       │
+│  USE CASE: Discovering implicit patterns that aren't codified.      │
+│                                                                      │
+│  OPTION: "Why Is This Slow?" Performance Trace Overlay              │
+│  ──────────────────────────────────────────────────────              │
+│  Import a flamegraph or perf trace. Overlay it on the architecture  │
+│  map. Now the heatmap shows ACTUAL runtime hotspots, not just       │
+│  structural centrality. "This function is called 10,000x/sec."     │
+│  Combined with the dependency graph: "The hot path goes through     │
+│  3 crate boundaries — each crossing has serialization overhead."    │
+│  USE CASE: Performance debugging guided by architecture.            │
+│                                                                      │
+│  OPTION: Dependency Health Score                                     │
+│  ────────────────────────────────                                    │
+│  Per-boundary health grade (A-F) based on:                          │
+│    Cohesion (high = good), Coupling_out (low = good),               │
+│    Coupling_in (moderate = good, extreme = risk),                   │
+│    pub_surface / entity_count (low ratio = good encapsulation),     │
+│    fan_in (moderate = good, >10 = bottleneck risk).                 │
+│  The architecture map shows grades per crate/module.                │
+│  "streaming/ gets an A. common/ gets a C (too many dependents)."   │
+│  USE CASE: Quick architecture health check. CTO-level dashboard.    │
+│                                                                      │
+│  OPTION: "What Would Break?" Impact Simulation                      │
+│  ──────────────────────────────────────────────                      │
+│  Click an entity → "What if this function didn't exist?"            │
+│  The variant engine removes all edges to/from it. Shows what        │
+│  breaks: "12 callers would fail. 3 are in tests. 2 are in the      │
+│  public API. 7 are internal."                                       │
+│  USE CASE: Evaluating whether to deprecate, remove, or refactor.   │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+### 14.9 Minimum Lovable Product (MLP) Definition
+
+Doshi would insist: before listing 40 workflows, define the smallest thing that a user would
+LOVE, not just use. "Minimum Lovable" is not "Minimum Viable" — it must create the emotional arc
+from Section 14.1.
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│  MINIMUM LOVABLE PRODUCT                                             │
+├──────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  Ships:                                                              │
+│  1. Drag-and-drop folder → tree-sitter indexing (3 seconds)         │
+│  2. Boundary tree from Cargo.toml (crate-level architecture map)    │
+│  3. Boundary metrics: entity_count, pub_surface, coupling,          │
+│     cohesion, fan_in/fan_out — all from GROUP BY                    │
+│  4. Source pane with caller/callee chips (clickable links)           │
+│  5. Focus lens (PPR ranking on click, 1-hop visible, rest dimmed)  │
+│  6. Search bar (FTS5)                                               │
+│  7. Breadcrumb trail                                                │
+│                                                                      │
+│  Does NOT ship:                                                      │
+│  • LLM companion (add in v1.1)                                      │
+│  • MIR/rustc_private (swap in later, same schema)                   │
+│  • Guided tours (v1.1)                                              │
+│  • Reading history (v1.1)                                           │
+│  • Variant overlays (v1.3)                                          │
+│  • Polonius/borrows (v1.2)                                          │
+│  • CFG visualizer (v1.2)                                            │
+│                                                                      │
+│  Emotional arc covered:                                              │
+│  ANXIETY → RELIEF (boundary map) → CURIOSITY (click to explore) →  │
+│  COMPETENCE (focus lens makes neighborhood legible) →               │
+│  CONFIDENCE (navigate the codebase without getting lost)            │
+│                                                                      │
+│  Time to "wow": 30 seconds (boundary map appears)                   │
+│  Time to "I get it": 5 minutes (clicked through 3 boundaries)      │
+│  Time to "I need this": 15 minutes (navigated a call chain          │
+│  and understood the module structure)                                │
+│                                                                      │
+│  This is ~4 weeks of work, not 6 months.                            │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
 ## Appendix A: rustc_private Stability Guarantee
 
 ```
