@@ -1,0 +1,1705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Why ISG Binary Format Makes Graph Algorithms Scream -- ELI5</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --bg-card: #161b22;
+    --bg-code: #0d1117;
+    --border: #30363d;
+    --text: #e6edf3;
+    --text-dim: #8b949e;
+    --accent-blue: #58a6ff;
+    --accent-green: #3fb950;
+    --accent-orange: #d29922;
+    --accent-red: #f85149;
+    --accent-purple: #bc8cff;
+    --accent-cyan: #39d2c0;
+    --accent-pink: #f778ba;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', 'JetBrains Mono', monospace;
+    font-size: 15px;
+    line-height: 1.7;
+    padding: 2rem;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  h1 {
+    font-size: 1.8rem;
+    color: var(--accent-blue);
+    border-bottom: 2px solid var(--accent-blue);
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  h2 {
+    font-size: 1.4rem;
+    color: var(--accent-green);
+    margin-top: 3rem;
+    margin-bottom: 0.8rem;
+    padding-left: 0.5rem;
+    border-left: 4px solid var(--accent-green);
+  }
+
+  h3 {
+    font-size: 1.15rem;
+    color: var(--accent-orange);
+    margin-top: 2rem;
+    margin-bottom: 0.6rem;
+  }
+
+  h4 {
+    font-size: 1rem;
+    color: var(--accent-purple);
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  p {
+    margin-bottom: 1rem;
+    color: var(--text-dim);
+  }
+
+  p strong, li strong {
+    color: var(--text);
+  }
+
+  .essence {
+    background: linear-gradient(135deg, #1a2332, #162230);
+    border: 2px solid var(--accent-blue);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+  }
+
+  .essence h2 {
+    border-left: none;
+    padding-left: 0;
+    margin-top: 0;
+    color: var(--accent-blue);
+    font-size: 1.3rem;
+  }
+
+  .punchline {
+    background: linear-gradient(135deg, #1a2820, #162a20);
+    border: 2px solid var(--accent-green);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin: 2rem 0;
+    text-align: center;
+  }
+
+  .punchline p {
+    color: var(--accent-green);
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin: 0;
+  }
+
+  pre {
+    background: var(--bg-code);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem 1.2rem;
+    overflow-x: auto;
+    margin: 1rem 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--text);
+  }
+
+  .diagram {
+    background: #0a0e14;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.2rem 1.4rem;
+    margin: 1.2rem 0;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .diagram-label {
+    display: inline-block;
+    background: var(--accent-blue);
+    color: var(--bg);
+    padding: 2px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .zoom-label {
+    display: inline-block;
+    padding: 3px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.5px;
+  }
+
+  .zoom-out { background: var(--accent-purple); color: var(--bg); }
+  .zoom-in  { background: var(--accent-orange); color: var(--bg); }
+  .zoom-deep { background: var(--accent-red); color: #fff; }
+
+  .versus {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin: 1rem 0;
+  }
+
+  .versus > div {
+    border-radius: 8px;
+    padding: 1rem;
+  }
+
+  .fast-side {
+    background: #0d2818;
+    border: 1px solid var(--accent-green);
+  }
+
+  .slow-side {
+    background: #2d1215;
+    border: 1px solid var(--accent-red);
+  }
+
+  .versus h4 {
+    margin-top: 0;
+    font-size: 0.95rem;
+  }
+
+  .fast-side h4 { color: var(--accent-green); }
+  .slow-side h4 { color: var(--accent-red); }
+
+  .speed-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: bold;
+    margin-left: 0.5rem;
+  }
+
+  .speed-fast { background: #0d3820; color: var(--accent-green); }
+  .speed-slow { background: #3d1215; color: var(--accent-red); }
+
+  .algo-section {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+  }
+
+  .algo-header {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin-bottom: 1rem;
+  }
+
+  .algo-num {
+    background: var(--accent-blue);
+    color: var(--bg);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  .algo-title {
+    font-size: 1.2rem;
+    color: var(--accent-cyan);
+  }
+
+  .key-insight {
+    background: #1a1a2e;
+    border-left: 3px solid var(--accent-purple);
+    padding: 0.8rem 1rem;
+    margin: 1rem 0;
+    border-radius: 0 6px 6px 0;
+  }
+
+  .key-insight p {
+    color: var(--accent-purple);
+    margin: 0;
+    font-weight: 600;
+  }
+
+  ul {
+    margin: 0.5rem 0 1rem 1.5rem;
+    color: var(--text-dim);
+  }
+
+  li { margin-bottom: 0.3rem; }
+
+  .toc {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.2rem 1.5rem;
+    margin: 1.5rem 0;
+  }
+
+  .toc a {
+    color: var(--accent-blue);
+    text-decoration: none;
+  }
+
+  .toc a:hover { text-decoration: underline; }
+
+  .highlight-green { color: var(--accent-green); }
+  .highlight-red   { color: var(--accent-red); }
+  .highlight-blue  { color: var(--accent-blue); }
+  .highlight-orange { color: var(--accent-orange); }
+  .highlight-purple { color: var(--accent-purple); }
+  .highlight-cyan  { color: var(--accent-cyan); }
+
+  .summary-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    font-size: 13px;
+  }
+
+  .summary-table th, .summary-table td {
+    border: 1px solid var(--border);
+    padding: 0.5rem 0.8rem;
+    text-align: left;
+  }
+
+  .summary-table th {
+    background: var(--bg-card);
+    color: var(--accent-blue);
+  }
+
+  .summary-table td { color: var(--text-dim); }
+
+  @media (max-width: 700px) {
+    body { padding: 1rem; font-size: 14px; }
+    .versus { grid-template-columns: 1fr; }
+    pre, .diagram { font-size: 11px; padding: 0.8rem; }
+  }
+</style>
+</head>
+<body>
+
+<h1>Why ISG Binary Makes Graph Algorithms Scream</h1>
+<p>An ELI5 explanation of how mmap'd dense arrays + sorted edge lists
+turn a 50K-entity code graph into a playground for BFS, PageRank,
+Leiden, k-core, SCC, and PPR -- and why SQLite can't keep up.</p>
+
+<div class="toc">
+  <strong style="color:var(--accent-blue)">Contents</strong>
+  <ul style="list-style:none;margin-left:0">
+    <li><a href="#essence">Level 1 -- The Essence (1 minute read)</a></li>
+    <li><a href="#foundations">Level 2 -- The 5 Foundations</a></li>
+    <li><a href="#algo-bfs">Algorithm 1 -- BFS (Neighbor Iteration)</a></li>
+    <li><a href="#algo-pagerank">Algorithm 2 -- PageRank (Full Scan)</a></li>
+    <li><a href="#algo-ppr">Algorithm 3 -- Personalized PageRank (Hot Path)</a></li>
+    <li><a href="#algo-leiden">Algorithm 4 -- Leiden (Community Detection)</a></li>
+    <li><a href="#algo-kcore">Algorithm 5 -- k-core Decomposition</a></li>
+    <li><a href="#algo-scc">Algorithm 6 -- SCC (Tarjan)</a></li>
+    <li><a href="#summary">The Final Scoreboard</a></li>
+  </ul>
+</div>
+
+<!-- ============================================================ -->
+<!--  LEVEL 1 -- THE ESSENCE                                       -->
+<!-- ============================================================ -->
+<div class="essence" id="essence">
+<h2>Level 1 -- The Essence</h2>
+
+<p><strong>The ISG binary format turns your code graph into a flat array
+that the CPU can chew through like a straight highway -- no stoplights
+(SQL parsing), no roundabouts (hash lookups), no toll booths (deserialization).
+The whole graph fits in L3 cache (11.7 MiB), so every algorithm runs at
+memory speed, not disk speed.</strong></p>
+
+<div class="diagram">
+<span class="diagram-label">The Core Idea</span>
+<pre style="border:none;margin:0;padding:0;background:transparent">
+           SQLite / JSON                    ISG Binary
+     ________________________        ________________________
+    |                        |      |                        |
+    |  SELECT * FROM edges   |      |  entity N = ptr[N*64]  |
+    |  WHERE src = 42        |      |  edges = ptr[start..   |
+    |                        |      |           start+count]  |
+    |  1. Parse SQL string   |      |                        |
+    |  2. B-tree traverse    |      |  1. Multiply           |
+    |  3. Deserialize rows   |      |  2. Read bytes         |
+    |  4. Alloc Vec&lt;Edge&gt;    |      |  Done.                 |
+    |  5. Return copy        |      |  Zero alloc. Zero copy.|
+    |________________________|      |________________________|
+    |                        |      |                        |
+    |  ~50 us per lookup     |      |  ~0.5 us per lookup    |
+    |  (100x slower)         |      |  (CPU cache speed)     |
+    |________________________|      |________________________|
+</pre>
+</div>
+
+<p><strong>Think of it this way:</strong> SQLite is a library with a
+librarian. You ask for a book, she walks to the shelf, looks up the
+index, finds the book, photocopies it, and hands you the copy.
+ISG is an open bookshelf where book #42 is always at slot #42.
+You just reach and grab it. No librarian. No photocopy.</p>
+
+</div>
+
+<!-- ============================================================ -->
+<!--  LEVEL 2 -- THE 5 FOUNDATIONS                                 -->
+<!-- ============================================================ -->
+<h2 id="foundations">Level 2 -- The 5 Foundations That Make It Fast</h2>
+
+<p>Before we look at each algorithm, here are the five tricks that the
+ISG binary format uses. Every algorithm benefits from all five.</p>
+
+<!-- FOUNDATION 1: Dense Arrays -->
+<h3>Foundation 1: Dense Arrays -- "Entity N lives at byte N*64"</h3>
+
+<p><strong>The key insight: when your ID IS your index, lookup is just
+multiplication.</strong> No hash table. No B-tree. No binary search.
+Multiply and read.</p>
+
+<div class="diagram">
+<span class="zoom-label zoom-in">ZOOMING IN -- Dense Array Layout</span>
+<pre style="border:none;margin:0;padding:0;background:transparent">
+  entities.idx  (mmap'd file, 64 bytes per entry)
+  _______________________________________________
+ |      |      |      |      |      |      |     |
+ | E[0] | E[1] | E[2] | E[3] | E[4] | E[5] | ...|
+ |______|______|______|______|______|______|_____|
+ ^      ^      ^      ^
+ |      |      |      |
+byte 0  64    128    192
+
+ "Where is entity 42?"
+
+   Answer: byte 42 * 64 = byte 2688
+   Cost: ONE multiplication. Done.
+
+ Compare to SQLite B-tree:
+ ____________________________
+|         Root Page          |
+|  keys: [100, 500, 900]    |
+|    /       |       \       |
+|  Page2   Page5   Page8     |  &lt;-- 3-4 page reads
+|  /    \                    |      to find entity 42
+| Leaf   Leaf                |
+|  [38,39,40,41,>>42<<,43]  |  &lt;-- then deserialize row
+|____________________________|
+</pre>
+</div>
+
+<div class="key-insight">
+<p>Dense array: O(1) with a single multiply.
+B-tree: O(log N) with 3-4 random page reads. For 50K entities,
+that's ~16 comparisons and ~4 page faults vs. 1 multiply.</p>
+</div>
+
+<!-- FOUNDATION 2: mmap -->
+<h3>Foundation 2: mmap -- "The OS Does the Caching for Free"</h3>
+
+<p><strong>mmap maps the file directly into your process's virtual address
+space.</strong> The OS page cache handles loading pages from disk. Your code
+just reads pointers. No read() syscalls. No application-level cache.
+No double-buffering.</p>
+
+<div class="diagram">
+<span class="zoom-label zoom-in">ZOOMING IN -- mmap vs. Traditional I/O</span>
+<pre style="border:none;margin:0;padding:0;background:transparent">
+  TRADITIONAL (SQLite):
+  ______        ________        ___________
+ | Disk | ───&gt; | Kernel | ───&gt; | App Buffer|
+ |      | read |  Page  | copy |  (malloc) |
+ |______|      | Cache  |      |___________|
+                                     |
+                                  parse SQL
+                                  build rows
+                                  return Vec
+
+  Two copies. Syscall overhead. Allocation.
+
+  ──────────────────────────────────────
+
+  MMAP (ISG):
+  ______        ____________________________
+ | Disk | ───&gt; |  Kernel Page Cache         |
+ |      | lazy |                            |
+ |______|      |  Your process's address    |
+               |  space. Just a pointer.    |
+               |  entities[42] = THIS byte. |
+               |____________________________|
+
+  Zero copies. No syscall after initial mmap.
+  OS prefetches pages automatically.
+</pre>
+</div>
+
+<p>When you access <code>entities[42]</code>, the OS checks if that page
+is in RAM. If yes: instant (nanoseconds). If no: one page fault, load
+4 KiB from SSD (~10 us), then cached forever. After a full scan, the
+entire 11.7 MiB file is in RAM and every access is at L3 cache speed.</p>
+
+<!-- FOUNDATION 3: Sorted Edge Files -->
+<h3>Foundation 3: Sorted Contiguous Edges -- "All neighbors in a row"</h3>
+
+<p><strong>This is the big one for graph algorithms.</strong> In <code>edges.fwd</code>,
+all outgoing edges for entity N are stored in a contiguous block. You
+don't search for them -- you just read bytes <code>[start..start+count]</code>.</p>
+
+<div class="diagram">
+<span class="zoom-label zoom-in">ZOOMING IN -- Edge Layout for BFS</span>
+<pre style="border:none;margin:0;padding:0;background:transparent">
+  edges.fwd  (sorted by src_seq, 12 bytes per edge)
+  ___________________________________________________
+ |E0's edges  |E1's edges     |E2's  |E3's edges    |
+ |a b c       |d e f g h      |i     |j k l m n o   |
+ |____________|_______________|______|______________|
+  ^                            ^
+  |                            |
+  Entity 0 has 3 outgoing     Entity 2 has 1 outgoing
+  edges starting at index 0    edge starting at index 8
+
+  Entity 2's offset table entry:
+  ┌────────────────────────┐
+  │ start = 8, count = 1   │  &lt;-- O(1) lookup
+  └────────────────────────┘
+  So: edges_fwd[8..9] = one 12-byte read. Done.
+
+  Compare to SQLite:
+  ┌───────────────────────────────────┐
+  │ SELECT * FROM edges              │
+  │ WHERE src_id = 'rust:fn:main'    │
+  │ ORDER BY dst_id;                 │
+  │                                   │
+  │ 1. Parse SQL                      │
+  │ 2. Plan query                     │
+  │ 3. Walk B-tree index on src_id    │
+  │ 4. For each match, read row page  │
+  │ 5. Deserialize each row           │
+  │ 6. Alloc result vector            │
+  │ 7. Sort results                   │
+  │ 8. Return                         │
+  └───────────────────────────────────┘
+</pre>
+</div>
+
+<div class="key-insight">
+<p>Contiguous = the CPU prefetcher sees you reading bytes 96, 108, 120
+and pre-loads 132, 144, 156 before you even ask. B-tree rows are
+scattered across different pages -- no prefetching possible.</p>
+</div>
+
+<!-- FOUNDATION 4: Cache Locality -->
+<h3>Foundation 4: Cache Locality -- "11.7 MiB fits in L3"</h3>
+
+<p><strong>Apple M-series chips have ~24 MiB of L3 cache.</strong> The
+entire ISG graph (11.7 MiB) fits inside it. After one full scan, every
+subsequent access hits L3 cache (~5 ns) instead of main RAM (~50 ns)
+or SSD (~10,000 ns).</p>
+
+<div class="diagram">
+<span class="zoom-label zoom-deep">DEEP DIVE -- The Memory Hierarchy</span>
+<pre style="border:none;margin:0;padding:0;background:transparent">
+                            Access Time
+  ┌──────────────┐
+  │   L1 Cache   │  ~1 ns     64 KiB     1 entity entry
+  │  (per core)  │                        fits perfectly
+  ├──────────────┤                        (64 bytes = 1
+  │   L2 Cache   │  ~3 ns     ~4 MiB     cache line)
+  │  (per core)  │
+  ├──────────────┤
+  │   L3 Cache   │  ~5 ns     ~24 MiB  &lt;-- ENTIRE ISG
+  │  (shared)    │                         GRAPH FITS
+  │              │                         HERE (11.7 MiB)
+  ├──────────────┤
+  │  Main RAM    │  ~50 ns    16+ GiB     SQLite page cache
+  │  (DRAM)      │                         lives here
+  ├──────────────┤
+  │     SSD      │  ~10 us    512+ GiB    SQLite DB file
+  │              │  (10,000 ns)            lives here
+  └──────────────┘
+
+  ISG: everything at 5 ns
+  SQLite: bounces between 50 ns and 10,000 ns
+  That's 10x to 2000x slower per access.
+</pre>
+</div>
+
+<!-- FOUNDATION 5: Zero Allocation -->
+<h3>Foundation 5: Zero Allocation -- "&[EdgeEntry] not Vec&lt;Edge&gt;"</h3>
+
+<p><strong>When you query SQLite, it allocates a Vec, copies each row into
+a struct, and hands you owned data.</strong> ISG gives you a slice pointing
+directly into the mmap'd file. No alloc. No copy. No destructor.</p>
+
+<div class="diagram">
+<span class="zoom-label zoom-in">ZOOMING IN -- Allocation Cost</span>
+<pre style="border:none;margin:0;padding:0;background:transparent">
+  SQLite: "give me entity 42's edges"
+  ┌─────────────────────────────────────────┐
+  │ let edges: Vec&lt;Edge&gt; = db.query(...);  │
+  │                                         │
+  │ Internally:                             │
+  │   1. malloc(N * sizeof(Edge))  ~50 ns   │
+  │   2. for each row:                      │
+  │      - parse blob        ~200 ns        │
+  │      - copy into Vec      ~10 ns        │
+  │   3. When done: free(edges)  ~30 ns     │
+  │                                         │
+  │ Total overhead per query: ~500 ns+      │
+  │ Garbage pressure: YES                   │
+  └─────────────────────────────────────────┘
+
+  ISG: "give me entity 42's edges"
+  ┌─────────────────────────────────────────┐
+  │ let edges: &amp;[EdgeEntry] =              │
+  │     &amp;fwd[start..start + count];        │
+  │                                         │
+  │ Internally:                             │
+  │   1. Pointer add.  ~0.3 ns              │
+  │   That's it.                            │
+  │                                         │
+  │ Total overhead per query: ~0.3 ns       │
+  │ Garbage pressure: ZERO                  │
+  └─────────────────────────────────────────┘
+</pre>
+</div>
+
+<p>This matters enormously for algorithms like PageRank that iterate
+ALL edges 20-50 times. 200K edges * 50 iterations = 10 million
+edge reads. At 500 ns overhead each for SQLite, that's 5 entire
+seconds of pure overhead. ISG: 3 ms of pure overhead (pointer adds).</p>
+
+<!-- ============================================================ -->
+<!--  ALGORITHM DEEP DIVES                                         -->
+<!-- ============================================================ -->
+<h2 style="color:var(--accent-cyan);border-color:var(--accent-cyan)">Level 3 -- Algorithm-by-Algorithm Deep Dive</h2>
+
+<!-- ==================== BFS ==================== -->
+<div class="algo-section" id="algo-bfs">
+<div class="algo-header">
+  <div class="algo-num">1</div>
+  <div class="algo-title">BFS -- Breadth-First Search</div>
+</div>
+
+<p><strong>Used for:</strong> call chain explorer, blast radius,
+neighborhood discovery. "Show me everything within 3 hops of main()."</p>
+
+<p><strong>Access pattern:</strong> Start at one node. Visit all neighbors.
+Then visit THEIR neighbors. Repeat for N hops. The critical operation
+is <em>"give me all neighbors of node X"</em> -- and you do it once
+per node you visit.</p>
+
+<div class="diagram">
+<span class="zoom-label zoom-out">ZOOMED OUT -- BFS Walks the Graph</span>
+<pre style="border:none;margin:0;padding:0;background:transparent">
+  Start: entity 42 (main)
+
+  Hop 0:  [42]
+
+  Hop 1:  [42] ───&gt; [7, 15, 88]
+                     neighbors of 42
+
+  Hop 2:  [7]  ───&gt; [3, 21]
+          [15] ───&gt; [42, 99]     (42 already visited, skip)
+          [88] ───&gt; [15, 200]    (15 already visited, skip)
+
+  Result: {42, 7, 15, 88, 3, 21, 99, 200}
+          blast radius = 8 entities in 2 hops
+</pre>
+</div>
+
+<p><strong>The critical inner loop:</strong> for each entity we visit,
+we need to read its outgoing edges. This is where ISG destroys SQLite.</p>
+
+<div class="diagram">
+<span class="zoom-label zoom-deep">DEEP DIVE -- BFS Neighbor Read</span>
+<pre style="border:none;margin:0;padding:0;background:transparent">
+  ISG -- visiting entity 42:
+
+  Step 1: Read offset table              Cost
+  ┌──────────────────────────┐
+  │ off = fwd_off[42]       │  8 bytes, O(1)
+  │ off.start = 1050        │  ptr + 42*8 = ptr + 336
+  │ off.count = 7           │
+  └──────────────────────────┘
+
+  Step 2: Read contiguous edge block
+  ┌──────────────────────────────────────┐
+  │ edges_fwd[1050..1057]               │
+  │ ┌────┬────┬────┬────┬────┬────┬────┐│
+  │ │e[0]│e[1]│e[2]│e[3]│e[4]│e[5]│e[6]││
+  │ │12B │12B │12B │12B │12B │12B │12B ││
+  │ └────┴────┴────┴────┴────┴────┴────┘│
+  │  84 bytes, CONTIGUOUS in memory     │
+  │  CPU prefetcher loads them all      │
+  └──────────────────────────────────────┘
+
+  Step 3: For each edge, just read dst_seq (4 bytes)
+  ┌────────────────┐
+  │ edge.dst_seq   │  the neighbor's ID
+  │ Already in the │  No string lookup needed
+  │ 12-byte entry  │  during BFS traversal
+  └────────────────┘
+
+  Total per node: ~100 bytes read, ~10 ns
+
+  ──────────────────────────────────────────
+
+  SQLite -- visiting entity 42:
+
+  Step 1: Send SQL query
+  ┌──────────────────────────────────────┐
+  │ SELECT dst_id FROM edges            │
+  │ WHERE src_id = 'rust:fn:main';      │
+  │                                      │
+  │ Cost: SQL parse         ~5 us       │
+  │       Query plan        ~2 us       │
+  │       B-tree walk       ~3 us       │
+  │       Row deserialize   ~5 us       │
+  │       Vec allocation    ~0.5 us     │
+  └──────────────────────────────────────┘
+
+  Total per node: ~15 us (15,000 ns)
+</pre>
+</div>
+
+<div class="key-insight">
+<p>BFS on ISG: ~10 ns per node visited (1500x faster).
+A 2-hop BFS visiting 500 nodes: ISG = 5 us. SQLite = 7.5 ms.</p>
+</div>
+
+<div class="versus">
+  <div class="fast-side">
+    <h4>ISG Binary <span class="speed-tag speed-fast">~5 us</span></h4>
+<pre style="border-color:#3fb950;font-size:12px">
+BFS 2-hop from entity 42:
+  500 nodes visited
+  x 10 ns each (contiguous read)
+  = ~5 us total
+
+  Allocations: 0
+  Syscalls: 0
+  Cache misses: ~10
+  (edges are contiguous)
+</pre>
+  </div>
+  <div class="slow-side">
+    <h4>SQLite <span class="speed-tag speed-slow">~7.5 ms</span></h4>
+<pre style="border-color:#f85149;font-size:12px">
+BFS 2-hop from entity 42:
+  500 nodes visited
+  x 15 us each (SQL per node)
+  = ~7.5 ms total
+
+  Allocations: 500
+  Syscalls: ~500
+  Cache misses: ~2000
+  (B-tree pages scattered)
+</pre>
+  </div>
+</div>
+</div>
+
+<!-- ==================== PageRank ==================== -->
+<div class="algo-section" id="algo-pagerank">
+<div class="algo-header">
+  <div class="algo-num">2</div>
+  <div class="algo-title">PageRank -- Entity Importance Ranking</div>
+</div>
+
+<p><strong>Used for:</strong> "Which functions are the most important in
+this codebase?" Ranks every entity by how many important things depend
+on it.</p>
+
+<p><strong>Access pattern:</strong> FULL SEQUENTIAL SCAN of all edges,
+repeated 20-50 times. For each edge, read source score, divide by
+out-degree, add to destination score. This is the most I/O-intensive
+algorithm.</p>
+
+<div class="diagram">
+<span class="zoom-label zoom-out">ZOOMED OUT -- PageRank Iteration</span>
+<pre style="border:none;margin:0;padding:0;background:transparent">
+  Round 1 of 30:
+
+  scores_new = [0.0; 50_000]    (one f32 per entity)
+
+  For EVERY edge (src, dst) in edges.fwd:
+    ┌───────────────────────────────────────┐
+    │ contribution = scores[src]            │
+    │              / out_degree[src]         │
+    │ scores_new[dst] += contribution       │
+    └───────────────────────────────────────┘
+
+  Repeat 30 times until convergence.
+
+  Total edge reads: 200K edges x 30 rounds = 6 million
+</pre>
+</div>
+
+<p><strong>Why sequential scan is everything:</strong> PageRank reads
+every single edge in order. This is the dream scenario for contiguous
+arrays -- the CPU prefetcher sees the sequential pattern and loads
+the next cache line before you even ask for it.</p>
+
+<div class="diagram">
+<span class="zoom-label zoom-deep">DEEP DIVE -- Sequential Scan Magic</span>
+<pre style="border:none;margin:0;padding:0;background:transparent">
+  ISG edges.fwd: 200K entries x 12 bytes = 2.3 MiB
+  Laid out in memory:
+
+  ┌──────┬──────┬──────┬──────┬──────┬──────┐
+  │edge 0│edge 1│edge 2│edge 3│edge 4│edge 5│...
+  │ 12B  │ 12B  │ 12B  │ 12B  │ 12B  │ 12B  │
+  └──────┴──────┴──────┴──────┴──────┴──────┘
+   ▲                     ▲
+   │ CPU reads here      │ Prefetcher already
+   │ right now           │ loaded this cache line
+
+  The CPU prefetcher detects: "they're reading
+  sequentially!" and loads AHEAD of you.
+
+  Result: effectively ZERO cache misses for
+  the edge scan. Pure memory bandwidth.
+
+  M-series memory bandwidth: ~100 GB/s
+  2.3 MiB / 100 GB/s = 0.023 ms per round
+  30 rounds = 0.7 ms for ALL edge I/O
+
+  ──────────────────────────────────────────
+
+  SQLite: has to iterate via cursor
+
+  ┌────────────────────────────────────────┐
+  │ SELECT src_id, dst_id FROM edges;     │
+  │                                        │
+  │ For each of 200K rows:                │
+  │   - Advance B-tree cursor   ~0.3 us   │
+  │   - Deserialize row         ~0.2 us   │
+  │   - Parse src_id string     ~0.1 us   │
+  │   - Hash lookup for seq_num ~0.2 us   │
+  │                                        │
+  │ Per round: 200K x 0.8 us = 160 ms     │
+  │ 30 rounds: 4,800 ms = 4.8 seconds     │
+  └────────────────────────────────────────┘
+</pre>
+</div>
+
+<div class="diagram">
+<span class="zoom-label zoom-deep">DEEP DIVE -- Score Array Access</span>
+<pre style="border:none;margin:0;padding:0;background:transparent">
+  ISG uses a dense f32 array for scores:
+
+  metrics.pagerank (or temp array during iteration)
+  ┌───────┬───────┬───────┬───────┬───────┐
+  │ E[0]  │ E[1]  │ E[2]  │ E[3]  │ E[4]  │ ...
+  │ 0.002 │ 0.015 │ 0.001 │ 0.042 │ 0.003 │
+  │  4B   │  4B   │  4B   │  4B   │  4B   │
+  └───────┴───────┴───────┴───────┴───────┘
+
+  scores[entity_42] = *(ptr + 42 * 4)
+  O(1). 4 bytes. In L3 cache.
+
+  50K entities x 4 bytes = 200 KiB
+  The ENTIRE score array fits in L2 cache.
+
+  SQLite equivalent:
+  ┌─────────────────────────────────────┐
+  │ HashMap&lt;String, f64&gt; scores;       │
+  │                                     │
+  │ scores["rust:fn:handle_request"]    │
+  │   1. Hash string        ~20 ns     │
+  │   2. Find bucket        ~10 ns     │
+  │   3. Compare key string ~15 ns     │
+  │   4. Random memory access          │
+  │                                     │
+  │ Per lookup: ~50 ns (vs 1 ns)       │
+  │ Plus: HashMap is 3-5x larger in    │
+  │ memory than a dense array          │
+  └─────────────────────────────────────┘
+</pre>
+</div>
+
+<div class="key-insight">
+<p>PageRank on ISG: ~3 ms total (30 rounds).
+PageRank on SQLite: ~5 seconds. That's a 1600x difference.
+The secret: sequential scan + dense score arrays + CPU prefetch.</p>
+</div>
+
+<div class="versus">
+  <div class="fast-side">
+    <h4>ISG Binary <span class="speed-tag speed-fast">~3 ms</span></h4>
+<pre style="border-color:#3fb950;font-size:12px">
+PageRank (30 rounds, 50K/200K):
+  Edge scan: 0.7 ms (sequential)
+  Score updates: 1.5 ms (dense f32[])
+  Convergence check: 0.2 ms
+  Overhead: ~0 (no alloc)
+  ─────────────────────
+  Total: ~3 ms
+</pre>
+  </div>
+  <div class="slow-side">
+    <h4>SQLite <span class="speed-tag speed-slow">~5 sec</span></h4>
+<pre style="border-color:#f85149;font-size:12px">
+PageRank (30 rounds, 50K/200K):
+  Edge cursor: 4800 ms (B-tree walk)
+  Score lookup: 300 ms (HashMap)
+  String hashing: 200 ms
+  Row deser: 150 ms
+  Allocations: ~6M mallocs
+  ─────────────────────
+  Total: ~5000 ms
+</pre>
+  </div>
+</div>
+</div>
+
+<!-- ==================== PPR ==================== -->
+<div class="algo-section" id="algo-ppr">
+<div class="algo-header">
+  <div class="algo-num">3</div>
+  <div class="algo-title">Personalized PageRank (PPR) -- The Hot Path</div>
+</div>
+
+<p><strong>Used for:</strong> "What's important relative to THIS entity?"
+Runs on every user click in the Parseltongue UI. Budget: 50 ms.</p>
+
+<p><strong>Access pattern:</strong> Like PageRank but starting from ONE
+seed node. Uses random walks or power iteration from the seed. Touches
+a SUBSET of the graph (the "neighborhood"). Mix of neighbor iteration
+(like BFS) and score accumulation (like PageRank).</p>
+
+<div class="diagram">
+<span class="zoom-label zoom-out">ZOOMED OUT -- PPR From a Seed</span>
+<pre style="border:none;margin:0;padding:0;background:transparent">
+  Seed: entity 42 (user clicked "main()")
+
+  Round 1: Push score from 42 to neighbors
+  ┌─────────────────────────────────────────┐
+  │          0.85                            │
+  │  [42] ────────&gt; split among neighbors   │
+  │   |              [7]  gets 0.28         │
+  │   |              [15] gets 0.28         │
+  │   |              [88] gets 0.28         │
+  │   +── 0.15 stays (teleport back to 42)  │
+  └─────────────────────────────────────────┘
+
+  Round 2: Push from 7, 15, 88 to THEIR neighbors
+  (only entities with score > threshold)
+
+  After 5-10 rounds: converged.
+  Typical: touches ~500-2000 entities (not all 50K).
+</pre>
+</div>
+
+<p><strong>Why this is the hardest test:</strong> PPR mixes random access
+(jumping to arbitrary entities) with sequential access (reading their
+edge lists). It also has a hard latency budget (50 ms) because it runs
+interactively.</p>
+
+<div class="diagram">
+<span class="zoom-label zoom-deep">DEEP DIVE -- PPR Inner Loop on ISG</span>
+<pre style="border:none;margin:0;padding:0;background:transparent">
+  For each active entity with score &gt; threshold:
+
+  ISG version:
+  ┌──────────────────────────────────────────┐
+  │                                          │
+  │ // O(1): read from dense array           │
+  │ let score = scores[entity_seq];    ~1 ns │
+  │ let out_deg = entities[entity_seq]       │
+  │               .out_degree;         ~5 ns │
+  │ let contrib = score * 0.85               │
+  │             / out_deg as f32;      ~1 ns │
+  │                                          │
+  │ // Contiguous edge read                  │
+  │ let off = fwd_off[entity_seq];     ~1 ns │
+  │ let edges = &amp;fwd[off.start..             │
+  │              off.start+off.count]; ~1 ns │
+  │                                          │
+  │ for e in edges {                         │
+  │   scores[e.dst_seq] += contrib;    ~1 ns │
+  │ }                              each iter │
+  │                                          │
+  │ // Teleport                              │
+  │ scores[seed] += score * 0.15;      ~1 ns │
+  │                                          │
+  │ Per entity: ~15 ns + 1 ns/edge           │
+  └──────────────────────────────────────────┘
+
+  SQLite version:
+  ┌──────────────────────────────────────────┐
+  │                                          │
+  │ SELECT dst_id FROM edges                 │
+  │ WHERE src_id = ?;                        │
+  │                                          │
+  │ Per entity: ~15 us (15,000 ns)           │
+  │ Plus HashMap lookup for scores: ~50 ns   │
+  │ Plus string hashing per edge: ~20 ns     │
+  │                                          │
+  │ 1000x slower per entity.                 │
+  └──────────────────────────────────────────┘
+</pre>
+</div>
+
+<div class="key-insight">
+<p>PPR touching 1000 entities: ISG = ~0.2 ms. SQLite = ~200 ms.
+ISG easily fits in the 50ms interactive budget.
+SQLite needs aggressive pruning or precomputation to get close.</p>
+</div>
+</div>
+
+<!-- ==================== Leiden ==================== -->
+<div class="algo-section" id="algo-leiden">
+<div class="algo-header">
+  <div class="algo-num">4</div>
+  <div class="algo-title">Leiden -- Community Detection</div>
+</div>
+
+<p><strong>Used for:</strong> "Which entities belong together?"
+Finds natural clusters in your code graph (like "auth module entities"
+or "HTTP handler cluster").</p>
+
+<p><strong>Access pattern:</strong> The most demanding pattern. For each
+node, compute modularity gain of moving it to each neighbor's community.
+This means: for EACH node, read ALL its edges, and for EACH edge, look
+up the DESTINATION's current community. Random access + neighbor iteration
++ global metrics. Many iterations.</p>
+
+<div class="diagram">
+<span class="zoom-label zoom-out">ZOOMED OUT -- Leiden Moves Nodes</span>
+<pre style="border:none;margin:0;padding:0;background:transparent">
+  Initial: every entity in its own community
+
+  ┌─C0──┐  ┌─C1──┐  ┌─C2──┐  ┌─C3──┐
+  │ E[0]│  │ E[1]│  │ E[2]│  │ E[3]│ ...
+  └─────┘  └─────┘  └─────┘  └─────┘
+
+  Iteration: try moving each entity to
+  its neighbors' communities
+
+  "Should E[2] move to C1?"
+  ┌─────────────────────────────────────┐
+  │ Check edges of E[2]:               │
+  │   edge to E[1] (in C1) -- strong   │
+  │   edge to E[5] (in C4) -- weak     │
+  │                                     │
+  │ Modularity gain for C1: +0.03      │
+  │ Modularity gain for C4: +0.01      │
+  │                                     │
+  │ Best gain: C1. Move E[2] to C1.    │
+  └─────────────────────────────────────┘
+
+  After:
+  ┌─C0──┐  ┌──C1───┐  ┌─C3──┐
+  │ E[0]│  │E[1]E[2]│  │ E[3]│ ...
+  └─────┘  └────────┘  └─────┘
+</pre>
+</div>
+
+<div class="diagram">
+<span class="zoom-label zoom-deep">DEEP DIVE -- Leiden's Data Appetite</span>
+<pre style="border:none;margin:0;padding:0;background:transparent">
+  For each entity (50K), Leiden needs:
+
+  ISG access pattern:
+  ┌─────────────────────────────────────────┐
+  │ 1. Read entity's edges (contiguous)     │
+  │    off = fwd_off[e]           ~1 ns     │
+  │    edges = fwd[start..count]  ~5 ns     │
+  │                                         │
+  │ 2. For each edge, read dst community    │
+  │    comm = community[edge.dst] ~1 ns     │
+  │    (dense u16 array, entity N at N*2)   │
+  │                                         │
+  │ 3. Accumulate modularity per community  │
+  │    community_weight[comm] += w  ~1 ns   │
+  │                                         │
+  │ 4. Read community totals                │
+  │    comm_total[comm]           ~1 ns     │
+  │    (another dense array)                │
+  │                                         │
+  │ All data: dense arrays. All in L3.      │
+  │ Per entity: ~20 ns + edges * 3 ns       │
+  └─────────────────────────────────────────┘
+
+  SQLite access pattern:
+  ┌─────────────────────────────────────────┐
+  │ 1. Query edges:                         │
+  │    SELECT * FROM edges WHERE src=?      │
+  │    ~15 us per entity                    │
+  │                                         │
+  │ 2. For each edge, query community:      │
+  │    SELECT community FROM entities       │
+  │    WHERE id = ?                         │
+  │    ~5 us per edge                       │
+  │                                         │
+  │ 3. Query community aggregates:          │
+  │    SELECT sum(degree) FROM entities     │
+  │    WHERE community = ?                  │
+  │    ~10 us per community                 │
+  │                                         │
+  │ Per entity: ~15 us + edges * 5 us       │
+  │ Plus N+1 query problem!                 │
+  └─────────────────────────────────────────┘
+</pre>
+</div>
+
+<p><strong>Leiden typically runs 5-15 iterations</strong> over the full
+graph before converging. Each iteration visits every entity.</p>
+
+<div class="versus">
+  <div class="fast-side">
+    <h4>ISG Binary <span class="speed-tag speed-fast">~15 ms</span></h4>
+<pre style="border-color:#3fb950;font-size:12px">
+Leiden (10 iterations, 50K/200K):
+  Per iter: 50K entities x 20 ns
+          + 200K edges x 3 ns
+          = 1 ms + 0.6 ms = 1.6 ms
+  10 iters: ~16 ms
+
+  community[N] = u16 dense array
+  100 KiB total. Fits in L2 cache.
+</pre>
+  </div>
+  <div class="slow-side">
+    <h4>SQLite <span class="speed-tag speed-slow">~75 sec</span></h4>
+<pre style="border-color:#f85149;font-size:12px">
+Leiden (10 iterations, 50K/200K):
+  Per iter: 50K x 15 us (edge query)
+          + 200K x 5 us (comm lookup)
+          = 750 ms + 1000 ms = 1750 ms
+  10 iters: ~17,500 ms
+
+  Plus community UPDATE queries
+  after each move: ~5 us each
+  Total: ~75 seconds
+</pre>
+</div>
+</div>
+
+<div class="key-insight">
+<p>Leiden on ISG: 15 ms. Leiden on SQLite: 75 seconds.
+The difference: 5000x. Community IDs as a dense u16[] array
+(100 KiB, fits in L2) vs. SQL UPDATE per community change.</p>
+</div>
+</div>
+
+<!-- ==================== K-Core ==================== -->
+<div class="algo-section" id="algo-kcore">
+<div class="algo-header">
+  <div class="algo-num">5</div>
+  <div class="algo-title">k-core Decomposition -- Core/Periphery</div>
+</div>
+
+<p><strong>Used for:</strong> "Which entities are in the core of the
+codebase (heavily connected) vs. periphery (loosely connected)?"
+Peels away low-degree nodes layer by layer.</p>
+
+<p><strong>Access pattern:</strong> Iterate all entities. Remove those with
+degree less than k. Recount degrees for remaining entities. Increase k.
+Repeat. Needs: degree lookup (dense array), neighbor iteration (edge
+lists), and a "removed" bitset.</p>
+
+<div class="diagram">
+<span class="zoom-label zoom-out">ZOOMED OUT -- k-core Peeling</span>
+<pre style="border:none;margin:0;padding:0;background:transparent">
+  k=1: Remove entities with degree &lt; 1
+  ┌─────────────────────────────────┐
+  │  Before:                        │
+  │  A(3)──B(2)──C(1)──D(0)        │
+  │  |      |                       │
+  │  E(2)──F(4)                     │
+  │                                 │
+  │  D has degree 0: REMOVE         │
+  │  Result: core(D) = 0            │
+  └─────────────────────────────────┘
+
+  k=2: Remove entities with degree &lt; 2
+  ┌─────────────────────────────────┐
+  │  A(3)──B(2)──C(0) &lt;-- lost D   │
+  │  |      |                       │
+  │  E(2)──F(4)                     │
+  │                                 │
+  │  C now has degree 0: REMOVE     │
+  │  Result: core(C) = 1            │
+  │  B drops to degree 1: REMOVE    │
+  │  Result: core(B) = 1            │
+  └─────────────────────────────────┘
+
+  k=3: Remove degree &lt; 3
+  ┌─────────────────────────────────┐
+  │  A(2)──E(2)──F(3)              │
+  │  A and E have degree 2: REMOVE  │
+  │  core(A) = 2, core(E) = 2      │
+  │  F alone: core(F) = 2          │
+  └─────────────────────────────────┘
+</pre>
+</div>
+
+<div class="diagram">
+<span class="zoom-label zoom-deep">DEEP DIVE -- k-core Data Access</span>
+<pre style="border:none;margin:0;padding:0;background:transparent">
+  ISG data structures used:
+
+  1. Degree array (from entities.idx or computed):
+     ┌───┬───┬───┬───┬───┬───┐
+     │ 3 │ 2 │ 1 │ 0 │ 2 │ 4 │  &lt;-- dense u16[]
+     └───┴───┴───┴───┴───┴───┘  50K x 2B = 100 KiB
+       A   B   C   D   E   F     Fits in L2 cache
+
+  2. Removed bitset:
+     ┌────────────────────────┐
+     │ 0 0 0 1 0 0 0 0 0 ... │  &lt;-- 50K bits = 6.25 KiB
+     └────────────────────────┘  Fits in L1 cache!
+       A B C D E F
+
+  3. When removing entity B, recount neighbors:
+     off = fwd_off[B]                 ~1 ns
+     for e in fwd[off.start..+count]: ~3 ns each
+       if !removed[e.dst]:
+         degrees[e.dst] -= 1          ~1 ns
+         if degrees[e.dst] &lt; k:
+           queue.push(e.dst)          ~2 ns
+
+  Per removal: ~10-20 ns
+  Total: ~200K edge reads = ~0.6 ms
+
+  ────────────────────────────────────
+
+  SQLite per removal:
+  ┌──────────────────────────────────┐
+  │ -- Find low-degree entities      │
+  │ SELECT id, degree FROM entities  │
+  │ WHERE degree &lt; ?                │
+  │ AND NOT removed;        ~10 ms   │
+  │                                  │
+  │ -- For each removed entity,      │
+  │ -- update neighbor degrees       │
+  │ UPDATE entities SET degree =     │
+  │   degree - 1                     │
+  │ WHERE id IN (SELECT dst FROM     │
+  │   edges WHERE src = ?);  ~5 ms   │
+  │                                  │
+  │ Per round: 10 ms + N * 5 ms      │
+  │ Many rounds = seconds to minutes │
+  └──────────────────────────────────┘
+</pre>
+</div>
+
+<div class="versus">
+  <div class="fast-side">
+    <h4>ISG Binary <span class="speed-tag speed-fast">~2 ms</span></h4>
+<pre style="border-color:#3fb950;font-size:12px">
+k-core (50K entities, 200K edges):
+  Degree init: 0.1 ms (scan entities)
+  Edge processing: 0.6 ms (each edge
+    visited ~once during peeling)
+  Bitset ops: negligible (L1 cache)
+  Total: ~2 ms
+</pre>
+  </div>
+  <div class="slow-side">
+    <h4>SQLite <span class="speed-tag speed-slow">~30 sec</span></h4>
+<pre style="border-color:#f85149;font-size:12px">
+k-core (50K entities, 200K edges):
+  Initial degree query: 50 ms
+  Per peeling round: ~500 ms
+    (UPDATE + SELECT per entity)
+  ~60 rounds typical
+  Total: ~30 seconds
+
+  Plus: index rebuilding between
+  rounds as rows get updated
+</pre>
+  </div>
+</div>
+
+<div class="key-insight">
+<p>k-core on ISG: 2 ms. On SQLite: 30 seconds.
+The killer: k-core needs a mutable degree array that gets updated
+thousands of times. Dense array update = 1 ns. SQL UPDATE = 5 ms.
+A 5-million-x difference per degree decrement.</p>
+</div>
+</div>
+
+<!-- ==================== SCC ==================== -->
+<div class="algo-section" id="algo-scc">
+<div class="algo-header">
+  <div class="algo-num">6</div>
+  <div class="algo-title">SCC -- Strongly Connected Components (Tarjan)</div>
+</div>
+
+<p><strong>Used for:</strong> "Find all circular dependency cycles."
+If A calls B, B calls C, and C calls A, they form an SCC. Every
+entity in an SCC of size &gt; 1 is part of a cycle.</p>
+
+<p><strong>Access pattern:</strong> DFS (depth-first search) through ALL
+nodes using forward edges, then DFS again using REVERSE edges. Needs:
+neighbor iteration in both directions + a stack + visited/lowlink arrays.</p>
+
+<div class="diagram">
+<span class="zoom-label zoom-out">ZOOMED OUT -- Tarjan's Algorithm</span>
+<pre style="border:none;margin:0;padding:0;background:transparent">
+  The algorithm does TWO full DFS traversals:
+
+  Pass 1: DFS using FORWARD edges (edges.fwd)
+  ┌────────────────────────────────────────┐
+  │ Visit every entity via outgoing edges  │
+  │ Record "finish order" (when DFS backs  │
+  │ out of a node)                         │
+  │                                        │
+  │ [42] ──&gt; [7] ──&gt; [3] ──&gt; (dead end)  │
+  │                    finish: 3, then 7   │
+  │      ──&gt; [15] ──&gt; [42] (cycle!)       │
+  │                    finish: 15           │
+  │ finish: 42                             │
+  └────────────────────────────────────────┘
+
+  Pass 2: DFS using REVERSE edges (edges.rev)
+  ┌────────────────────────────────────────┐
+  │ Process entities in REVERSE finish     │
+  │ order from Pass 1.                     │
+  │ Each DFS tree = one SCC.              │
+  │                                        │
+  │ [42] &lt;── [15] &lt;── [42]  (SCC found!) │
+  │ SCC = {42, 15}                         │
+  └────────────────────────────────────────┘
+</pre>
+</div>
+
+<p><strong>The critical advantage of ISG:</strong> it has BOTH
+<code>edges.fwd</code> AND <code>edges.rev</code>. Forward edges
+sorted by source. Reverse edges sorted by destination. Both with
+O(1) offset lookup. This is exactly what SCC needs.</p>
+
+<div class="diagram">
+<span class="zoom-label zoom-deep">DEEP DIVE -- SCC Uses BOTH Edge Files</span>
+<pre style="border:none;margin:0;padding:0;background:transparent">
+  ISG has two edge files -- purpose-built for SCC:
+
+  edges.fwd (sorted by src_seq):
+  ┌───────────────────────────────────┐
+  │ Entity 0's outgoing | E1's | E2's │
+  │ [0-&gt;5, 0-&gt;8, 0-&gt;12]|[1-&gt;3]|...  │
+  └───────────────────────────────────┘
+  fwd_off[0] = {start: 0, count: 3}
+
+  edges.rev (sorted by dst_seq):
+  ┌───────────────────────────────────┐
+  │ Entity 0's incoming | E1's | E2's │
+  │ [5-&gt;0, 9-&gt;0]       |[0-&gt;1]|...  │
+  └───────────────────────────────────┘
+  rev_off[0] = {start: 0, count: 2}
+
+  Pass 1 (forward DFS):
+    "neighbors of 42" = fwd[fwd_off[42]..]
+    Contiguous read. ~10 ns.
+
+  Pass 2 (reverse DFS):
+    "who points to 42" = rev[rev_off[42]..]
+    ALSO contiguous read. ~10 ns.
+
+  ────────────────────────────────────
+
+  SQLite -- getting REVERSE edges:
+
+  Option A: Separate reverse index
+  ┌──────────────────────────────────┐
+  │ SELECT src_id FROM edges        │
+  │ WHERE dst_id = ?;               │
+  │                                  │
+  │ Needs index on dst_id column.   │
+  │ B-tree walk: ~10 us per entity  │
+  │ Plus row deserialization.       │
+  └──────────────────────────────────┘
+
+  Option B: No reverse index
+  ┌──────────────────────────────────┐
+  │ FULL TABLE SCAN per entity!     │
+  │ 200K rows x 50K entities        │
+  │ = heat death of the universe    │
+  └──────────────────────────────────┘
+</pre>
+</div>
+
+<div class="diagram">
+<span class="zoom-label zoom-deep">DEEP DIVE -- SCC Auxiliary Arrays</span>
+<pre style="border:none;margin:0;padding:0;background:transparent">
+  Tarjan needs these per-entity arrays:
+
+  ISG: all dense arrays, all in cache
+  ┌────────────────────────────────────────┐
+  │ visited: [bool; 50_000]    = 50 KiB   │
+  │ on_stack: [bool; 50_000]   = 50 KiB   │
+  │ lowlink: [u32; 50_000]     = 200 KiB  │
+  │ discovery: [u32; 50_000]   = 200 KiB  │
+  │ scc_id: [u16; 50_000]      = 100 KiB  │
+  │                                        │
+  │ Total auxiliary: ~600 KiB              │
+  │ + edge files: ~3.6 MiB                │
+  │ + entity idx: ~3 MiB                   │
+  │ ───────────────────                    │
+  │ Everything: ~7.2 MiB                   │
+  │ Still fits in L3 cache (24 MiB)!       │
+  │                                        │
+  │ Every array access: index * sizeof     │
+  │ = ~1 ns                                │
+  └────────────────────────────────────────┘
+
+  SQLite: needs HashMap or application cache
+  ┌────────────────────────────────────────┐
+  │ HashMap&lt;String, bool&gt; visited;        │
+  │ HashMap&lt;String, u32&gt; lowlink;         │
+  │ HashMap&lt;String, u32&gt; discovery;       │
+  │                                        │
+  │ Each HashMap entry: ~80 bytes          │
+  │ (key string + hash + value + padding)  │
+  │ 50K entries x 80B x 3 maps = 12 MiB   │
+  │ Plus string allocations: ~5 MiB        │
+  │                                        │
+  │ Total: ~17 MiB of scattered heap       │
+  │ data with poor cache locality.         │
+  │                                        │
+  │ Each lookup: hash + compare + chase    │
+  │ pointer = ~50 ns                       │
+  └────────────────────────────────────────┘
+</pre>
+</div>
+
+<div class="versus">
+  <div class="fast-side">
+    <h4>ISG Binary <span class="speed-tag speed-fast">~5 ms</span></h4>
+<pre style="border-color:#3fb950;font-size:12px">
+SCC / Tarjan (50K entities, 200K edges):
+  Pass 1 (fwd DFS): 50K entities
+    x ~20 ns (neighbor read + stack ops)
+    = ~1 ms
+  Pass 2 (rev DFS): same
+    = ~1 ms
+  Auxiliary arrays: 600 KiB (in L3)
+  Total: ~5 ms (with overhead)
+</pre>
+  </div>
+  <div class="slow-side">
+    <h4>SQLite <span class="speed-tag speed-slow">~15 sec</span></h4>
+<pre style="border-color:#f85149;font-size:12px">
+SCC / Tarjan (50K entities, 200K edges):
+  Pass 1 (fwd DFS): 50K entities
+    x ~15 us (SQL per entity)
+    = ~750 ms
+  Pass 2 (rev DFS): 50K entities
+    x ~15 us (SQL per entity)
+    = ~750 ms
+  HashMap overhead: ~200 ms
+  String alloc/dealloc: ~300 ms
+  Total: ~15 seconds
+</pre>
+  </div>
+</div>
+
+<div class="key-insight">
+<p>SCC on ISG: 5 ms. On SQLite: 15 seconds.
+The double-DFS pattern is perfectly served by having edges.fwd AND
+edges.rev -- both with contiguous, O(1)-addressable neighbor lists.
+SQLite either needs two indexes (doubling storage and write cost) or
+does full table scans on the reverse pass.</p>
+</div>
+</div>
+
+<!-- ============================================================ -->
+<!--  THE BIG PICTURE: WHY IT ALL WORKS                            -->
+<!-- ============================================================ -->
+<h2>The Big Picture: Everything Fits Together</h2>
+
+<div class="diagram">
+<span class="zoom-label zoom-out">ZOOMED OUT -- ISG is Built for Graphs</span>
+<pre style="border:none;margin:0;padding:0;background:transparent">
+         What Graph Algos Need          What ISG Provides
+        ┌─────────────────────┐     ┌──────────────────────┐
+        │                     │     │                      │
+        │ "Neighbors of X"   │────&gt;│ fwd_off[X] + fwd[]  │
+        │  (BFS, PPR, SCC)   │     │ Contiguous, O(1)     │
+        │                     │     │                      │
+        ├─────────────────────┤     ├──────────────────────┤
+        │                     │     │                      │
+        │ "Who points to X"  │────&gt;│ rev_off[X] + rev[]  │
+        │  (SCC, PPR)        │     │ Contiguous, O(1)     │
+        │                     │     │                      │
+        ├─────────────────────┤     ├──────────────────────┤
+        │                     │     │                      │
+        │ "Scan ALL edges"   │────&gt;│ edges.fwd[0..200K]  │
+        │  (PageRank, Leiden)│     │ Sequential, prefetch │
+        │                     │     │                      │
+        ├─────────────────────┤     ├──────────────────────┤
+        │                     │     │                      │
+        │ "Score per entity" │────&gt;│ metrics.pagerank[]  │
+        │  (PageRank, PPR)   │     │ Dense f32, entity N  │
+        │                     │     │ at byte N*4          │
+        ├─────────────────────┤     ├──────────────────────┤
+        │                     │     │                      │
+        │ "Community of X"   │────&gt;│ metrics.community[] │
+        │  (Leiden, k-core)  │     │ Dense u16, entity N  │
+        │                     │     │ at byte N*2          │
+        │                     │     │                      │
+        └─────────────────────┘     └──────────────────────┘
+
+  Every access pattern maps to exactly one dense array.
+  No query parsing. No deserialization. Just pointer math.
+</pre>
+</div>
+
+<!-- ============================================================ -->
+<!--  FINAL SCOREBOARD                                             -->
+<!-- ============================================================ -->
+<h2 id="summary">The Final Scoreboard</h2>
+
+<table class="summary-table">
+  <thead>
+    <tr>
+      <th>Algorithm</th>
+      <th>Access Pattern</th>
+      <th style="color:var(--accent-green)">ISG Binary</th>
+      <th style="color:var(--accent-red)">SQLite</th>
+      <th>Speedup</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>BFS</strong> (2-hop, 500 nodes)</td>
+      <td>Neighbor iteration</td>
+      <td style="color:var(--accent-green)">~5 us</td>
+      <td style="color:var(--accent-red)">~7.5 ms</td>
+      <td><strong>1500x</strong></td>
+    </tr>
+    <tr>
+      <td><strong>PageRank</strong> (30 rounds)</td>
+      <td>Full sequential scan</td>
+      <td style="color:var(--accent-green)">~3 ms</td>
+      <td style="color:var(--accent-red)">~5 sec</td>
+      <td><strong>1600x</strong></td>
+    </tr>
+    <tr>
+      <td><strong>PPR</strong> (1K entities)</td>
+      <td>Local scan + random</td>
+      <td style="color:var(--accent-green)">~0.2 ms</td>
+      <td style="color:var(--accent-red)">~200 ms</td>
+      <td><strong>1000x</strong></td>
+    </tr>
+    <tr>
+      <td><strong>Leiden</strong> (10 rounds)</td>
+      <td>Full scan + random</td>
+      <td style="color:var(--accent-green)">~15 ms</td>
+      <td style="color:var(--accent-red)">~75 sec</td>
+      <td><strong>5000x</strong></td>
+    </tr>
+    <tr>
+      <td><strong>k-core</strong></td>
+      <td>Degree updates</td>
+      <td style="color:var(--accent-green)">~2 ms</td>
+      <td style="color:var(--accent-red)">~30 sec</td>
+      <td><strong>15000x</strong></td>
+    </tr>
+    <tr>
+      <td><strong>SCC</strong> (Tarjan)</td>
+      <td>DFS fwd + DFS rev</td>
+      <td style="color:var(--accent-green)">~5 ms</td>
+      <td style="color:var(--accent-red)">~15 sec</td>
+      <td><strong>3000x</strong></td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="punchline">
+<p>11.7 MiB. Fits in L3 cache. Every algorithm under 20 ms.
+No database. No serialization. No allocation. Just bytes and pointers.</p>
+</div>
+
+<!-- ============================================================ -->
+<!--  THE ANALOGY SUMMARY                                          -->
+<!-- ============================================================ -->
+<h2>The ELI5 Summary -- The Bookshelf Analogy</h2>
+
+<div class="diagram">
+<span class="diagram-label">The Whole Thing in One Picture</span>
+<pre style="border:none;margin:0;padding:0;background:transparent">
+  SQLITE is a LIBRARY with a LIBRARIAN:
+  ┌──────────────────────────────────────┐
+  │                                      │
+  │   You: "I need book #42"            │
+  │                                      │
+  │      O                               │
+  │     /|\   "Let me check the         │
+  │     / \    card catalog..."          │
+  │            │                         │
+  │            v                         │
+  │   ┌──────────────┐  walk to shelf   │
+  │   │ Card Catalog │ ──────────&gt;       │
+  │   │  (B-tree)    │    ┌──────────┐  │
+  │   └──────────────┘    │ Shelf 7  │  │
+  │                       │ Row 3    │  │
+  │                       │ Book #42 │  │
+  │                       └──────────┘  │
+  │            photocopy it             │
+  │            hand you the copy        │
+  │                                      │
+  │   Time: 15 minutes (15 us)          │
+  └──────────────────────────────────────┘
+
+  ISG is an OPEN BOOKSHELF in YOUR ROOM:
+  ┌──────────────────────────────────────┐
+  │                                      │
+  │   You: "I need book #42"            │
+  │                                      │
+  │   ┌──┬──┬──┬──┬──┬──┬──┬──┬──┬──┐  │
+  │   │00│01│02│..│41│42│43│..│  │  │  │
+  │   └──┴──┴──┴──┴──┴──┴──┴──┴──┴──┘  │
+  │                    ^                 │
+  │                    |                 │
+  │              Grab slot 42.           │
+  │              Read it in place.       │
+  │              No photocopy needed.    │
+  │                                      │
+  │   Time: 0.5 seconds (0.5 ns)        │
+  └──────────────────────────────────────┘
+
+  And when you need books 42's FRIENDS:
+  ┌──────────────────────────────────────┐
+  │ ISG: "42's friends are in slots     │
+  │       1050-1057, right next to each  │
+  │       other on the same shelf."      │
+  │                                      │
+  │ SQLite: "Let me look up each friend │
+  │          in the card catalog, walk   │
+  │          to 7 different shelves,     │
+  │          and photocopy each one."    │
+  └──────────────────────────────────────┘
+</pre>
+</div>
+
+<!-- ============================================================ -->
+<!--  CACHE LINE DETAIL                                            -->
+<!-- ============================================================ -->
+<h2>Bonus: Why 64 Bytes = 1 Cache Line Matters</h2>
+
+<p>A CPU cache line is 64 bytes on all modern CPUs (x86 and ARM).
+This is the smallest unit the CPU can load from memory. By making
+each entity entry exactly 64 bytes, ISG ensures:</p>
+
+<div class="diagram">
+<span class="zoom-label zoom-deep">DEEP DIVE -- Cache Line Alignment</span>
+<pre style="border:none;margin:0;padding:0;background:transparent">
+  Entity entry = 64 bytes = 1 cache line
+
+  When you read entity 42:
+  ┌──────────────────────────────────┐
+  │ CPU loads exactly 1 cache line   │
+  │ from L3 (or RAM if cold).       │
+  │                                  │
+  │ That cache line contains:        │
+  │ - name reference     (6 bytes)  │
+  │ - kind + visibility  (2 bytes)  │
+  │ - file path ref      (6 bytes)  │
+  │ - line range         (4 bytes)  │
+  │ - signature ref      (6 bytes)  │
+  │ - pagerank           (4 bytes)  │
+  │ - degrees            (4 bytes)  │
+  │ - k_core + community (4 bytes)  │
+  │ - fan_out start/count(6 bytes)  │
+  │ - fan_in start/count (6 bytes)  │
+  │ - id hash + ref      (10 bytes) │
+  │ - padding            (6 bytes)  │
+  │                                  │
+  │ EVERYTHING about entity 42 in   │
+  │ ONE memory load. No second read. │
+  └──────────────────────────────────┘
+
+  If the entry were 65+ bytes:
+  ┌──────────────┬──────────────┐
+  │ Cache Line 1 │ Cache Line 2 │
+  │ (first 64B)  │ (last 1B)   │
+  └──────────────┴──────────────┘
+  TWO cache line reads for one entity.
+  Doubles latency. Wastes 63 bytes of
+  the second cache line.
+
+  If the entry were 128 bytes:
+  ┌──────────────┬──────────────┐
+  │ Cache Line 1 │ Cache Line 2 │
+  │ (first 64B)  │ (last 64B)  │
+  └──────────────┴──────────────┘
+  TWO cache lines. Half the entities
+  fit in L3 cache (25K instead of 50K).
+  For 50K entities, the index spills
+  out of L3 and starts hitting RAM.
+</pre>
+</div>
+
+<h2>Bonus: The Write-Once Advantage</h2>
+
+<p>ISG snapshots are <strong>immutable after creation</strong>. This
+unlocks additional performance:</p>
+
+<div class="diagram">
+<span class="diagram-label">Write-Once Benefits</span>
+<pre style="border:none;margin:0;padding:0;background:transparent">
+  SQLite (mutable):
+  ┌───────────────────────────────────┐
+  │ - WAL (write-ahead log) overhead  │
+  │ - Page-level locking              │
+  │ - Journaling for crash safety    │
+  │ - Vacuum/compaction needed       │
+  │ - fsync after writes             │
+  │ - Index fragmentation over time   │
+  └───────────────────────────────────┘
+
+  ISG (immutable):
+  ┌───────────────────────────────────┐
+  │ - No WAL needed                   │
+  │ - No locks (readers only)        │
+  │ - No journal                      │
+  │ - No fragmentation ever           │
+  │ - mmap with MAP_PRIVATE          │
+  │ - OS can share pages between      │
+  │   multiple readers                │
+  │ - New snapshot = new directory   │
+  │ - Atomic switchover via symlink  │
+  └───────────────────────────────────┘
+
+  Immutable data + mmap = the OS kernel
+  becomes your database engine. For free.
+</pre>
+</div>
+
+<br>
+<p style="text-align:center;color:var(--text-dim);font-size:12px;margin-top:2rem">
+  ISG Binary Storage Spec (option-3) -- Parseltongue v3.0.1<br>
+  50K entities. 200K edges. 11.7 MiB. L3 cache speed.<br>
+  Generated 2026-04-04
+</p>
+
+</body>
+</html>
