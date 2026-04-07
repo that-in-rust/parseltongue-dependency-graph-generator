@@ -29,3 +29,16 @@
                 - <wip what direction should this edge go for siblings>
             - if one is a parent of the other it is parent-child as an edge-type
                 - parent is seen as center of cluster and arrows going out towards children
+        - folder to file relationships
+            - folder contains a file
+                - folder is seen as center of cluster and arrows going out towards files
+            - folder and file are siblings
+                - <wip what direction should this edge go for siblings>
+        - file to file relationships
+            - if files are siblings it is an edge-type
+                - <wip what direction should this edge go for siblings>
+        - file to entity relationships
+            - file contains an entity
+                - file is seen as center of cluster and arrows going out towards entities
+        - entity to entity relationships
+            
