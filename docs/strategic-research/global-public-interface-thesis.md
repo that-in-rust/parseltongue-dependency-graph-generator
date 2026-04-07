@@ -129,4 +129,5 @@ but the canonical **public interface graph layer** for repositories, versions, a
 
 - [Iggy Storage Meta Patterns](/Users/amuldotexe/Desktop/parseltongue-rust-LLM-companion/docs/strategic-research/iggy-storage-meta-patterns.md)
 - [Iggy Storage Pattern Research](/Users/amuldotexe/Desktop/parseltongue-rust-LLM-companion/docs/strategic-research/iggy-storage-pattern-research.md)
-- [Tree Sitter Simulation Scope](/Users/amuldotexe/Desktop/parseltongue-rust-LLM-companion/docs/strategic-research/tree-sitter-simulation-scope.md)
+- [Generic Graph Engine Thesis](/Users/amuldotexe/Desktop/parseltongue-rust-LLM-companion/docs/strategic-research/generic-graph-engine-thesis.md)
+- [Tree Sitter Graph Scope](/Users/amuldotexe/Desktop/parseltongue-rust-LLM-companion/docs/strategic-research/tree-sitter-graph-scope.md)
