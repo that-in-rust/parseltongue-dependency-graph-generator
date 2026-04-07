@@ -1,8 +1,31 @@
-# Simulation 01: Tree Sitter Graph Scope
+# Parseltongue Simulation 01: Tree Sitter Graph Scope
 
 - only tree-sitter dependency graph - no rustc
 - only forward calls backward calls and export a sub-graph of public interface dependency graph
 - language: rust c cpp java js ts python golang ruby
 - Tauri app for desktop for the user to manage triggering of graph generation, reindexing and viewing the graph
 - create a dataset of all OSS codebases for LLD documentation which can be used to train the models
-- 
+- Parseltongue WILL NOT store code
+- tree-sitter parses
+    - a folder
+        - entity is folder
+    - a file
+        - if extension is not in the list of supported languages with entity type as <wip-name> and insert it as filepath-filename in the persisted codebase graph
+        - if extension is in the list of supported languages
+            - entity is a file
+            - total LOC are measured
+            - file is broken down into mutually exclusive cumulatively exhaustive entities WHICH ARE just 1 level below the file ONLY - NO nested entities are allowed
+                - <wip list of normal entities found in codebase> like functions, classes, structs, enums, interfaces
+                    - includes import statements and use statements
+                - entity type for tests is separated out since we may want to exclude them from blast radius since they can affect our results
+                - entity type for comments is separated out since we may want to exclude them from blast radius since they can affect our results
+- edges extraction
+    - every edge will have a direction
+        - calling
+            - forward calls
+            - backward calls
+        - folder to folder relationships
+            - if both have common parents it is shared-parent as an edge-type
+                - <wip what direction should this edge go for siblings>
+            - if one is a parent of the other it is parent-child as an edge-type
+                - parent is seen as center of cluster and arrows going out towards children
