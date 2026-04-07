@@ -20,6 +20,7 @@ contexts/
 .ref/
 .refGitHubRepo/
 *.refGitHubRepo/
+docs/refer-repo/
 
 # Demo outputs (preserve committed demos in demo-walkthroughs/)
 demo-walkthroughs/*/step*.json
