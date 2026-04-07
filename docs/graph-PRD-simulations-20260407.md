@@ -19,6 +19,9 @@
                     - includes import statements and use statements
                 - entity type for tests is separated out since we may want to exclude them from blast radius since they can affect our results
                 - entity type for comments is separated out since we may want to exclude them from blast radius since they can affect our results
+    - total wc of each file should match the total wc of the entities in the file
+    - total wc of a folder should match the total wc of the files in the folder
+    - if failures happen in parsing they should be logged and summarized by the accuracy of the above system
 - edges extraction
     - every edge will have a direction
         - calling
@@ -41,4 +44,9 @@
             - file contains an entity
                 - file is seen as center of cluster and arrows going out towards entities
         - entity to entity relationships
-            
+            - entity calls another entity
+                - normal direction figured out <wip list of what direction what is>
+            - entity is in the same file as another entity
+                - shared context as an edge-type
+                    - direction can be basis LOC - earler one is center of cluster and arrows going out towards later one
+                    - <wip what direction if both on same LOC - 2 entities can it even happen>
