@@ -22,6 +22,7 @@
     - total wc of each file should match the total wc of the entities in the file
     - total wc of a folder should match the total wc of the files in the folder
     - if failures happen in parsing they should be logged and summarized by the accuracy of the above system
+    - entity will be ISGL1 - public interfaces with LOC range as start_line:end_line 
 - edges extraction
     - every edge will have a direction
         - calling
