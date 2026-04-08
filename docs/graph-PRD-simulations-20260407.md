@@ -51,3 +51,91 @@
                 - shared context as an edge-type
                     - direction can be basis LOC - earler one is center of cluster and arrows going out towards later one
                     - <wip what direction if both on same LOC - 2 entities can it even happen>
+
+---
+
+# Parseltongue Simulation 02: Walk Graph Runtime
+
+- repo codename: `Walk-Graph-Runtime`
+- selected storage/runtime architecture: `Immutable Dual CSR/CSC Snapshot (mmap)`
+- workload target:
+    - embedded
+    - local
+    - code-scale graph storage
+    - forward and backward traversal
+    - BFS / DFS / reachability / callers / callees / blast radius
+
+## Why this was chosen
+
+- this choice comes directly from the comparison table in [walk-runtime-options-explainer.md](/Users/amuldotexe/Desktop/parseltongue-rust-LLM-companion/docs/strategic-research/walk-runtime-options-explainer.md)
+- in that comparison, `Immutable Dual CSR/CSC Snapshot (mmap)` scored highest overall for the specific job of a **Walk Graph Runtime**
+- it is the best match when the main questions are:
+    - who points to this node?
+    - what does this node point to?
+    - what can I reach from here?
+    - what breaks if I start from here?
+
+## Why it wins against the alternatives
+
+- versus `CSR Base + Tiny Mutable Overlay`
+    - the overlay design is a good second step, but adds complexity too early
+    - rebuild-first is acceptable for local code graphs, so simplicity wins right now
+
+- versus `Serialized petgraph Snapshot`
+    - good for prototyping, weaker as a product wedge
+    - slower cold start and less clear differentiation
+
+- versus `SQLite / LMDB Adjacency Store`
+    - better mutation fit, worse walk-first feel
+    - this moves the architecture toward a database even though the core workload is graph walking
+
+- versus `Packed / Dynamic CSR`
+    - technically interesting, strategically premature
+    - too much cleverness before real user pressure for in-place mutation
+
+- versus `Edge Table + Covering Indexes`
+    - this behaves more like a database than a map
+    - the main job here is traversal, so a traversal-native shape is better
+
+- versus `Matrix-First Sparse Snapshot`
+    - strong idea for a future `Rank Graph Runtime`
+    - wrong lead architecture for the walk-first problem
+
+## Current architecture thesis
+
+- immutable snapshot files
+- page-friendly sectioned binary layout
+- forward adjacency by dimension
+- backward adjacency by dimension
+- `mmap` open path
+- zero-copy or near-zero-copy reads
+- graph walking is the center of gravity
+
+## What this runtime is for
+
+- forward and backward neighborhood lookup
+- call graph walking
+- bounded BFS
+- reverse traversal
+- reachability
+- blast radius
+- dead code from roots
+- shortest-path style local path queries
+
+## What this runtime is not for
+
+- semantic graph delta across snapshots
+- architecture simulation across worlds
+- public-interface policy
+- tree-sitter parsing
+- test/comment semantics
+- query-language style graph database behavior
+
+## Boundary with higher layers
+
+- `Walk-Graph-Runtime` stores and walks one frozen graph world
+- Parseltongue or Parcel10 can sit above it to:
+    - build the graph from source code
+    - compare multiple snapshots
+    - compute semantic deltas
+    - explain architectural consequences
