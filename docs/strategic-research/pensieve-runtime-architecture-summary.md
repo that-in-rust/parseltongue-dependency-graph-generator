@@ -81,6 +81,138 @@ Pensieve should stay boring and sharp:
    - operates over graph views
    - remains independent of code semantics
 
+## ELI5 View
+
+Think of Pensieve like a giant box of Lego maps.
+
+- each **snapshot** is one frozen Lego city
+- each **node** is a place in the city
+- each **dimension** is a different kind of road
+  - call road
+  - import road
+  - contains road
+  - sibling road
+- each **algorithm** is just a different question you ask about the same city
+
+Pensieve does not decide what a city means.
+
+It just stores the city really well and lets you walk through it quickly.
+
+Parcel10 is the thing that says:
+
+- which city is the old version
+- which city is the new version
+- what changed
+- which future is safer
+- which cluster matters most
+
+So:
+
+- **Pensieve stores worlds**
+- **Parcel10 explains worlds**
+
+## Algorithm Clusters
+
+Instead of thinking about 30 separate algorithms, it is easier to think about 4 clusters.
+
+### 1. Walk The Graph
+
+These algorithms answer:
+
+- what can I reach from here?
+- who points to me?
+- what breaks if this node changes?
+
+This cluster includes:
+
+- BFS
+- DFS
+- reachability
+- reverse reachability
+- callers / callees
+- blast radius
+- dead code from roots
+
+This is Pensieve's strongest cluster because adjacency traversal is exactly what the storage format is built for.
+
+### 2. Rank The Graph
+
+These algorithms answer:
+
+- what is important?
+- what is central?
+- what should I look at first?
+
+This cluster includes:
+
+- PageRank
+- Personalized PageRank
+- HITS
+- Katz
+- Eigenvector centrality
+- in-degree
+- out-degree
+
+This is also a strong Pensieve cluster because fixed graph snapshots are ideal for repeated sparse scans and cheap score lookup.
+
+### 3. Find The Shape
+
+These algorithms answer:
+
+- where are the cycles?
+- what is the dense core?
+- what naturally belongs together?
+- where are the boundaries?
+
+This cluster includes:
+
+- SCC / Tarjan
+- k-core
+- Leiden
+- Louvain
+- Label Propagation
+- Infomap
+- Walktrap
+- boundary crossing counts
+- coupling ratios
+- core-periphery layering
+
+This is the cluster that makes Pensieve useful for architecture understanding, not just graph walking.
+
+### 4. Heavy Or Higher-Level Work
+
+These algorithms or features answer:
+
+- what changed between two worlds?
+- which exact refactor is safer?
+- what should I show an LLM?
+- what is the code-quality score?
+
+This cluster includes:
+
+- betweenness
+- closeness
+- harmonic
+- spectral clustering
+- smart context selection
+- public boundary resolution
+- CK metrics
+- entropy
+- SQALE
+- snapshot diff
+- architecture simulation
+
+These are either:
+
+- expensive enough to precompute
+- better handled by a richer matrix or semantic layer
+- or simply not Pensieve's job
+
+That is the important simplification:
+
+- Pensieve is best at **walking, ranking, and shaping one world**
+- Parcel10 is best at **comparing and explaining many worlds**
+
 ## Expanded Algorithm Table
 
 | algorithm | pensieve fit | where it belongs | note |
