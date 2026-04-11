@@ -20,7 +20,7 @@ contexts/
 .ref/
 .refGitHubRepo/
 *.refGitHubRepo/
-docs/refer-repo/
+/gitignored-references/
 
 # Demo outputs (preserve committed demos in demo-walkthroughs/)
 demo-walkthroughs/*/step*.json
@@ -54,5 +54,3 @@ CR07/
 CR08/
 parseltongune20260221204410/
 docs/v199-docs/supermodel-extracted/
-
-CR09/
