@@ -139,3 +139,27 @@
     - compare multiple snapshots
     - compute semantic deltas
     - explain architectural consequences
+
+
+# Parseltongue Simulation 03: 5 Step Plan
+
+Yes. The direct hits in `docs` are:
+
+- [v301-PRD.md](/Users/amuldotexe/Desktop/parseltongue-rust-LLM-companion/docs/pre302/v301-PRD.md#L40)  
+  `### Fixed algorithm shortlist for 5-step / 7-step journeys`
+- [RECOMMENDATION-v301.md](/Users/amuldotexe/Desktop/parseltongue-rust-LLM-companion/docs/pre302/RECOMMENDATION-v301.md#L17)  
+  mentions the `7-event journey` and again at [line 121](/Users/amuldotexe/Desktop/parseltongue-rust-LLM-companion/docs/pre302/RECOMMENDATION-v301.md#L121)
+- [option-3-isg-binary-storage-spec-202604050100.md](/Users/amuldotexe/Desktop/parseltongue-rust-LLM-companion/docs/pre302/option-3-isg-binary-storage-spec-202604050100.md#L952)  
+  mentions the `7-event journey` performance budget, plus more references at [line 2114](/Users/amuldotexe/Desktop/parseltongue-rust-LLM-companion/docs/pre302/option-3-isg-binary-storage-spec-202604050100.md#L2114) and [line 2170](/Users/amuldotexe/Desktop/parseltongue-rust-LLM-companion/docs/pre302/option-3-isg-binary-storage-spec-202604050100.md#L2170)
+
+There’s also one transcript-style file with the exact wording:
+
+- [2026-03-30-185222-local-command-caveatcaveat-the-messages-below-w.txt](/Users/amuldotexe/Desktop/parseltongue-rust-LLM-companion/docs/pre302/2026-03-30-185222-local-command-caveatcaveat-the-messages-below-w.txt#L181)  
+  contains `Feature: 5-Phase Progressive Query Journey...` and at [line 57](/Users/amuldotexe/Desktop/parseltongue-rust-LLM-companion/docs/pre302/2026-03-30-185222-local-command-caveatcaveat-the-messages-below-w.txt#L57) it mentions `A 7-Event Journey query workflow`
+
+Related but not exact 5/7-step wording:
+
+- [bidirectional-workflows-01.md](/Users/amuldotexe/Desktop/parseltongue-rust-LLM-companion/docs/pre302/bidirectional-workflows-01.md#L343)  
+  `Progressive disclosure journey (SEARCH → ANCHOR → CLUSTER → DIVE)`
+
+If you want, I can do the next helpful step and extract the exact step lists from these files into one clean note.
