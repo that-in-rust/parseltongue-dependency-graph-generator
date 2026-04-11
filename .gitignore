@@ -17,10 +17,7 @@ contexts/
 *.json.tmp
 
 # Reference materials
-.ref/
-.refGitHubRepo/
-*.refGitHubRepo/
-/gitignored-references/
+gitignored-references/refer-repo/
 
 # Demo outputs (preserve committed demos in demo-walkthroughs/)
 demo-walkthroughs/*/step*.json
@@ -42,15 +39,4 @@ artifacts/
 archived-code/
 
 
-# Competitor research
-competitor_research/
-CR02/
-CR03/
-CR04/
 
-# Competitor research clones
-CR05/
-CR07/
-CR08/
-parseltongune20260221204410/
-docs/v199-docs/supermodel-extracted/
