@@ -15,6 +15,7 @@ test-dbs/
 contexts/
 *.db/
 *.json.tmp
+test-harness/*/bench_artifacts/
 
 # Reference materials
 gitignored-references/refer-repo/
@@ -37,6 +38,5 @@ artifacts/
 
 # Archived v1/v2 code
 archived-code/
-
 
 
