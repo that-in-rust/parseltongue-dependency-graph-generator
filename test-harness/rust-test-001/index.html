@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>rust-test-001 | Obsidian-style Graph Harness</title>
+  <style>
+    :root {
+      --bg: #101112;
+      --bg-deep: #0b0c0d;
+      --panel: rgba(20, 21, 23, 0.88);
+      --panel-strong: rgba(16, 17, 19, 0.94);
+      --border: rgba(255, 255, 255, 0.08);
+      --text: #f3efe6;
+      --muted: #9e978b;
+      --crate: #d38b42;
+      --file: #58a899;
+      --function: #6aa5ff;
+      --edge: rgba(194, 194, 194, 0.22);
+      --edge-strong: rgba(245, 245, 245, 0.86);
+      --chip: rgba(255, 255, 255, 0.05);
+      --chip-active: rgba(255, 255, 255, 0.14);
+      --shadow: 0 20px 60px rgba(0, 0, 0, 0.34);
+      --grain: rgba(255, 255, 255, 0.02);
+      font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      overflow: hidden;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(211, 139, 66, 0.09), transparent 32%),
+        radial-gradient(circle at top right, rgba(88, 168, 153, 0.08), transparent 28%),
+        radial-gradient(circle at bottom center, rgba(106, 165, 255, 0.09), transparent 36%),
+        linear-gradient(180deg, var(--bg) 0%, var(--bg-deep) 100%);
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--grain) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grain) 1px, transparent 1px);
+      background-size: 36px 36px;
+      pointer-events: none;
+      opacity: 0.4;
+    }
+
+    .shell {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    #stage {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      cursor: grab;
+    }
+
+    canvas.dragging {
+      cursor: grabbing;
+    }
+
+    .hud {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      width: min(420px, calc(100vw - 40px));
+      padding: 18px;
+      border-radius: 24px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      backdrop-filter: blur(18px);
+      box-shadow: var(--shadow);
+    }
+
+    .eyebrow,
+    .section-title {
+      margin: 0 0 6px;
+      font-size: 11px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 29px;
+      line-height: 1;
+      font-weight: 600;
+    }
+
+    .subtitle,
+    .details-meta,
+    .details-path,
+    .hint {
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--muted);
+    }
+
+    .subtitle {
+      margin: 10px 0 0;
+    }
+
+    .search-wrap {
+      margin-top: 16px;
+    }
+
+    .search-label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .search-input {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 15px;
+      padding: 12px 14px;
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text);
+      font: inherit;
+      font-size: 15px;
+      outline: none;
+    }
+
+    .search-input:focus {
+      border-color: rgba(255, 255, 255, 0.18);
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .search-results {
+      margin-top: 10px;
+      display: grid;
+      gap: 8px;
+      max-height: 190px;
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .result-item {
+      width: 100%;
+      text-align: left;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.045);
+      color: var(--text);
+      padding: 10px 12px;
+      cursor: pointer;
+      transition: transform 140ms ease, background 140ms ease;
+    }
+
+    .result-item:hover {
+      transform: translateY(-1px);
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .result-main {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      line-height: 1.3;
+    }
+
+    .result-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      flex: 0 0 auto;
+    }
+
+    .result-meta {
+      margin-top: 4px;
+      font-size: 12px;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .chip {
+      appearance: none;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--chip);
+      color: var(--text);
+      padding: 8px 12px;
+      font: inherit;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .chip.active {
+      background: var(--chip-active);
+    }
+
+    .legend {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+    }
+
+    .details {
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+
+    .details-name {
+      margin: 0 0 6px;
+      font-size: 18px;
+      line-height: 1.25;
+    }
+
+    .details-meta,
+    .details-path {
+      margin: 0;
+    }
+
+    .details-path {
+      margin-top: 6px;
+      word-break: break-word;
+    }
+
+    .hint-box {
+      position: absolute;
+      right: 20px;
+      bottom: 20px;
+      max-width: min(360px, calc(100vw - 40px));
+      padding: 14px 16px;
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      background: var(--panel-strong);
+      box-shadow: var(--shadow);
+    }
+
+    .tooltip {
+      position: absolute;
+      pointer-events: none;
+      transform: translate(14px, -50%);
+      padding: 8px 10px;
+      border-radius: 10px;
+      background: rgba(11, 12, 13, 0.94);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--text);
+      font-size: 12px;
+      line-height: 1.3;
+      opacity: 0;
+      transition: opacity 120ms ease;
+      white-space: nowrap;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.32);
+    }
+
+    .tooltip.visible {
+      opacity: 1;
+    }
+
+    @media (max-width: 760px) {
+      .hud {
+        width: calc(100vw - 24px);
+        left: 12px;
+        top: 12px;
+      }
+
+      .hint-box {
+        left: 12px;
+        right: 12px;
+        bottom: 12px;
+        max-width: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div id="stage"></div>
+
+    <section class="hud">
+      <p class="eyebrow">Rust Test Harness</p>
+      <h1>rust-test-001</h1>
+      <p class="subtitle">
+        Rebuilt as a PIXI spring graph, like the Obsidian graph stack we traced locally.
+        Search first, then pull nodes or even the edges themselves.
+      </p>
+
+      <div class="search-wrap">
+        <label class="search-label" for="fff-input">FFF Placeholder</label>
+        <input
+          id="fff-input"
+          class="search-input"
+          type="text"
+          placeholder="search boot, auth, profile, cache, lib.rs"
+          autocomplete="off"
+        >
+        <div class="search-results" id="fff-results"></div>
+      </div>
+
+      <div class="chips">
+        <button class="chip active" data-type="crate">Crates</button>
+        <button class="chip active" data-type="file">Files</button>
+        <button class="chip active" data-type="function">Functions</button>
+      </div>
+
+      <div class="legend">
+        <div class="legend-item"><span class="legend-dot" style="background: var(--crate)"></span>crate</div>
+        <div class="legend-item"><span class="legend-dot" style="background: var(--file)"></span>file</div>
+        <div class="legend-item"><span class="legend-dot" style="background: var(--function)"></span>function</div>
+      </div>
+
+      <div class="details">
+        <p class="section-title">Selected Node</p>
+        <p class="details-name" id="details-name">Nothing selected</p>
+        <p class="details-meta" id="details-meta">Function edges are the real dependencies. Crates and files are context anchors.</p>
+        <p class="details-path" id="details-path">Drag a line to pull its two endpoints and re-shape the local neighborhood.</p>
+      </div>
+    </section>
+
+    <aside class="hint-box">
+      <p class="hint">
+        This build uses the same rendering family Obsidian loads in its renderer: PIXI.
+        Nodes drift, springs settle, and edge dragging temporarily bends the line before the graph snaps back.
+      </p>
+    </aside>
+
+    <div class="tooltip" id="tooltip"></div>
+  </div>
+
+  <script id="nodes-data" type="text/plain">node_id,node_type,label,parent_id,file_path,span
+crate:shell-login-demo-core,crate,shell-login-demo-core,,shell-login-demo-core,
+crate:auth-token-demo-core,crate,auth-token-demo-core,,auth-token-demo-core,
+crate:store-profile-demo-core,crate,store-profile-demo-core,,store-profile-demo-core,
+file:shell-login-demo-core:src/lib.rs,file,lib.rs,crate:shell-login-demo-core,shell-login-demo-core/src/lib.rs,1:1-16:1
+file:shell-login-demo-core:src/http.rs,file,http.rs,crate:shell-login-demo-core,shell-login-demo-core/src/http.rs,1:1-16:1
+file:shell-login-demo-core:src/view.rs,file,view.rs,crate:shell-login-demo-core,shell-login-demo-core/src/view.rs,1:1-13:1
+file:auth-token-demo-core:src/lib.rs,file,lib.rs,crate:auth-token-demo-core,auth-token-demo-core/src/lib.rs,1:1-36:1
+file:auth-token-demo-core:src/tokens.rs,file,tokens.rs,crate:auth-token-demo-core,auth-token-demo-core/src/tokens.rs,1:1-17:1
+file:auth-token-demo-core:src/guards.rs,file,guards.rs,crate:auth-token-demo-core,auth-token-demo-core/src/guards.rs,1:1-11:1
+file:store-profile-demo-core:src/lib.rs,file,lib.rs,crate:store-profile-demo-core,store-profile-demo-core/src/lib.rs,1:1-18:1
+file:store-profile-demo-core:src/cache.rs,file,cache.rs,crate:store-profile-demo-core,store-profile-demo-core/src/cache.rs,1:1-11:1
+file:store-profile-demo-core:src/audit.rs,file,audit.rs,crate:store-profile-demo-core,store-profile-demo-core/src/audit.rs,1:1-11:1
+fn:boot_shell_flow_now,function,boot_shell_flow_now,file:shell-login-demo-core:src/lib.rs,shell-login-demo-core/src/lib.rs,4:1-8:1
+fn:sync_shell_state_now,function,sync_shell_state_now,file:shell-login-demo-core:src/lib.rs,shell-login-demo-core/src/lib.rs,10:1-14:1
+fn:show_shell_status_now,function,show_shell_status_now,file:shell-login-demo-core:src/lib.rs,shell-login-demo-core/src/lib.rs,16:1-18:1
+fn:handle_login_route_now,function,handle_login_route_now,file:shell-login-demo-core:src/http.rs,shell-login-demo-core/src/http.rs,7:1-9:1
+fn:handle_logout_route_now,function,handle_logout_route_now,file:shell-login-demo-core:src/http.rs,shell-login-demo-core/src/http.rs,11:1-13:1
+fn:handle_profile_route_now,function,handle_profile_route_now,file:shell-login-demo-core:src/http.rs,shell-login-demo-core/src/http.rs,15:1-17:1
+fn:render_login_panel_now,function,render_login_panel_now,file:shell-login-demo-core:src/view.rs,shell-login-demo-core/src/view.rs,1:1-3:1
+fn:render_profile_panel_now,function,render_profile_panel_now,file:shell-login-demo-core:src/view.rs,shell-login-demo-core/src/view.rs,5:1-7:1
+fn:render_status_panel_now,function,render_status_panel_now,file:shell-login-demo-core:src/view.rs,shell-login-demo-core/src/view.rs,9:1-14:1
+fn:login_user_flow_now,function,login_user_flow_now,file:auth-token-demo-core:src/lib.rs,auth-token-demo-core/src/lib.rs,9:1-18:1
+fn:logout_user_flow_now,function,logout_user_flow_now,file:auth-token-demo-core:src/lib.rs,auth-token-demo-core/src/lib.rs,20:1-28:1
+fn:load_profile_flow_now,function,load_profile_flow_now,file:auth-token-demo-core:src/lib.rs,auth-token-demo-core/src/lib.rs,30:1-38:1
+fn:issue_login_token_now,function,issue_login_token_now,file:auth-token-demo-core:src/tokens.rs,auth-token-demo-core/src/tokens.rs,6:1-9:1
+fn:revoke_login_token_now,function,revoke_login_token_now,file:auth-token-demo-core:src/tokens.rs,auth-token-demo-core/src/tokens.rs,11:1-14:1
+fn:read_profile_claims_now,function,read_profile_claims_now,file:auth-token-demo-core:src/tokens.rs,auth-token-demo-core/src/tokens.rs,16:1-19:1
+fn:check_password_match_now,function,check_password_match_now,file:auth-token-demo-core:src/guards.rs,auth-token-demo-core/src/guards.rs,1:1-3:1
+fn:check_session_guard_now,function,check_session_guard_now,file:auth-token-demo-core:src/guards.rs,auth-token-demo-core/src/guards.rs,5:1-7:1
+fn:require_profile_scope_now,function,require_profile_scope_now,file:auth-token-demo-core:src/guards.rs,auth-token-demo-core/src/guards.rs,9:1-11:1
+fn:fetch_user_record_now,function,fetch_user_record_now,file:store-profile-demo-core:src/lib.rs,store-profile-demo-core/src/lib.rs,4:1-7:1
+fn:save_session_record_now,function,save_session_record_now,file:store-profile-demo-core:src/lib.rs,store-profile-demo-core/src/lib.rs,9:1-13:1
+fn:fetch_profile_record_now,function,fetch_profile_record_now,file:store-profile-demo-core:src/lib.rs,store-profile-demo-core/src/lib.rs,15:1-19:1
+fn:warm_profile_cache_now,function,warm_profile_cache_now,file:store-profile-demo-core:src/cache.rs,store-profile-demo-core/src/cache.rs,1:1-3:1
+fn:read_profile_cache_now,function,read_profile_cache_now,file:store-profile-demo-core:src/cache.rs,store-profile-demo-core/src/cache.rs,5:1-7:1
+fn:clear_profile_cache_now,function,clear_profile_cache_now,file:store-profile-demo-core:src/cache.rs,store-profile-demo-core/src/cache.rs,9:1-11:1
+fn:write_audit_entry_now,function,write_audit_entry_now,file:store-profile-demo-core:src/audit.rs,store-profile-demo-core/src/audit.rs,1:1-3:1
+fn:read_audit_entry_now,function,read_audit_entry_now,file:store-profile-demo-core:src/audit.rs,store-profile-demo-core/src/audit.rs,5:1-7:1
+fn:trim_audit_entry_now,function,trim_audit_entry_now,file:store-profile-demo-core:src/audit.rs,store-profile-demo-core/src/audit.rs,9:1-11:1</script>
+  <script id="edges-data" type="text/plain">from_id,edge_type,to_id
+crate:shell-login-demo-core,contains,file:shell-login-demo-core:src/lib.rs
+crate:shell-login-demo-core,contains,file:shell-login-demo-core:src/http.rs
+crate:shell-login-demo-core,contains,file:shell-login-demo-core:src/view.rs
+crate:auth-token-demo-core,contains,file:auth-token-demo-core:src/lib.rs
+crate:auth-token-demo-core,contains,file:auth-token-demo-core:src/tokens.rs
+crate:auth-token-demo-core,contains,file:auth-token-demo-core:src/guards.rs
+crate:store-profile-demo-core,contains,file:store-profile-demo-core:src/lib.rs
+crate:store-profile-demo-core,contains,file:store-profile-demo-core:src/cache.rs
+crate:store-profile-demo-core,contains,file:store-profile-demo-core:src/audit.rs
+file:shell-login-demo-core:src/lib.rs,contains,fn:boot_shell_flow_now
+file:shell-login-demo-core:src/lib.rs,contains,fn:sync_shell_state_now
+file:shell-login-demo-core:src/lib.rs,contains,fn:show_shell_status_now
+file:shell-login-demo-core:src/http.rs,contains,fn:handle_login_route_now
+file:shell-login-demo-core:src/http.rs,contains,fn:handle_logout_route_now
+file:shell-login-demo-core:src/http.rs,contains,fn:handle_profile_route_now
+file:shell-login-demo-core:src/view.rs,contains,fn:render_login_panel_now
+file:shell-login-demo-core:src/view.rs,contains,fn:render_profile_panel_now
+file:shell-login-demo-core:src/view.rs,contains,fn:render_status_panel_now
+file:auth-token-demo-core:src/lib.rs,contains,fn:login_user_flow_now
+file:auth-token-demo-core:src/lib.rs,contains,fn:logout_user_flow_now
+file:auth-token-demo-core:src/lib.rs,contains,fn:load_profile_flow_now
+file:auth-token-demo-core:src/tokens.rs,contains,fn:issue_login_token_now
+file:auth-token-demo-core:src/tokens.rs,contains,fn:revoke_login_token_now
+file:auth-token-demo-core:src/tokens.rs,contains,fn:read_profile_claims_now
+file:auth-token-demo-core:src/guards.rs,contains,fn:check_password_match_now
+file:auth-token-demo-core:src/guards.rs,contains,fn:check_session_guard_now
+file:auth-token-demo-core:src/guards.rs,contains,fn:require_profile_scope_now
+file:store-profile-demo-core:src/lib.rs,contains,fn:fetch_user_record_now
+file:store-profile-demo-core:src/lib.rs,contains,fn:save_session_record_now
+file:store-profile-demo-core:src/lib.rs,contains,fn:fetch_profile_record_now
+file:store-profile-demo-core:src/cache.rs,contains,fn:warm_profile_cache_now
+file:store-profile-demo-core:src/cache.rs,contains,fn:read_profile_cache_now
+file:store-profile-demo-core:src/cache.rs,contains,fn:clear_profile_cache_now
+file:store-profile-demo-core:src/audit.rs,contains,fn:write_audit_entry_now
+file:store-profile-demo-core:src/audit.rs,contains,fn:read_audit_entry_now
+file:store-profile-demo-core:src/audit.rs,contains,fn:trim_audit_entry_now
+fn:boot_shell_flow_now,depends_on,fn:handle_login_route_now
+fn:boot_shell_flow_now,depends_on,fn:render_status_panel_now
+fn:sync_shell_state_now,depends_on,fn:handle_profile_route_now
+fn:sync_shell_state_now,depends_on,fn:render_profile_panel_now
+fn:show_shell_status_now,depends_on,fn:render_status_panel_now
+fn:handle_login_route_now,depends_on,fn:login_user_flow_now
+fn:handle_logout_route_now,depends_on,fn:logout_user_flow_now
+fn:handle_profile_route_now,depends_on,fn:load_profile_flow_now
+fn:render_status_panel_now,depends_on,fn:render_login_panel_now
+fn:render_status_panel_now,depends_on,fn:render_profile_panel_now
+fn:login_user_flow_now,depends_on,fn:check_password_match_now
+fn:login_user_flow_now,depends_on,fn:fetch_user_record_now
+fn:login_user_flow_now,depends_on,fn:issue_login_token_now
+fn:login_user_flow_now,depends_on,fn:save_session_record_now
+fn:logout_user_flow_now,depends_on,fn:check_session_guard_now
+fn:logout_user_flow_now,depends_on,fn:revoke_login_token_now
+fn:logout_user_flow_now,depends_on,fn:save_session_record_now
+fn:load_profile_flow_now,depends_on,fn:require_profile_scope_now
+fn:load_profile_flow_now,depends_on,fn:read_profile_claims_now
+fn:load_profile_flow_now,depends_on,fn:fetch_profile_record_now
+fn:issue_login_token_now,depends_on,fn:save_session_record_now
+fn:revoke_login_token_now,depends_on,fn:save_session_record_now
+fn:read_profile_claims_now,depends_on,fn:fetch_profile_record_now
+fn:require_profile_scope_now,depends_on,fn:check_session_guard_now
+fn:fetch_user_record_now,depends_on,fn:read_profile_cache_now
+fn:save_session_record_now,depends_on,fn:write_audit_entry_now
+fn:save_session_record_now,depends_on,fn:clear_profile_cache_now
+fn:fetch_profile_record_now,depends_on,fn:warm_profile_cache_now
+fn:fetch_profile_record_now,depends_on,fn:read_audit_entry_now
+fn:read_profile_cache_now,depends_on,fn:warm_profile_cache_now
+fn:read_audit_entry_now,depends_on,fn:trim_audit_entry_now</script>
+  <script src="vendor/pixi.min.js"></script>
+  <script>
+    const nodeColors = {
+      crate: 0xd38b42,
+      file: 0x58a899,
+      function: 0x6aa5ff,
+    };
+
+    const nodeRadius = {
+      crate: 15,
+      file: 9,
+      function: 5.5,
+    };
+
+    const dom = {
+      stage: document.getElementById("stage"),
+      tooltip: document.getElementById("tooltip"),
+      input: document.getElementById("fff-input"),
+      results: document.getElementById("fff-results"),
+      detailsName: document.getElementById("details-name"),
+      detailsMeta: document.getElementById("details-meta"),
+      detailsPath: document.getElementById("details-path"),
+      filterButtons: [...document.querySelectorAll(".chip")],
+    };
+
+    const activeTypes = new Set(["crate", "file", "function"]);
+    const state = {
+      selectedId: null,
+      hoveredNodeId: null,
+      hoveredEdgeKey: null,
+      dragNodeId: null,
+      dragEdgeKey: null,
+      pointerDown: false,
+      pointerMoved: false,
+      pointerX: 0,
+      pointerY: 0,
+      query: "",
+      results: [],
+    };
+
+    const rawNodes = parseCsv(document.getElementById("nodes-data").textContent);
+    const rawEdges = parseCsv(document.getElementById("edges-data").textContent);
+    const nodeById = new Map(rawNodes.map((node) => [node.node_id, node]));
+    const containsEdges = rawEdges.filter((edge) => edge.edge_type === "contains");
+    const dependencyEdges = rawEdges.filter((edge) => edge.edge_type === "depends_on");
+    const dependencyEdgeByKey = new Map(
+      dependencyEdges.map((edge) => [edgeKey(edge.from_id, edge.to_id), edge])
+    );
+
+    const parentById = new Map();
+    const childrenById = new Map();
+    rawNodes.forEach((node) => {
+      parentById.set(node.node_id, node.parent_id || null);
+      if (node.parent_id) {
+        if (!childrenById.has(node.parent_id)) childrenById.set(node.parent_id, []);
+        childrenById.get(node.parent_id).push(node.node_id);
+      }
+    });
+
+    const dependencyAdjacency = new Map();
+    dependencyEdges.forEach((edge) => {
+      if (!dependencyAdjacency.has(edge.from_id)) dependencyAdjacency.set(edge.from_id, new Set());
+      if (!dependencyAdjacency.has(edge.to_id)) dependencyAdjacency.set(edge.to_id, new Set());
+      dependencyAdjacency.get(edge.from_id).add(edge.to_id);
+      dependencyAdjacency.get(edge.to_id).add(edge.from_id);
+    });
+
+    const app = new PIXI.Application({
+      resizeTo: dom.stage,
+      backgroundAlpha: 0,
+      antialias: true,
+      autoDensity: true,
+      resolution: window.devicePixelRatio || 1,
+    });
+    dom.stage.appendChild(app.view);
+
+    const world = new PIXI.Container();
+    const edgeLayer = new PIXI.Graphics();
+    const nodeLayer = new PIXI.Container();
+    world.addChild(edgeLayer);
+    world.addChild(nodeLayer);
+    app.stage.addChild(world);
+
+    const simulationNodes = new Map();
+    const renderedNodes = new Map();
+    layoutNodes();
+    buildRenderedNodes();
+    updateSearchResults();
+    updateDetails(null);
+
+    app.ticker.add((ticker) => {
+      stepSimulation(Math.min(1.2, ticker.elapsedMS / 16.6667));
+      renderGraph();
+    });
+
+    dom.input.addEventListener("input", updateSearchResults);
+    dom.input.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" && state.results.length > 0) {
+        event.preventDefault();
+        selectNode(state.results[0].node.node_id);
+      }
+
+      if (event.key === "Escape") {
+        dom.input.value = "";
+        state.query = "";
+        state.selectedId = null;
+        updateSearchResults();
+        updateDetails(null);
+      }
+    });
+
+    dom.filterButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        const type = button.dataset.type;
+        if (activeTypes.has(type) && activeTypes.size > 1) {
+          activeTypes.delete(type);
+          button.classList.remove("active");
+        } else {
+          activeTypes.add(type);
+          button.classList.add("active");
+        }
+      });
+    });
+
+    app.view.addEventListener("mousemove", handlePointerMove);
+    app.view.addEventListener("mousedown", handlePointerDown);
+    window.addEventListener("mouseup", handlePointerUp);
+    app.view.addEventListener("mouseleave", () => {
+      state.hoveredNodeId = null;
+      state.hoveredEdgeKey = null;
+      dom.tooltip.classList.remove("visible");
+    });
+    window.addEventListener("resize", () => {
+      layoutNodes();
+    });
+
+    function parseCsv(csvText) {
+      const lines = csvText.trim().split(/\r?\n/);
+      const headers = splitCsvLine(lines[0]);
+      return lines.slice(1).map((line) => {
+        const values = splitCsvLine(line);
+        return Object.fromEntries(headers.map((header, index) => [header, values[index] ?? ""]));
+      });
+    }
+
+    function splitCsvLine(line) {
+      const values = [];
+      let current = "";
+      let inQuotes = false;
+
+      for (let index = 0; index < line.length; index += 1) {
+        const char = line[index];
+        if (char === "\"") {
+          inQuotes = !inQuotes;
+        } else if (char === "," && !inQuotes) {
+          values.push(current);
+          current = "";
+        } else {
+          current += char;
+        }
+      }
+
+      values.push(current);
+      return values;
+    }
+
+    function edgeKey(fromId, toId) {
+      return `${fromId}->${toId}`;
+    }
+
+    function layoutNodes() {
+      const width = dom.stage.clientWidth;
+      const height = dom.stage.clientHeight;
+      const crateAnchors = [
+        { x: width * 0.24, y: height * 0.45 },
+        { x: width * 0.52, y: height * 0.31 },
+        { x: width * 0.79, y: height * 0.57 },
+      ];
+      const fileOffsets = [
+        { x: -84, y: -96 },
+        { x: 0, y: 96 },
+        { x: 96, y: -18 },
+      ];
+      const functionOffsets = [
+        { x: -36, y: -30 },
+        { x: 38, y: -2 },
+        { x: -4, y: 34 },
+      ];
+
+      simulationNodes.clear();
+
+      rawNodes
+        .filter((node) => node.node_type === "crate")
+        .forEach((crateNode, crateIndex) => {
+          const anchor = crateAnchors[crateIndex];
+          setSimulationNode(crateNode, anchor.x, anchor.y);
+
+          rawNodes
+            .filter((node) => node.node_type === "file" && node.parent_id === crateNode.node_id)
+            .forEach((fileNode, fileIndex) => {
+              const offset = fileOffsets[fileIndex];
+              const fileX = anchor.x + offset.x;
+              const fileY = anchor.y + offset.y;
+              setSimulationNode(fileNode, fileX, fileY);
+
+              rawNodes
+                .filter((node) => node.node_type === "function" && node.parent_id === fileNode.node_id)
+                .forEach((fnNode, fnIndex) => {
+                  const fnOffset = functionOffsets[fnIndex];
+                  setSimulationNode(fnNode, fileX + fnOffset.x, fileY + fnOffset.y);
+                });
+            });
+        });
+    }
+
+    function setSimulationNode(node, x, y) {
+      const existing = simulationNodes.get(node.node_id);
+      simulationNodes.set(node.node_id, {
+        ...node,
+        x: existing?.x ?? x,
+        y: existing?.y ?? y,
+        vx: existing?.vx ?? 0,
+        vy: existing?.vy ?? 0,
+        homeX: x,
+        homeY: y,
+        radius: nodeRadius[node.node_type] ?? 6,
+      });
+    }
+
+    function buildRenderedNodes() {
+      simulationNodes.forEach((node) => {
+        const container = new PIXI.Container();
+        const circle = new PIXI.Graphics();
+        const label = new PIXI.Text(node.label, {
+          fontFamily: "Iowan Old Style, Palatino Linotype, serif",
+          fontSize: 12,
+          fill: 0xf3efe6,
+          align: "left",
+        });
+        label.anchor.set(0, 0.5);
+        label.x = node.radius + 10;
+        label.y = -10;
+        label.visible = false;
+        container.addChild(circle);
+        container.addChild(label);
+        nodeLayer.addChild(container);
+        renderedNodes.set(node.node_id, { container, circle, label });
+      });
+    }
+
+    function ancestorChain(nodeId) {
+      const out = [];
+      let current = parentById.get(nodeId);
+      while (current) {
+        out.push(current);
+        current = parentById.get(current);
+      }
+      return out;
+    }
+
+    function descendantNodes(nodeId) {
+      const out = [];
+      const stack = [...(childrenById.get(nodeId) ?? [])];
+      while (stack.length > 0) {
+        const current = stack.pop();
+        out.push(current);
+        for (const child of childrenById.get(current) ?? []) {
+          stack.push(child);
+        }
+      }
+      return out;
+    }
+
+    function descendantFunctions(nodeId) {
+      const node = nodeById.get(nodeId);
+      if (!node) return [];
+      if (node.node_type === "function") return [nodeId];
+      return descendantNodes(nodeId).filter((id) => nodeById.get(id)?.node_type === "function");
+    }
+
+    function focusModel() {
+      if (!state.selectedId) return null;
+      const selected = nodeById.get(state.selectedId);
+      if (!selected) return null;
+
+      const nodes = new Set([selected.node_id, ...ancestorChain(selected.node_id)]);
+      const edges = new Set();
+      const baseFunctions = new Set(
+        selected.node_type === "function"
+          ? [selected.node_id]
+          : descendantFunctions(selected.node_id)
+      );
+
+      if (selected.node_type !== "function") {
+        descendantNodes(selected.node_id).forEach((id) => nodes.add(id));
+      }
+
+      dependencyEdges.forEach((edge) => {
+        if (!baseFunctions.has(edge.from_id) && !baseFunctions.has(edge.to_id)) return;
+        nodes.add(edge.from_id);
+        nodes.add(edge.to_id);
+        ancestorChain(edge.from_id).forEach((id) => nodes.add(id));
+        ancestorChain(edge.to_id).forEach((id) => nodes.add(id));
+        edges.add(edgeKey(edge.from_id, edge.to_id));
+      });
+
+      return { nodes, edges };
+    }
+
+    function queryMatchSet() {
+      if (!state.query) return null;
+      return new Set(state.results.map((entry) => entry.node.node_id));
+    }
+
+    function nodeVisible(node, focus) {
+      if (focus && focus.nodes.has(node.node_id)) return true;
+      return activeTypes.has(node.node_type);
+    }
+
+    function nodeAlpha(node, focus, matches) {
+      if (!nodeVisible(node, focus)) return 0;
+
+      if (focus) {
+        return focus.nodes.has(node.node_id)
+          ? node.node_id === state.selectedId ? 1 : 0.95
+          : 0.04;
+      }
+
+      if (matches) {
+        return matches.has(node.node_id)
+          ? node.node_id === state.hoveredNodeId ? 1 : 0.98
+          : 0.12;
+      }
+
+      return node.node_id === state.hoveredNodeId ? 1 : 0.9;
+    }
+
+    function edgeAlpha(edge, focus, matches) {
+      const fromNode = nodeById.get(edge.from_id);
+      const toNode = nodeById.get(edge.to_id);
+      if (!activeTypes.has(fromNode.node_type) || !activeTypes.has(toNode.node_type)) return 0;
+
+      if (focus) {
+        return focus.edges.has(edgeKey(edge.from_id, edge.to_id)) ? 0.88 : 0;
+      }
+
+      if (matches) {
+        return matches.has(edge.from_id) || matches.has(edge.to_id) ? 0.5 : 0.1;
+      }
+
+      if (state.hoveredNodeId && (edge.from_id === state.hoveredNodeId || edge.to_id === state.hoveredNodeId)) {
+        return 0.74;
+      }
+
+      if (state.hoveredEdgeKey === edgeKey(edge.from_id, edge.to_id)) return 0.82;
+      return 0.22;
+    }
+
+    function structuralLength(edge) {
+      const fromType = nodeById.get(edge.from_id)?.node_type;
+      const toType = nodeById.get(edge.to_id)?.node_type;
+      if (fromType === "crate" && toType === "file") return 108;
+      if (fromType === "file" && toType === "function") return 52;
+      return 72;
+    }
+
+    function scoreNode(node, query) {
+      const q = query.trim().toLowerCase();
+      if (!q) return 0;
+      const label = node.label.toLowerCase();
+      const path = (node.file_path || "").toLowerCase();
+      const type = node.node_type.toLowerCase();
+
+      let score = 0;
+      if (label === q) score += 100;
+      if (label.startsWith(q)) score += 72;
+      if (label.includes(q)) score += 46;
+      if (path.includes(q)) score += 28;
+      if (type.includes(q)) score += 14;
+
+      q.split(/\s+/).filter(Boolean).forEach((token) => {
+        if (label.includes(token)) score += 16;
+        if (path.includes(token)) score += 8;
+      });
+
+      return score;
+    }
+
+    function updateSearchResults() {
+      state.query = dom.input.value.trim();
+      state.results = rawNodes
+        .map((node) => ({ node, score: scoreNode(node, state.query) }))
+        .filter((entry) => entry.score > 0)
+        .sort((left, right) => right.score - left.score)
+        .slice(0, 8);
+      renderSearchResults();
+    }
+
+    function renderSearchResults() {
+      if (!state.query) {
+        dom.results.innerHTML = `
+          <div class="result-item" style="cursor: default;">
+            <div class="result-main">
+              <span class="result-dot" style="background:#6aa5ff"></span>
+              <span>FFF is local and mock-backed for now</span>
+            </div>
+            <div class="result-meta">Type a name, a path fragment, or a node kind. Press Enter to jump to the top hit.</div>
+          </div>
+        `;
+        return;
+      }
+
+      if (state.results.length === 0) {
+        dom.results.innerHTML = `
+          <div class="result-item" style="cursor: default;">
+            <div class="result-main">
+              <span class="result-dot" style="background:rgba(255,255,255,0.4)"></span>
+              <span>No local match</span>
+            </div>
+            <div class="result-meta">Try boot, profile, auth, cache, status, or lib.rs.</div>
+          </div>
+        `;
+        return;
+      }
+
+      dom.results.innerHTML = state.results.map(({ node }) => `
+        <button class="result-item" data-node-id="${node.node_id}">
+          <div class="result-main">
+            <span class="result-dot" style="background:${colorToCss(nodeColors[node.node_type])}"></span>
+            <span>${node.label}</span>
+          </div>
+          <div class="result-meta">${node.node_type} · ${node.file_path || node.label}</div>
+        </button>
+      `).join("");
+
+      dom.results.querySelectorAll("[data-node-id]").forEach((button) => {
+        button.addEventListener("click", () => selectNode(button.dataset.nodeId));
+      });
+    }
+
+    function colorToCss(colorInt) {
+      return `#${colorInt.toString(16).padStart(6, "0")}`;
+    }
+
+    function selectNode(nodeId) {
+      state.selectedId = nodeId;
+      updateDetails(nodeById.get(nodeId));
+    }
+
+    function updateDetails(node) {
+      if (!node) {
+        dom.detailsName.textContent = "Nothing selected";
+        dom.detailsMeta.textContent = "Function edges are the real dependencies. Crates and files are context anchors.";
+        dom.detailsPath.textContent = "Drag a line to pull its two endpoints and re-shape the local neighborhood.";
+        return;
+      }
+
+      const functionCount =
+        node.node_type === "function"
+          ? dependencyAdjacency.get(node.node_id)?.size ?? 0
+          : descendantFunctions(node.node_id).length;
+
+      dom.detailsName.textContent = node.label;
+      dom.detailsMeta.textContent =
+        node.node_type === "function"
+          ? `${node.node_type} · ${functionCount} direct dependency neighbor${functionCount === 1 ? "" : "s"}`
+          : `${node.node_type} · ${functionCount} contained function${functionCount === 1 ? "" : "s"} shaping the local graph`;
+      dom.detailsPath.textContent = node.file_path
+        ? `${node.file_path}${node.span ? ` · ${node.span}` : ""}`
+        : "crate anchor";
+    }
+
+    function stepSimulation(multiplier) {
+      const focus = focusModel();
+      const visibleNodes = [...simulationNodes.values()].filter((node) => nodeVisible(node, focus));
+
+      for (let index = 0; index < visibleNodes.length; index += 1) {
+        const left = visibleNodes[index];
+        for (let inner = index + 1; inner < visibleNodes.length; inner += 1) {
+          const right = visibleNodes[inner];
+          const dx = right.x - left.x;
+          const dy = right.y - left.y;
+          const distSq = Math.max(140, dx * dx + dy * dy);
+          const force = 420 / distSq;
+          const fx = dx * force;
+          const fy = dy * force;
+          left.vx -= fx * multiplier;
+          left.vy -= fy * multiplier;
+          right.vx += fx * multiplier;
+          right.vy += fy * multiplier;
+        }
+      }
+
+      containsEdges.forEach((edge) => {
+        const from = simulationNodes.get(edge.from_id);
+        const to = simulationNodes.get(edge.to_id);
+        if (!from || !to) return;
+        const dx = to.x - from.x;
+        const dy = to.y - from.y;
+        const dist = Math.max(1, Math.hypot(dx, dy));
+        const rest = structuralLength(edge);
+        const stretch = dist - rest;
+        const strength = edge.from_id.startsWith("crate:") ? 0.0038 : 0.0054;
+        const fx = (dx / dist) * stretch * strength * multiplier;
+        const fy = (dy / dist) * stretch * strength * multiplier;
+        from.vx += fx;
+        from.vy += fy;
+        to.vx -= fx;
+        to.vy -= fy;
+      });
+
+      dependencyEdges.forEach((edge) => {
+        const from = simulationNodes.get(edge.from_id);
+        const to = simulationNodes.get(edge.to_id);
+        if (!from || !to) return;
+        const dx = to.x - from.x;
+        const dy = to.y - from.y;
+        const dist = Math.max(1, Math.hypot(dx, dy));
+        const stretch = dist - 82;
+        const fx = (dx / dist) * stretch * 0.0068 * multiplier;
+        const fy = (dy / dist) * stretch * 0.0068 * multiplier;
+        from.vx += fx;
+        from.vy += fy;
+        to.vx -= fx;
+        to.vy -= fy;
+      });
+
+      if (state.dragEdgeKey) {
+        const edge = dependencyEdgeByKey.get(state.dragEdgeKey);
+        const from = simulationNodes.get(edge.from_id);
+        const to = simulationNodes.get(edge.to_id);
+        const midX = (from.x + to.x) / 2;
+        const midY = (from.y + to.y) / 2;
+        const fx = (state.pointerX - midX) * 0.011 * multiplier;
+        const fy = (state.pointerY - midY) * 0.011 * multiplier;
+        from.vx += fx;
+        from.vy += fy;
+        to.vx += fx;
+        to.vy += fy;
+      }
+
+      simulationNodes.forEach((node) => {
+        if (state.dragNodeId === node.node_id) {
+          node.x = state.pointerX;
+          node.y = state.pointerY;
+          node.vx = 0;
+          node.vy = 0;
+          return;
+        }
+
+        const focusGhost = focus && !focus.nodes.has(node.node_id);
+        node.vx += (node.homeX - node.x) * (focusGhost ? 0.0012 : 0.0024) * multiplier;
+        node.vy += (node.homeY - node.y) * (focusGhost ? 0.0012 : 0.0024) * multiplier;
+        node.vx *= 0.93;
+        node.vy *= 0.93;
+        node.x += node.vx * multiplier;
+        node.y += node.vy * multiplier;
+      });
+    }
+
+    function renderGraph() {
+      const focus = focusModel();
+      const matches = queryMatchSet();
+      edgeLayer.clear();
+
+      dependencyEdges.forEach((edge) => {
+        const from = simulationNodes.get(edge.from_id);
+        const to = simulationNodes.get(edge.to_id);
+        const alpha = edgeAlpha(edge, focus, matches);
+        if (!from || !to || alpha <= 0) return;
+
+        const currentKey = edgeKey(edge.from_id, edge.to_id);
+        const highlighted =
+          currentKey === state.hoveredEdgeKey ||
+          currentKey === state.dragEdgeKey ||
+          edge.from_id === state.hoveredNodeId ||
+          edge.to_id === state.hoveredNodeId;
+
+        edgeLayer.lineStyle({
+          width: highlighted ? 1.6 : 1,
+          color: highlighted ? 0xf3efe6 : 0xc2c2c2,
+          alpha,
+          cap: PIXI.LINE_CAP.ROUND,
+          join: PIXI.LINE_JOIN.ROUND,
+        });
+
+        edgeLayer.moveTo(from.x, from.y);
+        if (currentKey === state.dragEdgeKey) {
+          edgeLayer.quadraticCurveTo(state.pointerX, state.pointerY, to.x, to.y);
+        } else {
+          edgeLayer.lineTo(to.x, to.y);
+        }
+      });
+
+      simulationNodes.forEach((node) => {
+        const visual = renderedNodes.get(node.node_id);
+        const alpha = nodeAlpha(node, focus, matches);
+        const active = node.node_id === state.selectedId || node.node_id === state.hoveredNodeId;
+
+        visual.container.position.set(node.x, node.y);
+        visual.container.alpha = alpha;
+        visual.label.visible = alpha > 0.45 && active;
+
+        visual.circle.clear();
+        if (alpha <= 0) return;
+
+        visual.circle.lineStyle(active ? 1.4 : 0, 0xf8f4eb, active ? 0.92 : 0);
+        visual.circle.beginFill(nodeColors[node.node_type], 1);
+        visual.circle.drawCircle(0, 0, node.radius);
+        visual.circle.endFill();
+      });
+    }
+
+    function pointForEvent(event) {
+      const rect = app.view.getBoundingClientRect();
+      return {
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top,
+      };
+    }
+
+    function handlePointerMove(event) {
+      const point = pointForEvent(event);
+      state.pointerX = point.x;
+      state.pointerY = point.y;
+      if (state.pointerDown) state.pointerMoved = true;
+
+      if (!state.dragNodeId && !state.dragEdgeKey) {
+        const hoveredNode = findNodeAt(point.x, point.y);
+        if (hoveredNode) {
+          state.hoveredNodeId = hoveredNode.node_id;
+          state.hoveredEdgeKey = null;
+          showTooltip(point.x, point.y, `${hoveredNode.label} · ${hoveredNode.node_type}`);
+          return;
+        }
+
+        const hoveredEdge = findEdgeAt(point.x, point.y);
+        if (hoveredEdge) {
+          state.hoveredNodeId = null;
+          state.hoveredEdgeKey = hoveredEdge.key;
+          const edge = dependencyEdgeByKey.get(hoveredEdge.key);
+          showTooltip(
+            point.x,
+            point.y,
+            `${nodeById.get(edge.from_id).label} -> ${nodeById.get(edge.to_id).label}`
+          );
+          return;
+        }
+      }
+
+      if (state.dragEdgeKey) {
+        showTooltip(point.x, point.y, "edge drag");
+      } else if (state.dragNodeId) {
+        const node = nodeById.get(state.dragNodeId);
+        showTooltip(point.x, point.y, `${node.label} · dragging`);
+      } else {
+        state.hoveredNodeId = null;
+        state.hoveredEdgeKey = null;
+        dom.tooltip.classList.remove("visible");
+      }
+    }
+
+    function handlePointerDown(event) {
+      const point = pointForEvent(event);
+      state.pointerX = point.x;
+      state.pointerY = point.y;
+      state.pointerDown = true;
+      state.pointerMoved = false;
+
+      const node = findNodeAt(point.x, point.y);
+      if (node) {
+        state.dragNodeId = node.node_id;
+        state.selectedId = node.node_id;
+        updateDetails(nodeById.get(node.node_id));
+        app.view.classList.add("dragging");
+        return;
+      }
+
+      const edge = findEdgeAt(point.x, point.y);
+      if (edge) {
+        state.dragEdgeKey = edge.key;
+        app.view.classList.add("dragging");
+      }
+    }
+
+    function handlePointerUp(event) {
+      if (!state.pointerDown) return;
+      const point = pointForEvent(event);
+      const clickedNode = findNodeAt(point.x, point.y);
+
+      if (!state.pointerMoved && clickedNode) {
+        selectNode(clickedNode.node_id);
+      } else if (!state.pointerMoved && !clickedNode && !findEdgeAt(point.x, point.y)) {
+        state.selectedId = null;
+        updateDetails(null);
+      }
+
+      state.pointerDown = false;
+      state.dragNodeId = null;
+      state.dragEdgeKey = null;
+      app.view.classList.remove("dragging");
+    }
+
+    function showTooltip(x, y, text) {
+      dom.tooltip.textContent = text;
+      dom.tooltip.style.left = `${x}px`;
+      dom.tooltip.style.top = `${y}px`;
+      dom.tooltip.classList.add("visible");
+    }
+
+    function findNodeAt(x, y) {
+      const focus = focusModel();
+      const matches = queryMatchSet();
+      return [...simulationNodes.values()]
+        .filter((node) => nodeAlpha(node, focus, matches) > 0.12)
+        .sort((left, right) => right.radius - left.radius)
+        .find((node) => {
+          const dx = x - node.x;
+          const dy = y - node.y;
+          return Math.sqrt(dx * dx + dy * dy) <= node.radius + 8;
+        }) ?? null;
+    }
+
+    function findEdgeAt(x, y) {
+      const focus = focusModel();
+      const matches = queryMatchSet();
+
+      let best = null;
+      let bestDistance = 14;
+
+      dependencyEdges.forEach((edge) => {
+        if (edgeAlpha(edge, focus, matches) <= 0) return;
+        const from = simulationNodes.get(edge.from_id);
+        const to = simulationNodes.get(edge.to_id);
+        const key = edgeKey(edge.from_id, edge.to_id);
+
+        const distance =
+          key === state.dragEdgeKey
+            ? pointToQuadraticDistance(
+                { x, y },
+                from,
+                { x: state.pointerX, y: state.pointerY },
+                to
+              )
+            : pointToSegmentDistance({ x, y }, from, to);
+
+        if (distance < bestDistance) {
+          bestDistance = distance;
+          best = { key };
+        }
+      });
+
+      return best;
+    }
+
+    function pointToSegmentDistance(point, start, end) {
+      const dx = end.x - start.x;
+      const dy = end.y - start.y;
+      const lengthSquared = dx * dx + dy * dy;
+      if (lengthSquared === 0) return Math.hypot(point.x - start.x, point.y - start.y);
+      let t = ((point.x - start.x) * dx + (point.y - start.y) * dy) / lengthSquared;
+      t = Math.max(0, Math.min(1, t));
+      const projX = start.x + t * dx;
+      const projY = start.y + t * dy;
+      return Math.hypot(point.x - projX, point.y - projY);
+    }
+
+    function pointToQuadraticDistance(point, start, control, end) {
+      let best = Infinity;
+      for (let t = 0; t <= 1; t += 0.05) {
+        const mt = 1 - t;
+        const x = mt * mt * start.x + 2 * mt * t * control.x + t * t * end.x;
+        const y = mt * mt * start.y + 2 * mt * t * control.y + t * t * end.y;
+        best = Math.min(best, Math.hypot(point.x - x, point.y - y));
+      }
+      return best;
+    }
+  </script>
+</body>
+</html>

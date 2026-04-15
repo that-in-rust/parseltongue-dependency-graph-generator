@@ -1,0 +1,7 @@
+[package]
+name = "auth-token-demo-core"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+store-profile-demo-core = { path = "../store-profile-demo-core" }

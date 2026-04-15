@@ -1,0 +1,7 @@
+[workspace]
+members = [
+  "shell-login-demo-core",
+  "auth-token-demo-core",
+  "store-profile-demo-core",
+]
+resolver = "2"
