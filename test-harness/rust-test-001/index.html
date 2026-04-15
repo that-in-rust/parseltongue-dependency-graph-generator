@@ -243,6 +243,39 @@
       border-radius: 999px;
     }
 
+    .view-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .view-button {
+      appearance: none;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text);
+      padding: 8px 12px;
+      min-width: 44px;
+      font: inherit;
+      font-size: 13px;
+      cursor: pointer;
+      transition: background 140ms ease, transform 140ms ease;
+    }
+
+    .view-button:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: translateY(-1px);
+    }
+
+    .view-note {
+      margin: 10px 0 0;
+      font-size: 12px;
+      line-height: 1.45;
+      color: var(--muted);
+    }
+
     .details {
       margin-top: 16px;
       padding-top: 14px;
@@ -298,6 +331,28 @@
       opacity: 1;
     }
 
+    .boot-status {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      min-width: 280px;
+      max-width: 520px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: rgba(12, 13, 15, 0.94);
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.45;
+      box-shadow: var(--shadow);
+      z-index: 4;
+    }
+
+    .boot-status.is-hidden {
+      display: none;
+    }
+
     @media (max-width: 760px) {
       .hud {
         width: calc(100vw - 24px);
@@ -323,7 +378,7 @@
       <h1>rust-test-001</h1>
       <p class="subtitle">
         Rebuilt as a PIXI spring graph, like the Obsidian graph stack we traced locally.
-        Search first, then pull nodes or even the edges themselves.
+        Search first, zoom with the wheel, then pull nodes or even the edges themselves.
       </p>
 
       <div class="search-wrap">
@@ -350,22 +405,30 @@
         <div class="legend-item"><span class="legend-dot" style="background: var(--function)"></span>function</div>
       </div>
 
+      <div class="view-controls">
+        <button class="view-button" id="zoom-out" type="button">-</button>
+        <button class="view-button" id="zoom-reset" type="button">Reset</button>
+        <button class="view-button" id="zoom-in" type="button">+</button>
+      </div>
+      <p class="view-note">Wheel to zoom. Drag empty space to pan. Double click the canvas or use Reset to recentre the map.</p>
+
       <div class="details">
         <p class="section-title">Selected Node</p>
         <p class="details-name" id="details-name">Nothing selected</p>
         <p class="details-meta" id="details-meta">Function edges are the real dependencies. Crates and files are context anchors.</p>
-        <p class="details-path" id="details-path">Drag a line to pull its two endpoints and re-shape the local neighborhood.</p>
+        <p class="details-path" id="details-path">Wheel to zoom, drag empty space to pan, or drag a line to pull its two endpoints.</p>
       </div>
     </section>
 
     <aside class="hint-box">
       <p class="hint">
         This build uses the same rendering family Obsidian loads in its renderer: PIXI.
-        Nodes drift, springs settle, and edge dragging temporarily bends the line before the graph snaps back.
+        Nodes drift in circular clusters, springs settle, and edge dragging temporarily bends the line before the graph snaps back.
       </p>
     </aside>
 
     <div class="tooltip" id="tooltip"></div>
+    <div class="boot-status is-hidden" id="boot-status"></div>
   </div>
 
   <script id="nodes-data" type="text/plain">node_id,node_type,label,parent_id,file_path,span
@@ -493,12 +556,16 @@ fn:read_audit_entry_now,depends_on,fn:trim_audit_entry_now</script>
     const dom = {
       stage: document.getElementById("stage"),
       tooltip: document.getElementById("tooltip"),
+      bootStatus: document.getElementById("boot-status"),
       input: document.getElementById("fff-input"),
       results: document.getElementById("fff-results"),
       detailsName: document.getElementById("details-name"),
       detailsMeta: document.getElementById("details-meta"),
       detailsPath: document.getElementById("details-path"),
       filterButtons: [...document.querySelectorAll(".chip")],
+      zoomIn: document.getElementById("zoom-in"),
+      zoomOut: document.getElementById("zoom-out"),
+      zoomReset: document.getElementById("zoom-reset"),
     };
 
     const activeTypes = new Set(["crate", "file", "function"]);
@@ -508,13 +575,28 @@ fn:read_audit_entry_now,depends_on,fn:trim_audit_entry_now</script>
       hoveredEdgeKey: null,
       dragNodeId: null,
       dragEdgeKey: null,
+      dragPanActive: false,
       pointerDown: false,
       pointerMoved: false,
+      pointerScreenX: 0,
+      pointerScreenY: 0,
       pointerX: 0,
       pointerY: 0,
+      cameraOffsetX: 0,
+      cameraOffsetY: 0,
+      cameraScale: 1,
+      panStartX: 0,
+      panStartY: 0,
+      panOriginX: 0,
+      panOriginY: 0,
       query: "",
       results: [],
     };
+
+    window.addEventListener("error", (event) => {
+      const message = event?.error?.message || event.message || "Unknown renderer error";
+      showBootStatus(`Renderer error: ${message}`);
+    });
 
     const rawNodes = parseCsv(document.getElementById("nodes-data").textContent);
     const rawEdges = parseCsv(document.getElementById("edges-data").textContent);
@@ -543,6 +625,11 @@ fn:read_audit_entry_now,depends_on,fn:trim_audit_entry_now</script>
       dependencyAdjacency.get(edge.to_id).add(edge.from_id);
     });
 
+    if (!window.PIXI || !PIXI.Application) {
+      showBootStatus("PIXI did not load, so the graph renderer could not start.");
+      throw new Error("PIXI runtime missing");
+    }
+
     const app = new PIXI.Application({
       resizeTo: dom.stage,
       backgroundAlpha: 0,
@@ -550,7 +637,9 @@ fn:read_audit_entry_now,depends_on,fn:trim_audit_entry_now</script>
       autoDensity: true,
       resolution: window.devicePixelRatio || 1,
     });
-    dom.stage.appendChild(app.view);
+    const graphView = app.view || app.canvas;
+    dom.stage.appendChild(graphView);
+    graphView.style.touchAction = "none";
 
     const world = new PIXI.Container();
     const edgeLayer = new PIXI.Graphics();
@@ -563,11 +652,19 @@ fn:read_audit_entry_now,depends_on,fn:trim_audit_entry_now</script>
     const renderedNodes = new Map();
     layoutNodes();
     buildRenderedNodes();
+    applyCameraTransform();
     updateSearchResults();
     updateDetails(null);
+    renderGraph();
+    hideBootStatus();
 
-    app.ticker.add((ticker) => {
-      stepSimulation(Math.min(1.2, ticker.elapsedMS / 16.6667));
+    app.ticker.add(() => {
+      const elapsedMs =
+        app.ticker.elapsedMS ||
+        app.ticker.deltaMS ||
+        16.6667;
+      const step = Math.min(1.2, elapsedMs / 16.6667);
+      stepSimulation(Number.isFinite(step) ? step : 1);
       renderGraph();
     });
 
@@ -600,16 +697,27 @@ fn:read_audit_entry_now,depends_on,fn:trim_audit_entry_now</script>
       });
     });
 
-    app.view.addEventListener("mousemove", handlePointerMove);
-    app.view.addEventListener("mousedown", handlePointerDown);
+    dom.zoomIn.addEventListener("click", () => {
+      setCameraScale(state.cameraScale * 1.18);
+    });
+    dom.zoomOut.addEventListener("click", () => {
+      setCameraScale(state.cameraScale / 1.18);
+    });
+    dom.zoomReset.addEventListener("click", resetCameraView);
+
+    graphView.addEventListener("mousemove", handlePointerMove);
+    graphView.addEventListener("mousedown", handlePointerDown);
+    graphView.addEventListener("wheel", handleWheel, { passive: false });
+    graphView.addEventListener("dblclick", resetCameraView);
     window.addEventListener("mouseup", handlePointerUp);
-    app.view.addEventListener("mouseleave", () => {
+    graphView.addEventListener("mouseleave", () => {
       state.hoveredNodeId = null;
       state.hoveredEdgeKey = null;
       dom.tooltip.classList.remove("visible");
     });
     window.addEventListener("resize", () => {
       layoutNodes();
+      applyCameraTransform();
     });
 
     function parseCsv(csvText) {
@@ -649,46 +757,50 @@ fn:read_audit_entry_now,depends_on,fn:trim_audit_entry_now</script>
     function layoutNodes() {
       const width = dom.stage.clientWidth;
       const height = dom.stage.clientHeight;
-      const crateAnchors = [
-        { x: width * 0.24, y: height * 0.45 },
-        { x: width * 0.52, y: height * 0.31 },
-        { x: width * 0.79, y: height * 0.57 },
-      ];
-      const fileOffsets = [
-        { x: -84, y: -96 },
-        { x: 0, y: 96 },
-        { x: 96, y: -18 },
-      ];
-      const functionOffsets = [
-        { x: -36, y: -30 },
-        { x: 38, y: -2 },
-        { x: -4, y: 34 },
-      ];
+      const layoutScale = clamp(Math.min(width, height) / 900, 0.84, 1.28);
+      const crateNodes = rawNodes.filter((node) => node.node_type === "crate");
+      const crateRingRadius = Math.max(180, Math.min(width, height) * 0.23);
+      const fileRingRadius = 112 * layoutScale;
+      const functionRingRadius = 40 * layoutScale;
 
       simulationNodes.clear();
 
-      rawNodes
-        .filter((node) => node.node_type === "crate")
-        .forEach((crateNode, crateIndex) => {
-          const anchor = crateAnchors[crateIndex];
-          setSimulationNode(crateNode, anchor.x, anchor.y);
+      crateNodes.forEach((crateNode, crateIndex) => {
+        const crateAngle = (-Math.PI / 2) + (crateIndex * (Math.PI * 2 / crateNodes.length));
+        const crateX = Math.cos(crateAngle) * crateRingRadius;
+        const crateY = Math.sin(crateAngle) * crateRingRadius;
+        setSimulationNode(crateNode, crateX, crateY);
 
-          rawNodes
-            .filter((node) => node.node_type === "file" && node.parent_id === crateNode.node_id)
-            .forEach((fileNode, fileIndex) => {
-              const offset = fileOffsets[fileIndex];
-              const fileX = anchor.x + offset.x;
-              const fileY = anchor.y + offset.y;
-              setSimulationNode(fileNode, fileX, fileY);
+        const crateFiles = rawNodes.filter(
+          (node) => node.node_type === "file" && node.parent_id === crateNode.node_id
+        );
 
-              rawNodes
-                .filter((node) => node.node_type === "function" && node.parent_id === fileNode.node_id)
-                .forEach((fnNode, fnIndex) => {
-                  const fnOffset = functionOffsets[fnIndex];
-                  setSimulationNode(fnNode, fileX + fnOffset.x, fileY + fnOffset.y);
-                });
-            });
+        crateFiles.forEach((fileNode, fileIndex) => {
+          const fileAngle =
+            crateAngle +
+            (-Math.PI / 2) +
+            (fileIndex * (Math.PI * 2 / Math.max(crateFiles.length, 1)));
+          const fileX = crateX + Math.cos(fileAngle) * fileRingRadius;
+          const fileY = crateY + Math.sin(fileAngle) * fileRingRadius;
+          setSimulationNode(fileNode, fileX, fileY);
+
+          const fileFunctions = rawNodes.filter(
+            (node) => node.node_type === "function" && node.parent_id === fileNode.node_id
+          );
+
+          fileFunctions.forEach((fnNode, fnIndex) => {
+            const fnAngle =
+              fileAngle +
+              (-Math.PI / 2) +
+              (fnIndex * (Math.PI * 2 / Math.max(fileFunctions.length, 1)));
+            setSimulationNode(
+              fnNode,
+              fileX + Math.cos(fnAngle) * functionRingRadius,
+              fileY + Math.sin(fnAngle) * functionRingRadius
+            );
+          });
         });
+      });
     }
 
     function setSimulationNode(node, x, y) {
@@ -929,7 +1041,7 @@ fn:read_audit_entry_now,depends_on,fn:trim_audit_entry_now</script>
       if (!node) {
         dom.detailsName.textContent = "Nothing selected";
         dom.detailsMeta.textContent = "Function edges are the real dependencies. Crates and files are context anchors.";
-        dom.detailsPath.textContent = "Drag a line to pull its two endpoints and re-shape the local neighborhood.";
+        dom.detailsPath.textContent = "Wheel to zoom, drag empty space to pan, or drag a line to pull its two endpoints.";
         return;
       }
 
@@ -1075,6 +1187,10 @@ fn:read_audit_entry_now,depends_on,fn:trim_audit_entry_now</script>
         const alpha = nodeAlpha(node, focus, matches);
         const active = node.node_id === state.selectedId || node.node_id === state.hoveredNodeId;
 
+        if (!Number.isFinite(node.x) || !Number.isFinite(node.y)) {
+          return;
+        }
+
         visual.container.position.set(node.x, node.y);
         visual.container.alpha = alpha;
         visual.label.visible = alpha > 0.45 && active;
@@ -1090,25 +1206,40 @@ fn:read_audit_entry_now,depends_on,fn:trim_audit_entry_now</script>
     }
 
     function pointForEvent(event) {
-      const rect = app.view.getBoundingClientRect();
+      const rect = graphView.getBoundingClientRect();
+      const screenX = event.clientX - rect.left;
+      const screenY = event.clientY - rect.top;
+      const worldPoint = screenToWorld(screenX, screenY);
       return {
-        x: event.clientX - rect.left,
-        y: event.clientY - rect.top,
+        screenX,
+        screenY,
+        x: worldPoint.x,
+        y: worldPoint.y,
       };
     }
 
     function handlePointerMove(event) {
       const point = pointForEvent(event);
+      state.pointerScreenX = point.screenX;
+      state.pointerScreenY = point.screenY;
       state.pointerX = point.x;
       state.pointerY = point.y;
       if (state.pointerDown) state.pointerMoved = true;
+
+      if (state.dragPanActive) {
+        state.cameraOffsetX = state.panOriginX + (point.screenX - state.panStartX);
+        state.cameraOffsetY = state.panOriginY + (point.screenY - state.panStartY);
+        applyCameraTransform();
+        showTooltip(point.screenX, point.screenY, "pan view");
+        return;
+      }
 
       if (!state.dragNodeId && !state.dragEdgeKey) {
         const hoveredNode = findNodeAt(point.x, point.y);
         if (hoveredNode) {
           state.hoveredNodeId = hoveredNode.node_id;
           state.hoveredEdgeKey = null;
-          showTooltip(point.x, point.y, `${hoveredNode.label} · ${hoveredNode.node_type}`);
+          showTooltip(point.screenX, point.screenY, `${hoveredNode.label} · ${hoveredNode.node_type}`);
           return;
         }
 
@@ -1118,8 +1249,8 @@ fn:read_audit_entry_now,depends_on,fn:trim_audit_entry_now</script>
           state.hoveredEdgeKey = hoveredEdge.key;
           const edge = dependencyEdgeByKey.get(hoveredEdge.key);
           showTooltip(
-            point.x,
-            point.y,
+            point.screenX,
+            point.screenY,
             `${nodeById.get(edge.from_id).label} -> ${nodeById.get(edge.to_id).label}`
           );
           return;
@@ -1127,10 +1258,10 @@ fn:read_audit_entry_now,depends_on,fn:trim_audit_entry_now</script>
       }
 
       if (state.dragEdgeKey) {
-        showTooltip(point.x, point.y, "edge drag");
+        showTooltip(point.screenX, point.screenY, "edge drag");
       } else if (state.dragNodeId) {
         const node = nodeById.get(state.dragNodeId);
-        showTooltip(point.x, point.y, `${node.label} · dragging`);
+        showTooltip(point.screenX, point.screenY, `${node.label} · dragging`);
       } else {
         state.hoveredNodeId = null;
         state.hoveredEdgeKey = null;
@@ -1150,15 +1281,23 @@ fn:read_audit_entry_now,depends_on,fn:trim_audit_entry_now</script>
         state.dragNodeId = node.node_id;
         state.selectedId = node.node_id;
         updateDetails(nodeById.get(node.node_id));
-        app.view.classList.add("dragging");
+        graphView.classList.add("dragging");
         return;
       }
 
       const edge = findEdgeAt(point.x, point.y);
       if (edge) {
         state.dragEdgeKey = edge.key;
-        app.view.classList.add("dragging");
+        graphView.classList.add("dragging");
+        return;
       }
+
+      state.dragPanActive = true;
+      state.panStartX = point.screenX;
+      state.panStartY = point.screenY;
+      state.panOriginX = state.cameraOffsetX;
+      state.panOriginY = state.cameraOffsetY;
+      graphView.classList.add("dragging");
     }
 
     function handlePointerUp(event) {
@@ -1176,7 +1315,15 @@ fn:read_audit_entry_now,depends_on,fn:trim_audit_entry_now</script>
       state.pointerDown = false;
       state.dragNodeId = null;
       state.dragEdgeKey = null;
-      app.view.classList.remove("dragging");
+      state.dragPanActive = false;
+      graphView.classList.remove("dragging");
+    }
+
+    function handleWheel(event) {
+      event.preventDefault();
+      const point = pointForEvent(event);
+      const zoomFactor = Math.exp(-event.deltaY * 0.0014);
+      setCameraScale(state.cameraScale * zoomFactor, point.screenX, point.screenY);
     }
 
     function showTooltip(x, y, text) {
@@ -1189,13 +1336,14 @@ fn:read_audit_entry_now,depends_on,fn:trim_audit_entry_now</script>
     function findNodeAt(x, y) {
       const focus = focusModel();
       const matches = queryMatchSet();
+      const hitPadding = 8 / state.cameraScale;
       return [...simulationNodes.values()]
         .filter((node) => nodeAlpha(node, focus, matches) > 0.12)
         .sort((left, right) => right.radius - left.radius)
         .find((node) => {
           const dx = x - node.x;
           const dy = y - node.y;
-          return Math.sqrt(dx * dx + dy * dy) <= node.radius + 8;
+          return Math.sqrt(dx * dx + dy * dy) <= node.radius + hitPadding;
         }) ?? null;
     }
 
@@ -1204,7 +1352,7 @@ fn:read_audit_entry_now,depends_on,fn:trim_audit_entry_now</script>
       const matches = queryMatchSet();
 
       let best = null;
-      let bestDistance = 14;
+      let bestDistance = 14 / state.cameraScale;
 
       dependencyEdges.forEach((edge) => {
         if (edgeAlpha(edge, focus, matches) <= 0) return;
@@ -1252,6 +1400,51 @@ fn:read_audit_entry_now,depends_on,fn:trim_audit_entry_now</script>
         best = Math.min(best, Math.hypot(point.x - x, point.y - y));
       }
       return best;
+    }
+
+    function showBootStatus(message) {
+      dom.bootStatus.textContent = message;
+      dom.bootStatus.classList.remove("is-hidden");
+    }
+
+    function hideBootStatus() {
+      dom.bootStatus.classList.add("is-hidden");
+      dom.bootStatus.textContent = "";
+    }
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function applyCameraTransform() {
+      world.scale.set(state.cameraScale);
+      world.position.set(
+        (dom.stage.clientWidth / 2) + state.cameraOffsetX,
+        (dom.stage.clientHeight / 2) + state.cameraOffsetY
+      );
+    }
+
+    function screenToWorld(screenX, screenY) {
+      return {
+        x: (screenX - ((dom.stage.clientWidth / 2) + state.cameraOffsetX)) / state.cameraScale,
+        y: (screenY - ((dom.stage.clientHeight / 2) + state.cameraOffsetY)) / state.cameraScale,
+      };
+    }
+
+    function setCameraScale(nextScale, screenX = dom.stage.clientWidth / 2, screenY = dom.stage.clientHeight / 2) {
+      const clampedScale = clamp(nextScale, 0.35, 2.8);
+      const focusPoint = screenToWorld(screenX, screenY);
+      state.cameraScale = clampedScale;
+      state.cameraOffsetX = screenX - (dom.stage.clientWidth / 2) - (focusPoint.x * clampedScale);
+      state.cameraOffsetY = screenY - (dom.stage.clientHeight / 2) - (focusPoint.y * clampedScale);
+      applyCameraTransform();
+    }
+
+    function resetCameraView() {
+      state.cameraScale = 1;
+      state.cameraOffsetX = 0;
+      state.cameraOffsetY = 0;
+      applyCameraTransform();
     }
   </script>
 </body>
