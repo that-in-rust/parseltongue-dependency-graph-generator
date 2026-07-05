@@ -36,3 +36,4 @@ parseltongue-v*-macos-arm64
 artifacts/
 
 # Archive folder (for cleanup - can be deleted later)
+git-ref-repo/ignore-this-folder-repos
