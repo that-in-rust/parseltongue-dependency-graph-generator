@@ -11,8 +11,31 @@ Generated from current local evidence. This file is an audit companion for the f
 - Repositories with grammar/query asset paths: 289
 - Repositories with `.scm` query assets: 230
 - Repositories with `tags.scm` assets: 58
-- Repositories with at least one CGC run directory: 43
-- Repositories with complete CGC artifact sets: 17
+- Repositories with at least one CGC run directory: 86
+- Repositories with complete CGC artifact sets: 39
+- Repositories with incomplete/error CGC run evidence: 51
+- CGC run directories scanned under `/tmp/codex-code-intel/codegraphcontext`: 221
+- Latest resumable batch attempts recorded in `cgc-batch-status.tsv`: 27
+- Latest batch completions: 11
+- Latest batch failures: 1
+- Latest batch timeouts: 15
+
+## CGC Run Status Totals
+
+| Status | Count |
+|---|---:|
+| `complete_artifacts` | 64 |
+| `index_error` | 6 |
+| `interrupted_or_incomplete_index` | 93 |
+| `unknown` | 58 |
+
+## Latest Resumable CGC Batch
+
+| Status | Count |
+|---|---:|
+| `complete` | 11 |
+| `failed` | 1 |
+| `timeout_45s` | 15 |
 
 ## Evidence Files
 
@@ -20,14 +43,15 @@ Generated from current local evidence. This file is an audit companion for the f
 - `repo-evidence-index.tsv`: per-repo counters from broad scans and CGC run directories.
 - `repo-feature-summary.tsv`: earlier coarse feature/path counter table.
 - `cgc-run-summary.tsv`: best-effort summary of CGC run directories under `/tmp/codex-code-intel/codegraphcontext`.
-- `cgc-bounded-attempts.tsv`: current-turn bounded CGC retry outcomes for selected high-signal repos.
+- `cgc-bounded-attempts.tsv`: prior bounded CGC retry outcomes for selected high-signal repos.
+- `cgc-batch-status.tsv`: latest resumable bounded batch-run status from `cgc_batch_runner.py`.
 - `/tmp/parseltongue-ts-rg-v2.txt`: literal Tree-sitter evidence scan across repository contents.
 - `/tmp/parseltongue-api-evidence.txt`: parser/query/traversal API evidence scan.
 - `/tmp/parseltongue-grammar-files.txt`: grammar and query asset path scan.
 
 ## Important Limitation
 
-This index proves broad text/path coverage across the manifest. It does not prove that every repository was semantically browsed through CodeGraphContext, because CGC runs are incomplete for most repositories and several high-signal runs timed out or failed.
+This index proves broad text/path coverage across the manifest and records the current state of CGC attempts. It does not prove that every repository was semantically browsed through CodeGraphContext, because CGC runs are incomplete for most repositories and the latest bounded runner produced completions, failures, and timeouts.
 
 ## Top Repositories by Literal Tree-sitter matches
 
@@ -213,7 +237,22 @@ This index proves broad text/path coverage across the manifest. It does not prov
 
 | Count | Repository |
 |---:|---|
-| 1 | `BrianHicks__tree-grepper` |
+| 5 | `AB498__code-context-provider-mcp` |
+| 2 | `BrianHicks__tree-grepper` |
+| 2 | `tree-sitter__tree-sitter-html` |
+| 2 | `tree-sitter__tree-sitter-json` |
+| 1 | `71__vscode-tree-sitter-api` |
+| 1 | `AbstractMachinesLab__tree-sitter-sexp` |
+| 1 | `Aerijo__tree-sitter-biber` |
+| 1 | `Akzestia__tree-sitter-cql` |
+| 1 | `AndroidIDEOfficial__tree-sitter-aidl` |
+| 1 | `AndroidIDEOfficial__tree-sitter-log` |
+| 1 | `AndroidIDEOfficial__tree-sitter-properties` |
+| 1 | `AndroidIDEOfficial__tree-sitter-xml` |
+| 1 | `Anirudh-030307__CHATBOT` |
+| 1 | `Aryan1643__swe-agent` |
+| 1 | `Benjamin-Davies__tree-sitter-relview` |
+| 1 | `BloopAI__bloop` |
 | 1 | `INS-JVidal__code-primer` |
 | 1 | `RageLtd__cartographer` |
 | 1 | `afnanenayet__diffsitter` |
@@ -222,12 +261,4 @@ This index proves broad text/path coverage across the manifest. It does not prov
 | 1 | `bytecodealliance__tree-sitter-wit` |
 | 1 | `casey__tree-sitter-just` |
 | 1 | `framadhita4__syntax-tree-codebase-mcp` |
-| 1 | `johunsang__semble_rs` |
-| 1 | `skbgp__codememory-mcp` |
-| 1 | `tree-sitter__parse-action` |
-| 1 | `tree-sitter__tree-sitter-html` |
-| 1 | `tree-sitter__tree-sitter-json` |
-| 1 | `tree-sitter__tree-sitter-tsq` |
-| 1 | `zackyalgiffari__fast-index` |
-| 1 | `zzxn__tree-sitter-ast-dfg` |
-
+| 1 | `indradb__indradb` |

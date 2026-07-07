@@ -2,7 +2,7 @@
 
 - Task: Build five-file Tree-sitter reference corpus from all git-ref-repo repositories for Parseltongue
 - Created: 2026-07-06 17:46:57Z
-- Updated: 2026-07-06 18:27:53Z
+- Updated: 2026-07-07 02:27:45Z
 - Current Phase: Refactor
 - Status: active
 
@@ -121,3 +121,110 @@ Audited original objective against current research003 artifacts and converted r
 
 #### Performance/Metrics:
 - repo-evidence-index rows: 609; cgc-run-summary rows: 147; complete CGC artifact repos in coverage index: 17
+
+### Session: 2026-07-07 01:15:33Z
+
+#### Current Phase: Refactor
+
+#### Tests Written:
+- (none recorded)
+
+#### Implementation Progress:
+- Ran cgc_batch_runner.py bounded sample across 10 manifest repos; 4 completed and 6 timed out at 45 seconds
+- Regenerated cgc-run-summary.tsv from /tmp/codex-code-intel/codegraphcontext and updated repo-evidence-index.tsv CGC counters
+- Refreshed repo-coverage-index.md and completion-audit.md with current CGC totals and explicit incomplete verdict
+- Terminated stale current-workspace analysis process groups for tree-sitter-cpp and tree-sitter-bash
+
+#### Current Focus:
+Research003 CGC coverage audit refresh after bounded batch
+
+#### Next Steps:
+- Continue cgc_batch_runner.py by resumable batches until all 609 manifest repos have attempted status, or document CGC infeasibility for user acceptance
+- Optionally deepen direct source citations for top API-evidence repos not already represented in the five corpus files
+
+#### Context Notes:
+- Goal remains active because each-and-every-repo CGC browsing is not proven and original parallel-agent provenance remains unmet
+
+#### Performance/Metrics:
+- CGC run dirs scanned: 166; manifest repos with any CGC run: 52; manifest repos with complete CGC artifacts: 23
+- Latest cgc-batch-status.tsv rows: 10 attempts, 4 complete, 6 timeout_45s
+
+### Session: 2026-07-07 01:34:28Z
+
+#### Current Phase: Refactor
+
+#### Tests Written:
+- (none recorded)
+
+#### Implementation Progress:
+- Ran second resumable cgc_batch_runner.py batch across 15 additional unattempted manifest repos
+- Added docs/research003/refresh_research003_audit.py to regenerate cgc-run-summary.tsv, repo-evidence-index.tsv, repo-coverage-index.md, and completion-audit.md reproducibly
+- Refreshed coverage artifacts after the second batch
+
+#### Current Focus:
+Continue all-repo CGC coverage for Research003
+
+#### Next Steps:
+- Continue cgc_batch_runner.py by resumable batches until cgc-batch-status.tsv records all 609 manifest repos
+- Investigate or document CGC NoneType split failure for AndyInternet__indexer and related failed repos
+- After all repos are attempted, decide whether timed-out repos need longer retry windows or documented CGC infeasibility
+
+#### Context Notes:
+- Goal remains active; each-and-every-repo CGC browsing is still not proven
+- AndyInternet__indexer failed with CGC runtime error: 'NoneType' object has no attribute 'split'
+
+#### Performance/Metrics:
+- cgc-batch-status.tsv rows: 25 attempts; 10 complete; 1 failed; 14 timeout_45s
+- cgc-run-summary.tsv rows: 190 run dirs; manifest repos with any CGC run: 68; manifest repos with complete CGC artifacts: 31
+
+### Session: 2026-07-07 02:24:02Z
+
+#### Current Phase: Refactor
+
+#### Tests Written:
+- (none recorded)
+
+#### Implementation Progress:
+- Terminated stray current-workspace CGC scan process group for Christoph__treesitter-mcp after process audit
+- Ran refresh_research003_audit.py again after process cleanup so cgc-run-summary.tsv and coverage docs match current /tmp CGC output directories
+
+#### Current Focus:
+Finalize continuation after second CGC batch and audit refresh
+
+#### Next Steps:
+- Resume cgc_batch_runner.py from cgc-batch-status.tsv row 26 and continue toward all 609 manifest repos
+- Keep using refresh_research003_audit.py after each bounded batch to update audit artifacts
+- At full attempted coverage, retry selected failed/timeouts with longer per-repo timeout or document CGC infeasibility
+
+#### Context Notes:
+- Filtered process check after TERM showed no remaining current-workspace CGC runner or scan wrapper except the check command itself
+- Goal remains active; cgc-batch-status.tsv covers 25 of 609 manifest repos
+
+#### Performance/Metrics:
+- Latest refresh: cgc-run-summary.tsv rows=212; manifest repos with any CGC run=80; complete CGC artifact repos=38
+- Durable cgc-batch-status.tsv rows=25; complete=10; failed=1; timeout_45s=14
+
+### Session: 2026-07-07 02:27:45Z
+
+#### Current Phase: Refactor
+
+#### Tests Written:
+- (none recorded)
+
+#### Implementation Progress:
+- Ran resumable `cgc_batch_runner.py` across the next manifest slice, capturing `Ataraxy-Labs__weave` (timeout), `Benjamin-Davies__tree-sitter-relview` (complete), and entering `BloopAI__bloop` before interruption
+- Refreshed audit evidence after the interrupted run with `refresh_research003_audit.py`
+- Checked all generated docs and evidence artifacts for consistency before checkpointing
+
+#### Current Focus:
+Provide a checkpoint commit of all current research artifacts.
+
+#### Next Steps:
+- Resume CGC scanning for remaining manifest repositories when user wants full-complete coverage
+
+#### Context Notes:
+- User requested quick closure; this checkpoint reflects the current run state
+
+#### Performance/Metrics:
+- cgc-batch-status.tsv rows: 27 attempts; 11 complete; 1 failed; 15 timeout_45s
+- cgc-run-summary.tsv rows: 221; manifest repos with any CGC run: 86; complete CGC artifact repos: 39
