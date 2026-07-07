@@ -32388,8 +32388,3886 @@ Make cancellation and match-limit truncation visible to Codex.
 If Concept 34 is about "what public contracts changed", Concept 35 is about "can we
 trust the trees and facts used to answer that question".
 
+## Concept 36: Compile Grammar Artifacts Into Fact Extraction Contracts
+
+### Why This Concept Exists
+
+Concept 27 said official grammar repositories should be treated as versioned language
+packs. Concept 36 goes one layer deeper.
+
+The deeper lesson is:
+
+```text
+node-types.json + queries/*.scm + corpus fixtures = an extraction contract.
+```
+
+Parceltongue should not only read grammar repos to learn "what files exist". It should
+compile grammar-maintained artifacts into:
+
+```text
+valid node-kind and field contracts
+query-pack dependency graphs
+support matrices
+expected fact extraction fixtures
+known omission lists
+confidence policies
+agent-facing warnings
+```
+
+That is how Parceltongue avoids becoming brittle when grammars evolve. If a query pack
+references a node kind that disappeared, or if a language pack has highlights but no tags,
+Codex should know that before it trusts the dependency graph.
+
+### Repositories Inspected For This Concept
+
+| Repo | Why It Was Revisited | Evidence |
+|---|---|---|
+| `tree-sitter__tree-sitter-c` | Preprocessor, C declarator shape, and very small tags query. | codebase-memory indexed with 1468 nodes / 2849 edges. Direct reads from `queries/tags.scm`, `src/node-types.json`, and `test/corpus/preprocessor.txt`. |
+| `tree-sitter__tree-sitter-cpp` | C++ query inheritance from C, raw-string injections, concepts/requires syntax, and richer C++ declarations. | codebase-memory attempt ended with code 143 and no indexed project; direct reads from `tree-sitter.json`, `package.json`, `queries/tags.scm`, `queries/injections.scm`, and `test/corpus/concepts.txt`. |
+| `tree-sitter__tree-sitter-html` | Embedded JavaScript/CSS injection and simple markup schema. | codebase-memory indexed with 534 nodes / 796 edges. CodeGraphContext indexed with 46 files / 49 functions / 10 classes / 13 structs / 2 enums / 38 modules. Direct reads from `tree-sitter.json`, `queries/highlights.scm`, `queries/injections.scm`, `src/node-types.json`, and `test/corpus/main.txt`. |
+| `tree-sitter__tree-sitter-bash` | Shell command shape, shebang detection, highlights-only support, and command/redirect schema. | codebase-memory indexed with 1079 nodes / 1813 edges. CodeGraphContext attempt ended with code 143 after creating a partial DB; generated `.cgcignore` was removed. Direct reads from `tree-sitter.json`, `queries/highlights.scm`, `src/node-types.json`, and `test/corpus/commands.txt`. |
+| `tree-sitter__tree-sitter-typescript` | Multi-grammar TypeScript/TSX/Flow pack, JavaScript query dependencies, signatures, declarations, locals, and call schema. | codebase-memory indexed successfully with 2938 nodes / 6533 edges. Direct reads from `tree-sitter.json`, `package.json`, `queries/tags.scm`, `queries/locals.scm`, `typescript/src/node-types.json`, and `test/corpus/declarations.txt`. |
+
+### What Changed Since Concept 27
+
+Concept 27 described the language-pack shape.
+
+This concept turns the shape into a build rule:
+
+```text
+Every Parceltongue language pack should compile its grammar artifacts into a checked
+fact-extraction contract before the agent uses it.
+```
+
+The contract should answer:
+
+```text
+Which node kinds exist?
+Which fields exist?
+Which query layers exist?
+Which query layers are inherited from another pack?
+Which graph facts can be extracted?
+Which facts are explicitly unsupported?
+Which corpus or graph fixtures prove the extraction behavior?
+What confidence label should the agent attach?
+```
+
+This is different from "we support language X".
+
+Better:
+
+```text
+For TypeScript:
+  parse: yes
+  declarations: yes
+  signatures: yes
+  local parameter definitions: partial
+  JavaScript tag/query inheritance: yes
+  full module resolution: not proven by grammar artifacts
+```
+
+That is the level of truth Codex can use.
+
+### Pattern 1: Query Pack Presence Is A Support Matrix, Not A Detail
+
+The inspected repos have very different query layers:
+
+| Language Pack | Query Files Observed | Parceltongue Meaning |
+|---|---|---|
+| C | `highlights.scm`, `tags.scm` | Basic syntactic definitions, but no locals/injections layer observed. |
+| C++ | `highlights.scm`, `injections.scm`, `tags.scm` | Basic definitions plus raw-string injections; inherits C highlighting through manifest/package dependency. |
+| HTML | `highlights.scm`, `injections.scm` | Can classify markup and inject JavaScript/CSS, but no tags query observed. |
+| Bash | `highlights.scm` | Can classify commands/functions/properties for UI-ish facts, but no tags or locals layer observed. |
+| TypeScript | `highlights.scm`, `locals.scm`, `tags.scm`, plus JavaScript query dependencies | Signatures/interfaces/types plus inherited JS/JSX behavior. |
+
+This should become a Parceltongue support matrix:
+
+```json
+{
+  "language": "bash",
+  "parse": "stable",
+  "highlights": "present",
+  "tags": "missing",
+  "locals": "missing",
+  "injections": "missing",
+  "publicInterface": "requires_custom_pack",
+  "calls": "requires_custom_pack",
+  "agentWarning": "Bash command names are visible in highlights but not in a tags layer."
+}
+```
+
+The important behavior is the warning. Codex should not ask a Bash tags layer for
+definitions when the pack only ships highlights.
+
+### Pattern 2: Query Dependencies Must Be Explicit Graph Edges
+
+TypeScript and C++ both show query-pack inheritance.
+
+TypeScript's manifest declares multiple grammars:
+
+```text
+typescript
+tsx
+flow
+```
+
+For TypeScript, local queries are combined with JavaScript locals. Tags are combined
+with JavaScript tags. TSX combines TypeScript highlights with JavaScript JSX and base
+JavaScript highlights. Flow uses the TSX grammar path with a content regex.
+
+C++ declares C highlighting as a dependency before C++ highlights, and its package
+depends on `tree-sitter-c`.
+
+Parceltongue should represent this as a graph:
+
+```text
+QueryPack:typescript.tags
+  depends_on QueryPack:javascript.tags
+
+QueryPack:tsx.highlights
+  depends_on QueryPack:typescript.highlights
+  depends_on QueryPack:javascript.highlights-jsx
+  depends_on QueryPack:javascript.highlights
+
+QueryPack:cpp.highlights
+  depends_on QueryPack:c.highlights
+```
+
+That matters because agent-visible confidence should distinguish:
+
+```text
+native TypeScript fact
+inherited JavaScript fact
+custom Parceltongue fact
+missing dependency fact
+```
+
+If a dependency is missing, the agent should receive:
+
+```json
+{
+  "status": "degraded",
+  "missingQueryPack": "javascript.tags",
+  "affectedFacts": ["reference.call", "definition.function"],
+  "nextAction": "install or enable JavaScript query pack dependency"
+}
+```
+
+### Pattern 3: Node-Type Schema Is A Query Compiler Input
+
+`node-types.json` is not documentation only. It is the schema Parceltongue can compile
+against.
+
+Examples from the inspected repos:
+
+| Repo | Schema Signal | Fact-Extraction Meaning |
+|---|---|---|
+| TypeScript | `declaration` has subtypes including `abstract_class_declaration`, `function_signature`, `interface_declaration`, `module`, `type_alias_declaration`, and `variable_declaration`. | A public-interface extractor can enumerate declaration subtypes from schema before writing queries. |
+| TypeScript | `call_expression` requires `arguments` and `function`, and can include optional `type_arguments`. | A call extractor can validate that `function`, `arguments`, and type-argument captures are real fields. |
+| TypeScript | `function_signature` requires `name` and `parameters`, with optional return/type parameters. | Signature facts can record optionality instead of assuming all signatures have return types. |
+| C | `_declarator` includes `function_declarator`, `identifier`, pointer, array, attributed, and parenthesized declarators. | C public API extraction must walk declarator shape, not only direct identifiers. |
+| C | `function_definition` requires `type`, `declarator`, and `body`. | Function facts can be validated against required fields. |
+| C | `struct_specifier` has optional `name` and optional `body`. | Anonymous structs must not be forced into named-class facts. |
+| HTML | `document` and `element` can contain `script_element` and `style_element`. | Embedded-document extraction can be generated from schema plus injection query. |
+| HTML | `script_element` and `style_element` contain `raw_text`. | Injection content range can be validated against a real child type. |
+| Bash | `command` has required `name`, optional repeated `argument`, and optional repeated `redirect`. | Shell command facts should separate command name, args, env assignments, and redirects. |
+| Bash | `function_definition` has required `name` and `body`, optional redirect. | Bash function facts can be extracted even without a tags query. |
+| Bash | `variable_assignment` has required `name` and `value`. | Env/config facts can be extracted from grammar schema. |
+
+This suggests a compile step:
+
+```text
+load node-types.json
+load queries/*.scm
+for every capture:
+  validate node kind exists
+  validate field names exist
+  validate optional fields are handled
+  validate multi fields produce arrays
+  validate query dependencies exist
+emit QueryPackContract
+```
+
+Possible command:
+
+```bash
+parseltongue compile-query-pack --language typescript --json
+```
+
+Possible output:
+
+```json
+{
+  "language": "typescript",
+  "nodeTypesHash": "sha256:...",
+  "queryPacks": [
+    {
+      "name": "typescript.tags",
+      "status": "valid",
+      "dependencies": ["javascript.tags"],
+      "facts": ["definition.function", "definition.method", "definition.class", "definition.interface", "reference.type", "reference.class"]
+    }
+  ],
+  "warnings": [
+    {
+      "code": "optional_field",
+      "node": "function_signature",
+      "field": "return_type",
+      "message": "Return type is optional; extractor must handle missing return_type."
+    }
+  ]
+}
+```
+
+### Pattern 4: Small Tags Queries Tell You What Not To Claim
+
+C and C++ tags queries are tiny.
+
+C tags extract:
+
+```text
+struct_specifier -> definition.class
+union_specifier -> definition.class
+function_declarator -> definition.function
+type_definition -> definition.type
+enum_specifier -> definition.type
+```
+
+C++ tags add:
+
+```text
+field_identifier function declarators
+qualified namespace method definitions
+class_specifier -> definition.class
+```
+
+This is useful, but limited. It does not prove:
+
+```text
+preprocessor-aware symbol visibility
+include graph semantics
+macro expansion
+template instantiation
+overload resolution
+virtual dispatch
+namespace import resolution
+```
+
+So Parceltongue should expose:
+
+```json
+{
+  "language": "cpp",
+  "facts": {
+    "definition.function": "syntactic",
+    "definition.class": "syntactic",
+    "reference.call": "missing_from_official_tags",
+    "templateInstantiation": "unsupported",
+    "preprocessorVisibility": "unsupported"
+  }
+}
+```
+
+That may look pessimistic. It is actually agent-friendly. Codex can decide to read
+headers, build files, and local call sites instead of trusting a fantasy graph.
+
+### Pattern 5: Corpus Fixtures Should Become Graph Fixtures
+
+Grammar corpus files already encode:
+
+```text
+input code
+expected syntax tree
+```
+
+Parceltongue needs the graph equivalent:
+
+```text
+input code
+expected entities
+expected edges
+expected missing edges
+expected confidence labels
+expected warnings
+```
+
+The inspected corpus files suggest concrete fixture families:
+
+| Source Corpus | What It Tests | Parceltongue Fixture Family |
+|---|---|---|
+| C `preprocessor.txt` | Includes, object/function-like macros, ifdefs, nested preprocessor conditionals. | `c_preprocessor_public_surface.graph.txt` with include edges, macro facts, and conditional-confidence warnings. |
+| C++ `concepts.txt` | Concepts, requires expressions, requires clauses, template functions. | `cpp_concepts_public_contract.graph.txt` with concept definitions, template constraints, and unsupported instantiation notes. |
+| HTML `main.txt` | Tags, attributes, nested tags, void tags, comments, raw script/style text. | `html_embedded_document_ranges.graph.txt` with elements, attributes, script/style injection ranges. |
+| Bash `commands.txt` | Command names, arguments, env assignments, redirects, command substitutions. | `bash_command_flow.graph.txt` with command facts, env assignment facts, redirect facts, and unknown executable warnings. |
+| TypeScript `declarations.txt` | Ambient declarations, modules, function signatures, interfaces, class fields/methods. | `ts_ambient_public_interface.graph.txt` with declaration/interface/module/signature facts. |
+
+Example graph fixture format:
+
+```text
+================================================================================
+TypeScript ambient public interface
+================================================================================
+
+declare namespace myLib {
+  function makeGreeting(s: string): string;
+  interface LogOptions {
+    verbose?: boolean;
+  }
+}
+
+--------------------------------------------------------------------------------
+
+entities:
+  definition.module myLib confidence high
+  definition.function_signature myLib.makeGreeting confidence high
+  definition.interface myLib.LogOptions confidence high
+  definition.property myLib.LogOptions.verbose confidence high optional true
+
+edges:
+  contains myLib -> myLib.makeGreeting confidence high
+  contains myLib -> myLib.LogOptions confidence high
+
+warnings:
+  no runtime implementation edge; ambient declaration describes API surface only
+```
+
+This format does something grammar corpus files do not do: it tells the agent what is
+intentionally absent.
+
+### Pattern 6: Highlights Can Seed Weak Facts, But Must Not Masquerade As Tags
+
+Bash only had `highlights.scm` in the inspected query directory. That file marks:
+
+```text
+command_name as function
+variable_name as property
+function_definition name as function
+command substitutions / process substitutions / expansions as embedded
+keywords, comments, strings, operators, file descriptors
+```
+
+This is useful, especially for a first-pass shell script context packet. But it is not
+a tags query. It does not define a semantic graph contract by itself.
+
+Parceltongue should classify highlight-derived facts separately:
+
+```json
+{
+  "factKind": "highlight.function",
+  "promotedTo": "candidate.command",
+  "confidence": "weak_syntactic",
+  "reason": "derived from highlights.scm, not tags.scm"
+}
+```
+
+For Bash, a custom Parceltongue command extractor can be built from `node-types.json`
+instead:
+
+```text
+command.name -> CommandFact
+command.argument -> CommandArgumentFact
+command.redirect -> RedirectFact
+variable_assignment -> EnvAssignmentFact
+function_definition.name -> ShellFunctionFact
+pipeline children -> PipelineFact
+```
+
+That is an example of "similar implementation" beyond official tags. The grammar gives
+enough schema to build a better agent tool than the official query pack ships.
+
+### Pattern 7: Injections Are Graph Boundaries
+
+HTML injections are simple and powerful:
+
+```text
+script_element raw_text -> javascript
+style_element raw_text -> css
+```
+
+C++ raw string injections use the raw string delimiter as the injected language and
+the raw string content as injection content.
+
+TypeScript inherits JavaScript injections. That means TS/TSX code can inherit tagged
+template, regex, and JSDoc injection behavior from JavaScript.
+
+Parceltongue should treat every injection as a graph boundary:
+
+```text
+HostFact
+  has_embedded_document EmbeddedDocumentFact
+EmbeddedDocumentFact
+  parsed_by LanguagePack
+EmbeddedDocumentFact
+  owns SourceRange
+```
+
+Example:
+
+```json
+{
+  "hostLanguage": "html",
+  "hostFact": "element:script",
+  "embeddedLanguage": "javascript",
+  "rangeKind": "raw_text",
+  "confidence": "high",
+  "source": "html.queries.injections"
+}
+```
+
+This directly supports Codex workflows:
+
+```text
+The bug is in an HTML file.
+Parceltongue detects embedded JavaScript.
+Codex asks for JS definitions and calls inside only that raw_text range.
+```
+
+Without an explicit injection graph, Codex either misses the script or dumps the whole
+HTML file into context.
+
+### Pattern 8: Preprocessor And Ambient Declarations Need Warning Classes
+
+C preprocessor corpus cases show includes, macros, and ifdef branches as syntax tree
+facts. C++ corpus cases show concepts and requires clauses as parseable syntax. TypeScript
+ambient declarations show API surface without implementation.
+
+These are not just node kinds. They are warning categories.
+
+Parceltongue should introduce warning classes:
+
+| Warning | Trigger | Agent Meaning |
+|---|---|---|
+| `conditional_compilation` | C/C++ preprocessor branches. | This fact may exist only under certain defines. |
+| `macro_body_unexpanded` | C/C++ macro definition or macro-like include path. | Do not assume call/reference edges inside macro body are complete. |
+| `ambient_api_no_runtime_body` | TypeScript `declare` or ambient module. | This is public API surface, not implementation. |
+| `embedded_document_unparsed` | Injection detected but embedded parser/query pack missing. | Install/enable another pack or fall back to text. |
+| `highlight_promoted_fact` | Fact derived from highlights rather than tags/custom graph query. | Treat as weak syntactic evidence. |
+| `schema_optional_field_missing` | Optional schema field absent in code. | Missing field is normal, not parse failure. |
+
+This is a Shreyas-style PMF detail. The tool is valuable not because it always knows
+everything. It is valuable because it knows what kind of uncertainty it has.
+
+### Product Functionality That Falls Out Of Concept 36
+
+| Functionality | Agent Journey | Why It Matters |
+|---|---|---|
+| `language-pack doctor` | Codex checks whether a language pack is internally consistent. | Prevents stale query/node-type mismatch. |
+| `support matrix` | Codex asks what Parceltongue can actually do for this language. | Avoids false confidence. |
+| `compile query pack` | Build step validates queries against node-type schema. | Catches grammar upgrade breakage early. |
+| `explain missing fact` | Codex asks why no caller/import/tag was found. | Distinguishes unsupported from absent. |
+| `graph fixture test` | Developer adds expected entities/edges/warnings for a language case. | Turns syntax fixtures into agent-context fixtures. |
+| `injection graph` | Codex finds embedded JS/CSS/SQL/regex ranges. | Gives multi-language context without dumping files. |
+| `warning classifier` | Tool reports macro/ambient/highlight/conditional uncertainty. | Lets Codex decide the next evidence step. |
+
+### Suggested Commands
+
+```bash
+parseltongue language-pack doctor --language typescript --json
+parseltongue query-pack compile --language cpp --json
+parseltongue support-matrix --language bash --json
+parseltongue explain-missing-fact --language html --fact definition.function --json
+parseltongue graph-fixture test fixtures/typescript/ambient-public-interface.graph.txt
+parseltongue injections --file index.html --json
+```
+
+### Suggested Data Model
+
+```rust
+pub struct QueryPackContract {
+    pub pack_id: QueryPackId,
+    pub language_id: LanguageId,
+    pub layer: QueryLayer,
+    pub source_files: Vec<QueryFilePath>,
+    pub dependencies: Vec<QueryPackId>,
+    pub required_node_kinds: Vec<NodeKind>,
+    pub required_fields: Vec<NodeField>,
+    pub emitted_fact_kinds: Vec<FactKind>,
+    pub warnings: Vec<QueryPackWarning>,
+    pub node_types_hash: NodeTypesHash,
+}
+
+pub struct LanguageSupportMatrix {
+    pub language_id: LanguageId,
+    pub parse: SupportLevel,
+    pub highlights: SupportLevel,
+    pub tags: SupportLevel,
+    pub locals: SupportLevel,
+    pub injections: SupportLevel,
+    pub calls: SupportLevel,
+    pub public_interface: SupportLevel,
+    pub warning_classes: Vec<WarningClass>,
+}
+
+pub struct GraphFixtureExpectation {
+    pub fixture_id: FixtureId,
+    pub language_id: LanguageId,
+    pub source_case: SourceCase,
+    pub expected_entities: Vec<ExpectedEntity>,
+    pub expected_edges: Vec<ExpectedEdge>,
+    pub expected_warnings: Vec<ExpectedWarning>,
+    pub expected_omissions: Vec<ExpectedOmission>,
+}
+```
+
+### Tests Parceltongue Should Add
+
+| Test ID | Test Name | Requirement |
+|---|---|---|
+| `T564` | `validate_query_pack_against_node_types` | Query pack compilation fails if a referenced node kind or field is not present in `node-types.json`. |
+| `T566` | `surface_missing_tags_layer_in_support_matrix` | Bash reports highlights present and tags missing, instead of pretending definition extraction is supported. |
+| `T568` | `preserve_query_pack_dependencies` | TypeScript support matrix includes JavaScript tags/locals/highlights dependencies. |
+| `T570` | `detect_cpp_depends_on_c_queries` | C++ query-pack contract records dependency on C highlighting/query package. |
+| `T572` | `extract_html_injection_ranges` | HTML script/style raw text ranges become embedded-document facts for JavaScript/CSS. |
+| `T574` | `warn_on_c_preprocessor_conditionals` | C preprocessor fixtures emit conditional-compilation warnings. |
+| `T576` | `warn_on_typescript_ambient_declaration` | TypeScript `declare` facts are labeled as API surface without runtime body. |
+| `T578` | `promote_bash_highlights_as_weak_candidates` | Bash command/function facts derived from highlights are labeled `weak_syntactic`. |
+| `T580` | `run_graph_fixture_expected_omissions` | Graph fixture tests fail if expected omissions are not declared or if unsupported facts are silently emitted. |
+| `T582` | `report_optional_schema_field_absence` | Missing optional fields from `node-types.json` do not become parse errors. |
+
+### Concept-Level Acceptance Criteria
+
+```text
+WHEN a Parceltongue language pack is loaded
+THEN it SHALL compile query packs against node-types schema before agent use.
+
+WHEN a language pack lacks tags, locals, injections, calls, or public-interface support
+THEN it SHALL expose that gap in a support matrix.
+
+WHEN a query pack depends on another query pack
+THEN Parceltongue SHALL record the dependency and report degraded support when missing.
+
+WHEN a corpus-like graph fixture runs
+THEN it SHALL verify expected entities, edges, warnings, and omissions.
+
+WHEN facts are derived from weaker sources like highlights
+THEN Parceltongue SHALL label them as weak syntactic evidence.
+```
+
+### PMF Judgment
+
+PMF for the user's Codex workflow:
+
+```text
+91 / 100
+```
+
+This is slightly lower than the parser-lifecycle concept because it is one layer more
+infrastructure-heavy. But it is still very high value.
+
+Reason:
+
+```text
+Large-codebase agents do not only need more context.
+They need to know which context is trustworthy, which is approximate, and which is unsupported.
+```
+
+A support matrix plus graph fixtures gives Codex that honesty.
+
+### Most Useful Build Slice
+
+Build the smallest slice:
+
+```text
+Rust and TypeScript query-pack doctor.
+```
+
+Scope:
+
+```text
+1. Load node-types.json.
+2. Load official tags/locals/injections query files.
+3. Extract referenced node kinds and field names.
+4. Validate them against node-types schema.
+5. Emit support matrix.
+6. Add one graph fixture for TypeScript ambient declarations.
+7. Add one graph fixture for Rust function/trait/impl tags.
+```
+
+Then add:
+
+```text
+HTML injection graph fixture.
+Bash weak highlight-derived command fixture.
+C preprocessor warning fixture.
+```
+
+### Search Keywords This Concept Adds
+
+```text
+Tree-sitter node-types query validation
+Tree-sitter query pack contract
+Tree-sitter tags support matrix
+Tree-sitter corpus to graph fixture
+grammar fixture expected entities
+expected omissions graph fixture
+query pack dependency graph
+language support matrix
+highlight derived weak fact
+Tree-sitter injection graph
+embedded document fact
+C preprocessor graph warning
+C++ concepts Tree-sitter
+TypeScript ambient declaration graph
+Bash command fact extraction
+node-types schema compiler
+grammar upgrade query validation
+agent context confidence matrix
+```
+
+### Summary
+
+The lesson from this grammar slice is:
+
+```text
+Official grammar artifacts should be compiled into Parceltongue contracts.
+```
+
+Not only:
+
+```text
+Parse this language.
+```
+
+But:
+
+```text
+Validate the query pack.
+Declare the support level.
+Expose missing layers.
+Run graph fixtures.
+Emit warnings for macro/ambient/injection/highlight uncertainty.
+Give Codex a truthful context contract.
+```
+
+That is how Parceltongue can scale across languages without turning into a
+false-confidence generator.
+
+## Concept 37: Separate Symbol Identity From Syntax Evidence
+
+### The New Lesson
+
+The next layer Parceltongue needs is not just:
+
+```text
+AST node -> fact -> graph edge
+```
+
+It needs:
+
+```text
+syntax evidence -> occurrence -> symbol identity -> resolution edge -> agent packet
+```
+
+This sounds pedantic until the agent asks:
+
+```text
+What calls this function?
+What implements this trait?
+If I edit this public method, what must I inspect next?
+Is this local variable, imported function, method override, generated symbol, or external dependency?
+```
+
+Tree-sitter can show where identifiers and definitions appear.
+It does not automatically give a stable, cross-file, cross-package identity for each name.
+It also does not automatically prove that a reference resolves to a definition.
+
+SCIP, Stack Graphs, and Bloop each cover a different slice of this missing layer:
+
+```text
+SCIP: stable symbol identity, occurrences, roles, relationships, external symbols.
+Stack Graphs: reference-to-definition resolution as path search over scopes and symbols.
+Bloop: productized repo indexing, tree-sitter scope graphs, text search, semantic chunks.
+```
+
+The product lesson is blunt:
+
+```text
+Parceltongue should stop treating "symbol-like syntax" and "resolved symbol identity"
+as the same thing.
+```
+
+### Evidence From Local Graph Tools
+
+I used both local graph tools here.
+
+| Repo | codebase-memory Result | CodeGraphContext Result | Interpretation |
+|---|---:|---:|---|
+| `scip-code__scip` | 5,101 nodes / 17,185 edges / 29,818,880 bytes | Success: 146 files, 4,566 functions, 95 classes, 16 interfaces, 110 structs, 26 enums, 47 modules | Good candidate for symbol identity model. |
+| `github__stack-graphs` | 6,629 nodes / 21,133 edges / 38,338,560 bytes | Failed during indexing with `NoneType` / `split` | Direct source reads still show the name-resolution architecture. CGC failure is itself a warning that graph tools need robust repo/file filtering. |
+| `BloopAI__bloop` | 9,750 nodes / 21,821 edges / 40,173,568 bytes | Success: 568 files, 2,943 functions, 48 interfaces, 9 traits, 246 structs, 65 enums, 743 modules | Strong product reference for indexing, semantic chunks, tree-sitter scope graphs, and navigation endpoints. |
+
+The local graph evidence was useful for orientation.
+The claims below are still anchored in direct source reads, because the CodeGraphContext skill is an evidence tool, not the final authority.
+
+### SCIP: Symbol Identity Is A First-Class Protocol
+
+SCIP is the cleanest reference for Parceltongue's missing identity layer.
+
+The repo states that SCIP is a language-agnostic protocol for indexing source code and powering navigation such as go-to-definition, find-references, and find-implementations:
+
+```text
+git-ref-repo/ignore-this-folder-repos/scip-code__scip/README.md:3
+git-ref-repo/ignore-this-folder-repos/scip-code__scip/README.md:6
+```
+
+The important schema choices:
+
+| SCIP Concept | Source Evidence | Parceltongue Lesson |
+|---|---|---|
+| `Index` has metadata, documents, and external symbols | `scip.proto:20` to `scip.proto:36` | Index output is a shard, not just one graph blob. External symbols must be represented even when definitions are outside the repo. |
+| `Document` has language, relative path, occurrences, symbols, text, position encoding | `scip.proto:75` to `scip.proto:118` | A file-level packet should contain occurrences and symbol metadata together, with explicit position encoding. |
+| Symbol grammar has scheme, package, descriptors, and local IDs | `scip.proto:148` to `scip.proto:190` | Stable symbol IDs need package identity and descriptor paths. Local symbols must stay document-local. |
+| Descriptors encode namespace, type, term, method, type parameter, parameter, meta, macro | `scip.proto:196` to `scip.proto:230` | Public-contract IDs should know whether they name a type, term, method, macro, parameter, etc. |
+| `SymbolInformation` carries symbol metadata, documentation, relationships, kind, display name, signature, enclosing symbol | `scip.proto:251` to `scip.proto:463` | "Symbol" should not mean only a string. It needs display, docs, kind, signature, and containment. |
+| `Relationship` models reference, implementation, type-definition, definition relationships | `scip.proto:465` to `scip.proto:517` | Dependency graph edges need typed relationship semantics, not only "calls". |
+| `SymbolRole` marks definition, import, write, read, generated, test, forward definition | `scip.proto:519` to `scip.proto:546` | Occurrences need role bitsets. A generated test import should not be treated like a production definition. |
+| `Occurrence` associates range with symbol, role, syntax kind, diagnostics, and enclosing range | `scip.proto:672` to `scip.proto:806` | The smallest useful agent unit is not a file; it is an occurrence with symbol, role, span, and enclosing AST range. |
+
+This is directly relevant to Parceltongue because the current idea of `PublicContractFact` risks mixing three separate claims:
+
+```text
+1. Syntax claim: this node looks like a function definition.
+2. Identity claim: this definition is package X / module Y / function Z.
+3. Resolution claim: this reference binds to that definition.
+```
+
+Those should be separate facts.
+
+### Stack Graphs: Resolution Is A Path, Not A Label
+
+Stack Graphs answers the next question:
+
+```text
+Once you have names and spans, how do you know what a reference means?
+```
+
+The repo describes stack graphs as name-resolution rules for arbitrary languages that are efficient, incremental, and do not need existing build or program analysis tools:
+
+```text
+git-ref-repo/ignore-this-folder-repos/github__stack-graphs/README.md:5
+git-ref-repo/ignore-this-folder-repos/github__stack-graphs/README.md:8
+```
+
+The `tree-sitter-stack-graphs` crate turns tree-sitter grammars into stack graphs, exposes a CLI for indexing a source folder, and supports a query to find definitions for a reference at `SOURCE_PATH:LINE:COLUMN`:
+
+```text
+git-ref-repo/ignore-this-folder-repos/github__stack-graphs/tree-sitter-stack-graphs/README.md:3
+git-ref-repo/ignore-this-folder-repos/github__stack-graphs/tree-sitter-stack-graphs/README.md:42
+git-ref-repo/ignore-this-folder-repos/github__stack-graphs/tree-sitter-stack-graphs/README.md:69
+```
+
+The core graph model has node kinds for:
+
+```text
+DropScopes
+JumpTo
+PopScopedSymbol
+PopSymbol
+PushScopedSymbol
+PushSymbol
+Root
+Scope
+```
+
+Source:
+
+```text
+git-ref-repo/ignore-this-folder-repos/github__stack-graphs/stack-graphs/src/graph.rs:536
+git-ref-repo/ignore-this-folder-repos/github__stack-graphs/stack-graphs/src/graph.rs:544
+```
+
+The key design is not the exact Rust API.
+The key design is that references and definitions are encoded by stack behavior:
+
+```text
+pop symbol nodes can be definitions.
+push symbol nodes can be references.
+scope/root/jump/drop nodes explain how lookup moves.
+```
+
+Source:
+
+```text
+git-ref-repo/ignore-this-folder-repos/github__stack-graphs/stack-graphs/src/graph.rs:557
+git-ref-repo/ignore-this-folder-repos/github__stack-graphs/stack-graphs/src/graph.rs:569
+git-ref-repo/ignore-this-folder-repos/github__stack-graphs/stack-graphs/src/graph.rs:836
+git-ref-repo/ignore-this-folder-repos/github__stack-graphs/stack-graphs/src/graph.rs:1125
+```
+
+Then partial paths model a reference-to-definition binding as something that can be stitched:
+
+```text
+start_node
+end_node
+symbol_stack_precondition
+symbol_stack_postcondition
+scope_stack_precondition
+scope_stack_postcondition
+edges
+```
+
+Source:
+
+```text
+git-ref-repo/ignore-this-folder-repos/github__stack-graphs/stack-graphs/src/partial.rs:1707
+git-ref-repo/ignore-this-folder-repos/github__stack-graphs/stack-graphs/src/partial.rs:1727
+```
+
+The implementation explicitly says a complete partial path resolves a reference to a definition:
+
+```text
+git-ref-repo/ignore-this-folder-repos/github__stack-graphs/stack-graphs/src/partial.rs:1819
+git-ref-repo/ignore-this-folder-repos/github__stack-graphs/stack-graphs/src/partial.rs:1837
+```
+
+The stitching module says large codebases have a very large set of partial paths, so they must be loaded lazily during phased path stitching:
+
+```text
+git-ref-repo/ignore-this-folder-repos/github__stack-graphs/stack-graphs/src/stitching.rs:8
+git-ref-repo/ignore-this-folder-repos/github__stack-graphs/stack-graphs/src/stitching.rs:32
+```
+
+This is extremely relevant to Codex-agent use.
+
+An agent does not need the entire dependency graph in the prompt.
+It needs:
+
+```text
+the reference,
+the plausible definitions,
+the resolution explanation,
+the next files to inspect,
+and the confidence/limits of that resolution.
+```
+
+Stack Graphs is a proof that a syntax-only graph is not enough if the user wants:
+
+```text
+what calls whom
+what imports what
+which public interface is being touched
+which implementation edge matters
+```
+
+### Bloop: Productized Retrieval Beats Pure Graph Purity
+
+Bloop is less clean as a symbol-identity protocol, but much more product-shaped.
+
+The server README says Bloop's Rust package powers search and code navigation, recursively scans source directories for repositories, indexes them, starts a webserver, and periodically checks for changes and reindexes:
+
+```text
+git-ref-repo/ignore-this-folder-repos/BloopAI__bloop/server/README.md:3
+git-ref-repo/ignore-this-folder-repos/BloopAI__bloop/server/README.md:28
+git-ref-repo/ignore-this-folder-repos/BloopAI__bloop/server/README.md:30
+```
+
+The dependency stack is telling:
+
+| Bloop Dependency Area | Source Evidence | Product Lesson |
+|---|---|---|
+| Tantivy text index | `server/bleep/Cargo.toml:28` | Fast lexical search remains necessary. |
+| Tree-sitter grammars for C, Go, JS, Python, Rust, TypeScript, C#, Java, C++, Ruby, R, PHP, COBOL | `server/bleep/Cargo.toml:62` to `server/bleep/Cargo.toml:75` | Multi-language support is grammar-pack driven. |
+| Qdrant vector search and tokenizers | `server/bleep/Cargo.toml:100` to `server/bleep/Cargo.toml:103` | Semantic retrieval is a parallel lane, not a replacement for symbolic facts. |
+| App initialization loads repos, SQL, Qdrant, Tantivy indexes, and cache reset logic | `server/bleep/src/lib.rs:129` to `server/bleep/src/lib.rs:163` | A real code assistant needs index lifecycle, schema versions, and reset behavior. |
+| File indexing walks local/remote repos, computes hashes, indexes files, and commits embeddings | `server/bleep/src/indexes/file.rs:96` to `server/bleep/src/indexes/file.rs:219` | Incremental indexing is a product primitive. |
+| Semantic cache chunks buffers into Qdrant payloads with repo/path/range metadata | `server/bleep/src/cache.rs:401` to `server/bleep/src/cache.rs:445` | Chunks must carry repo, path, language, branch, and byte/line spans. |
+| Symbol locations are either tree-sitter scope graphs or empty | `server/bleep/src/symbol.rs:11` to `server/bleep/src/symbol.rs:20` | The UI/tool must admit when a file has no symbol graph. |
+
+Bloop's scope graph model is local and pragmatic:
+
+```text
+Scope
+Def
+Import
+Ref
+```
+
+Edges include:
+
+```text
+ScopeToScope
+DefToScope
+ImportToScope
+RefToDef
+RefToImport
+```
+
+Source:
+
+```text
+git-ref-repo/ignore-this-folder-repos/BloopAI__bloop/server/bleep/src/intelligence/scope_resolution.rs:52
+git-ref-repo/ignore-this-folder-repos/BloopAI__bloop/server/bleep/src/intelligence/scope_resolution.rs:102
+```
+
+The insertion logic walks scopes from current scope to root, finds candidate definitions/imports, matches names, and adds edges from references to definitions/imports:
+
+```text
+git-ref-repo/ignore-this-folder-repos/BloopAI__bloop/server/bleep/src/intelligence/scope_resolution.rs:187
+git-ref-repo/ignore-this-folder-repos/BloopAI__bloop/server/bleep/src/intelligence/scope_resolution.rs:246
+```
+
+It exposes definitions, imports, references, and symbols:
+
+```text
+git-ref-repo/ignore-this-folder-repos/BloopAI__bloop/server/bleep/src/intelligence/scope_resolution.rs:303
+git-ref-repo/ignore-this-folder-repos/BloopAI__bloop/server/bleep/src/intelligence/scope_resolution.rs:327
+git-ref-repo/ignore-this-folder-repos/BloopAI__bloop/server/bleep/src/intelligence/scope_resolution.rs:394
+```
+
+And the code-navigation layer uses local definitions/references first, then falls back to repo-wide definitions/references for top-level tokens:
+
+```text
+git-ref-repo/ignore-this-folder-repos/BloopAI__bloop/server/bleep/src/intelligence/code_navigation.rs:198
+git-ref-repo/ignore-this-folder-repos/BloopAI__bloop/server/bleep/src/intelligence/code_navigation.rs:239
+git-ref-repo/ignore-this-folder-repos/BloopAI__bloop/server/bleep/src/intelligence/code_navigation.rs:307
+git-ref-repo/ignore-this-folder-repos/BloopAI__bloop/server/bleep/src/intelligence/code_navigation.rs:420
+```
+
+This is almost exactly the user journey Parceltongue should give Codex:
+
+```text
+Start local.
+Escalate to repo-wide only when needed.
+Package snippets, ranges, and next files.
+Tell the agent when the symbolic graph is missing or approximate.
+```
+
+### The Parceltongue Architecture Shift
+
+Parceltongue should introduce three separate graph layers:
+
+```text
++----------------------+---------------------------------------------+
+| Layer                | Job                                         |
++----------------------+---------------------------------------------+
+| Syntax Evidence      | What did tree-sitter/query/corpus observe? |
+| Symbol Identity      | What stable symbol does this occurrence use? |
+| Resolution Evidence  | Why does this reference bind to that definition? |
++----------------------+---------------------------------------------+
+```
+
+The current `PublicContractFact` idea belongs partly in all three layers.
+That is dangerous.
+
+A better split:
+
+```text
+SyntaxNodeFact
+  raw parser/query evidence
+  file, byte range, point range, node kind, field path, query capture
+
+OccurrenceFact
+  source span plus optional symbol id
+  role: definition, reference, import, read, write, generated, test
+
+SymbolIdentityFact
+  stable package/module/item identity
+  may be global or document-local
+
+SymbolRelationshipFact
+  implementation, reference-equivalence, type-definition, override, alias
+
+ResolutionEdgeFact
+  reference occurrence -> candidate symbol/definition
+  includes resolver kind and confidence
+
+AgentContextPacket
+  the compact packet Codex actually receives
+  includes why these files/spans are the next useful context
+```
+
+This lets Parceltongue answer two separate questions honestly:
+
+```text
+What did we parse?
+What do we believe this means?
+```
+
+### Suggested Data Model
+
+```rust
+pub struct SyntaxNodeFact {
+    pub fact_id: FactId,
+    pub repo_id: RepoId,
+    pub commit_id: CommitId,
+    pub file_path: RepoRelativePath,
+    pub language_id: LanguageId,
+    pub node_kind: NodeKind,
+    pub field_path: Vec<NodeField>,
+    pub byte_range: ByteRange,
+    pub point_range: PointRange,
+    pub query_capture: Option<QueryCaptureName>,
+    pub evidence_source: SyntaxEvidenceSource,
+}
+
+pub struct OccurrenceFact {
+    pub occurrence_id: OccurrenceId,
+    pub syntax_fact_id: FactId,
+    pub symbol_id: Option<SymbolId>,
+    pub display_text: String,
+    pub roles: OccurrenceRoleSet,
+    pub syntax_kind: Option<SyntaxKind>,
+    pub enclosing_range: Option<ByteRange>,
+    pub diagnostics: Vec<FactDiagnostic>,
+    pub confidence: EvidenceConfidence,
+}
+
+pub struct SymbolIdentityFact {
+    pub symbol_id: SymbolId,
+    pub scheme: SymbolScheme,
+    pub package: Option<PackageIdentity>,
+    pub descriptors: Vec<SymbolDescriptor>,
+    pub local_document: Option<RepoRelativePath>,
+    pub kind: SymbolKind,
+    pub display_name: String,
+    pub signature: Option<SignatureText>,
+    pub documentation: Vec<MarkdownText>,
+    pub enclosing_symbol: Option<SymbolId>,
+}
+
+pub struct SymbolRelationshipFact {
+    pub source_symbol: SymbolId,
+    pub target_symbol: SymbolId,
+    pub relationship: SymbolRelationshipKind,
+    pub evidence: RelationshipEvidence,
+}
+
+pub struct ResolutionEdgeFact {
+    pub reference_occurrence: OccurrenceId,
+    pub target_symbol: SymbolId,
+    pub target_occurrence: Option<OccurrenceId>,
+    pub resolver: ResolverKind,
+    pub confidence: EvidenceConfidence,
+    pub explanation: ResolutionExplanation,
+}
+
+pub struct IndexShardFact {
+    pub shard_id: IndexShardId,
+    pub repo_id: RepoId,
+    pub commit_id: CommitId,
+    pub project_root: RepoRelativePath,
+    pub producer: IndexProducer,
+    pub documents: Vec<RepoRelativePath>,
+    pub external_symbols: Vec<SymbolId>,
+    pub position_encoding: PositionEncoding,
+}
+
+pub struct AgentContextPacket {
+    pub query: AgentCodeQuestion,
+    pub anchor_occurrence: Option<OccurrenceId>,
+    pub relevant_occurrences: Vec<OccurrenceFact>,
+    pub relevant_symbols: Vec<SymbolIdentityFact>,
+    pub resolution_edges: Vec<ResolutionEdgeFact>,
+    pub next_files_to_inspect: Vec<RankedFileSpan>,
+    pub omissions: Vec<DeclaredOmission>,
+    pub token_estimate: TokenEstimate,
+}
+```
+
+### Agent User Journey
+
+```text
+User asks Codex:
+  "If I change this Rust trait method, what else must I inspect?"
+
+Codex asks Parceltongue:
+  occurrence-at src/foo.rs:42:17
+
+Parceltongue returns:
+  occurrence_id
+  symbol_id
+  role = definition
+  kind = trait method
+  enclosing range
+  confidence
+
+Codex asks:
+  symbol-relationships symbol_id --kind implementation,reference,type-definition
+
+Parceltongue returns:
+  implementations
+  references
+  overrides or equivalent methods
+  external symbols if any
+
+Codex asks:
+  context-packet symbol_id --budget 4000 --task edit-impact
+
+Parceltongue returns:
+  top files/spans
+  definitions first
+  direct references next
+  implementation edges next
+  tests/generated code labeled
+  unresolved imports listed as omissions
+
+Codex reads:
+  only the spans it needs
+```
+
+That is the exact workflow the user keeps asking for:
+
+```text
+LLM asks query to tool.
+Tool responds with relevant context.
+LLM decides better with fewer tokens.
+Dependency graph of what was asked explains what to inspect next.
+```
+
+### CLI/API Shape
+
+```bash
+parseltongue index --repo . --commit HEAD
+
+parseltongue occurrence-at \
+  --file src/foo.rs \
+  --line 42 \
+  --column 17 \
+  --json
+
+parseltongue symbols-for-file \
+  --file src/foo.rs \
+  --json
+
+parseltongue resolve-occurrence \
+  --occurrence occ_123 \
+  --json
+
+parseltongue symbol-relationships \
+  --symbol "cargo my_crate 0.1.0 my_mod/Thing#method()." \
+  --kind implementation,reference,type-definition \
+  --json
+
+parseltongue context-packet \
+  --symbol "cargo my_crate 0.1.0 my_mod/Thing#method()." \
+  --task edit-impact \
+  --budget 4000 \
+  --json
+```
+
+### Tests Parceltongue Should Add
+
+| Test ID | Test Name | Requirement |
+|---|---|---|
+| `T584` | `separate_syntax_fact_from_symbol_identity` | A parsed function definition emits a syntax fact and a separate symbol identity fact. |
+| `T586` | `stable_symbol_id_survives_formatting` | Reformatting whitespace changes ranges but not the global symbol id. |
+| `T588` | `local_symbol_does_not_escape_document` | Local variables receive document-local symbol ids and are not returned as package public symbols. |
+| `T590` | `occurrence_roles_distinguish_definition_reference_import` | A fixture with import, definition, and call emits distinct occurrence roles. |
+| `T592` | `generated_and_test_roles_affect_context_rank` | Generated/test occurrences are labeled and ranked lower for production edit-impact packets. |
+| `T594` | `relationship_fact_models_trait_implementation` | A Rust trait impl emits an implementation relationship separate from a call edge. |
+| `T596` | `resolution_edge_records_resolver_kind` | Resolution edges record whether they came from syntax, stack-graph, SCIP, LSP, or compiler-backed evidence. |
+| `T598` | `unresolved_reference_is_declared_omission` | Unresolved references are returned as omissions, not silently dropped. |
+| `T600` | `external_symbol_without_local_document_is_preserved` | External crate or package symbols can appear without local definition documents. |
+| `T602` | `position_encoding_is_explicit` | Every index shard declares byte/UTF encoding assumptions for ranges. |
+| `T604` | `context_packet_respects_token_budget` | Context packet selection returns ranked spans under a requested token budget. |
+| `T606` | `repo_wide_resolution_escalates_after_local_lookup` | Local file resolution is attempted before repo-wide search. |
+
+### Concept-Level Acceptance Criteria
+
+```text
+WHEN Parceltongue emits a public contract
+THEN it SHALL preserve the raw syntax evidence separately from the symbol identity.
+
+WHEN Parceltongue emits a reference
+THEN it SHALL declare whether the reference was resolved, unresolved, external, or approximate.
+
+WHEN a symbol is local to one document
+THEN Parceltongue SHALL prevent that symbol id from leaking into repo-wide public-contract output.
+
+WHEN a symbol is external to the repository
+THEN Parceltongue SHALL preserve the external symbol identity even without a local definition file.
+
+WHEN Codex asks for edit impact
+THEN Parceltongue SHALL return a budgeted context packet with definitions, references, implementations, tests, omissions, and next files.
+```
+
+### PMF Judgment
+
+PMF for the user's Codex workflow:
+
+```text
+96 / 100
+```
+
+Reason:
+
+```text
+This is the heart of the product.
+```
+
+If Parceltongue only parses syntax, it is a better `rg`.
+If Parceltongue gives stable symbol identities, occurrence roles, resolution edges, and budgeted context packets, it becomes a code-assistance power tool.
+
+This concept is more important than adding one more language.
+
+### Most Useful Build Slice
+
+Build the smallest useful slice:
+
+```text
+Rust-only Symbol Identity and Occurrence Layer.
+```
+
+Scope:
+
+```text
+1. Parse Rust public items and impl blocks.
+2. Emit SyntaxNodeFact for definitions and references.
+3. Emit SymbolIdentityFact for crate/module/type/function/trait/method.
+4. Emit OccurrenceFact with definition/reference/import roles.
+5. Emit unresolved references as declared omissions.
+6. Add a simple ResolutionEdgeFact for same-file definitions.
+7. Add context-packet command that returns top spans under a token budget.
+```
+
+Then add:
+
+```text
+Cross-file Rust module resolution.
+Rust trait implementation relationships.
+TypeScript import/export symbol identity.
+SCIP import/export support as optional interchange.
+Stack-graph-like resolver for languages where syntax-only lookup is weak.
+```
+
+### Search Keywords This Concept Adds
+
+```text
+SCIP symbol identity protocol
+SCIP occurrence symbol roles
+SCIP external symbols index
+SCIP symbol relationship implementation
+SCIP typed occurrence range
+Stack Graphs reference definition path
+Stack Graphs partial path stitching
+tree-sitter stack graphs query definition
+scope graph reference resolution
+tree-sitter scope graph definitions references
+Bloop tree-sitter scope graph
+Bloop semantic code search Qdrant Tantivy
+code navigation symbol occurrence packet
+agent code context occurrence role
+public contract symbol identity
+dependency graph symbol occurrence resolution
+LLM code retrieval symbol graph
+repo-wide code navigation local first
+context packet token budget code agent
+stable symbol id from syntax tree
+external symbol dependency graph
+implementation relationship code graph
+trait implementation graph Rust
+find references implementation graph
+go to definition syntax graph
+agent asks code graph tool relevant context
+```
+
+### Summary
+
+The lesson from SCIP, Stack Graphs, and Bloop is:
+
+```text
+Parceltongue needs a symbol identity layer between syntax facts and agent context.
+```
+
+Not:
+
+```text
+Tree-sitter found an identifier, so the graph knows what it means.
+```
+
+But:
+
+```text
+Tree-sitter found a span.
+The occurrence says what role that span plays.
+The symbol id says what stable program entity it belongs to.
+The resolution edge says why this reference binds to that definition.
+The context packet says what Codex should inspect next under a token budget.
+```
+
+That is the universal relationship model Parceltongue should evolve toward.
+
+## Concept 38: Package Context As Explicit Agent Choices
+
+### Why This Concept Exists
+
+Concept 37 established the core ontology:
+
+```text
+syntax span -> occurrence role -> stable symbol identity -> resolution edge -> context packet
+```
+
+Concept 38 asks the next product question:
+
+```text
+How should a code graph expose itself to an agent so the agent makes better next decisions with fewer tokens?
+```
+
+This is not only a storage question. It is a user journey question.
+
+A solo Codex power user does not want a beautiful graph database sitting somewhere. The user wants the agent to stop wandering the repository like it has amnesia. The product needs to help the agent answer:
+
+```text
+What should I inspect first?
+What should I not inspect yet?
+Which files are probably relevant?
+Which symbol relationships explain why?
+What is the smallest packet of context that lets me take the next action?
+When should I escalate from summary to exact source?
+When did the context go stale?
+```
+
+That makes the public interface as important as the internal graph.
+
+The working thesis for this concept:
+
+```text
+Parceltongue should not expose raw graph data as its primary agent interface.
+It should expose explicit context choices.
+```
+
+In other words, the best API is not:
+
+```text
+Here are 10,000 nodes.
+Good luck.
+```
+
+It is:
+
+```text
+Here are 5 candidate context packets.
+This one is the likely edit surface.
+This one is the dependency explanation.
+This one is the test surface.
+This one is an omission warning.
+Open these two spans next if you need proof.
+```
+
+### Repos Inspected
+
+I inspected four local repo families for this concept:
+
+| Repo | Local Clone | Why It Matters |
+|---|---|---|
+| `Aider-AI/aider` | `git-ref-repo/ignore-this-folder-repos/Aider-AI__aider` | Best reference for a least-token repo map that helps the LLM decide which files to inspect. |
+| `continuedev/continue` | `git-ref-repo/ignore-this-folder-repos/continuedev__continue` | Best reference for context providers as a first-class product surface. |
+| `cline/cline` | `git-ref-repo/ignore-this-folder-repos/cline__cline` | Best reference for an agent loop with governed read/search/list/MCP tools, truncation, stale context tracking, and user approval. |
+| `AB498/code-context-provider-mcp` | `git-ref-repo/ignore-this-folder-repos/AB498__code-context-provider-mcp` | Minimal MCP packaging reference for tree-sitter-backed code context. |
+
+I also searched for a local Cody/Sourcegraph Cody clone. I did not find one in the current cloned reference set, so this concept does not pretend to have source-read Cody. Sourcegraph-related evidence in this document is already covered by SCIP and Sourcegraph-adjacent graph/index repos in prior concepts.
+
+### CodeGraphContext Evidence
+
+The user explicitly asked to use `codegraphcontext-evidence-reader`, so I used CodeGraphContext as a second local graph lens, then checked conclusions against direct source reads.
+
+| Repo | CodeGraphContext Result | What I Used It For |
+|---|---:|---|
+| `AB498__code-context-provider-mcp` | Succeeded: 1 repo, 8 files, 16 functions, 0 classes, 8 modules | Verified the small MCP candidate has an indexable function surface around `initializeTreeSitter`, `extractCodeSymbols`, `getDirectoryTree`, and the MCP tool wrapper. |
+| `Aider-AI__aider` | Failed with `NoneType` split error | Treated as a CGC limitation for this repo, not as product evidence. Used direct source reads instead. |
+| `continuedev__continue` | Interrupted after long indexing | Used codebase-memory plus direct source reads. Continue is large enough that partial CGC indexing was not worth blocking this concept. |
+| `cline__cline` | Interrupted after long indexing | Used codebase-memory plus direct source reads. Cline's product evidence is in tool/runtime/source files. |
+
+The successful CGC query on AB498 returned functions with properties such as `name`, `path`, `line_number`, `end_line`, `source`, `lang`, and `args`. A failed first query tried `f.file_path`, but the graph schema used `path`. That failure is itself a useful design lesson:
+
+```text
+Do not expose backend graph property names as the public Parceltongue agent API.
+```
+
+The public API should normalize backend differences into stable fields:
+
+```text
+path
+span
+symbol_id
+role
+confidence
+reason
+token_estimate
+next_queries
+```
+
+### Codebase-Memory Evidence
+
+Codebase-memory indexing gave a rough size and shape check:
+
+| Repo | Nodes | Edges | Database Bytes |
+|---|---:|---:|---:|
+| `Aider-AI__aider` | 7,451 | 17,408 | 33,816,576 |
+| `continuedev__continue` | 51,725 | 103,930 | 193,855,488 |
+| `cline__cline` | 33,313 | 103,919 | 174,194,688 |
+| `AB498__code-context-provider-mcp` | 57 | 86 | 1,966,080 |
+
+The shape is useful:
+
+```text
+Aider is compact enough to study as one product idea.
+Continue and Cline are large agent platforms with multiple context surfaces.
+AB498 is tiny and shows the minimum viable MCP wrapping pattern.
+```
+
+### Source Evidence: Aider
+
+Aider is the clearest reference for the exact user journey Parceltongue cares about:
+
+```text
+LLM asks for help understanding repo -> tool returns compact map -> LLM chooses which files to inspect next.
+```
+
+Important source facts:
+
+| Evidence | Source |
+|---|---|
+| Aider imports `grep_ast.TreeContext`, `filename_to_lang`, tree-sitter queries, and parser/language helpers. | `aider/repomap.py` lines 1-40 |
+| `RepoMap` has explicit `map_tokens`, `max_context_window`, `map_mul_no_files`, and refresh controls. | `aider/repomap.py` lines 81-109 |
+| When no files are in chat, Aider expands the map target to show a broader repository view, still bounded by the model context window. | `aider/repomap.py` lines 140-173 |
+| `get_tags_raw` extracts definitions and references from tree-sitter `.scm` tag queries. | `aider/repomap.py` lines 269-343 |
+| If a language has definitions but no references, Aider backfills references using Pygments tokens. | `aider/repomap.py` lines 311-333 |
+| `get_ranked_tags` builds a `networkx.MultiDiGraph` and personalizes ranking from chat files, mentioned files, and mentioned identifiers. | `aider/repomap.py` lines 344-524 |
+| Aider PageRanks files through the reference graph, then emits ranked definition tags. | `aider/repomap.py` lines 466-553 |
+| Aider binary-searches how many ranked tags fit inside the token budget. | `aider/repomap.py` lines 622-657 |
+| Aider renders selected code lines with `TreeContext`, not whole files. | `aider/repomap.py` lines 671-718 |
+| Aider docs say the repo map helps the LLM decide what files to inspect and ask the user to add. | `aider/website/docs/repomap.md` lines 1-112 |
+| Aider warns when too many full files are in chat, because that hurts the model's ability to edit well. | `aider/coders/base_coder.py` lines 2240-2270 |
+
+This is the big product lesson:
+
+```text
+The repo map is not final context.
+The repo map is a decision aid.
+```
+
+That matters because Parceltongue should not optimize only for "return the answer". It should optimize for:
+
+```text
+Return the smallest useful next decision.
+```
+
+From a Shreyas Doshi POV, Aider has excellent single-player PMF for the Parceltongue use case because it reduces the agent's search space without pretending the map is enough to edit from.
+
+The Aider loop is:
+
+```text
+User asks task
+Agent has few/no files in chat
+Aider sends repo map under token budget
+LLM chooses likely files
+User/agent adds exact files
+LLM edits with concrete context
+```
+
+Parceltongue can evolve that loop:
+
+```text
+User asks task
+Codex calls Parceltongue context packet
+Parceltongue returns ranked symbol/file/spans with reasons
+Codex opens only the best spans
+Codex asks follow-up graph query if confidence is low
+Codex edits
+Parceltongue reports blast radius and tests
+```
+
+### Source Evidence: Continue
+
+Continue is the best product architecture reference. It treats context sources as explicit providers.
+
+Important source facts:
+
+| Evidence | Source |
+|---|---|
+| Continue has a provider registry containing file, diff, file tree, GitHub issues, terminal, search, problems, folder, docs, codebase, current file, URL, repo map, MCP, git commit, clipboard, and rules providers. | `core/context/providers/index.ts` lines 43-74 |
+| Config loading always includes default providers and loads additional providers from assistant config. | `core/config/loadContextProviders.ts` lines 22-78 |
+| The `codebase` provider says it automatically finds relevant files and depends on embeddings, full-text search, and chunk indexes. | `core/context/providers/CodebaseContextProvider.ts` lines 9-24 |
+| The `repo-map` provider is a submenu that can generate a whole-project or folder-specific repository map. | `core/context/providers/RepoMapContextProvider.ts` lines 16-47 |
+| The `search` provider uses workspace search with a max result count and formats grep-like results. | `core/context/providers/SearchContextProvider.ts` lines 9-35 |
+| The `MCP` provider turns MCP resources into context items and only supports text resources. | `core/context/providers/MCPContextProvider.ts` lines 17-98 |
+| Continue indexing uses content-addressing, cache keys, and artifact-specific indexes. | `core/indexing/README.md` lines 1-18 |
+| Existing indexes include code snippets from tree-sitter queries, full-text search through SQLite FTS5, code-structure chunking, and LanceDB vector embeddings. | `core/indexing/README.md` lines 19-27 |
+| `CodebaseIndexer` builds only indexes needed by configured context providers. | `core/indexing/CodebaseIndexer.ts` lines 169-209 |
+| `CodebaseIndexer` batches files to limit memory and request pressure. | `core/indexing/CodebaseIndexer.ts` lines 528-550 |
+| Continue's retrieval fills about half the context length, caps snippets, optionally reranks, and returns instruction plus formatted code blocks. | `core/context/retrieval/retrieval.ts` lines 34-42 and 99-129 |
+| The chunker uses tree-sitter for supported languages, falls back to a basic chunker, and skips very large files. | `core/indexing/chunk/chunk.ts` lines 16-52 and 96-105 |
+| The code chunker collapses class/function bodies to fit token budgets while retaining signatures and structure. | `core/indexing/chunk/code.ts` lines 101-171 and 246-262 |
+| Continue's CLI MCP spec says connected servers contribute tools and prompts; connection state should be visible and only connected servers contribute. | `extensions/cli/spec/mcp.md` lines 25-34 and 38-62 |
+
+Continue's strongest lesson:
+
+```text
+Context is a provider system.
+```
+
+Not every task wants the same context source.
+
+| User Need | Continue Provider Pattern | Parceltongue Equivalent |
+|---|---|---|
+| "Show me exact file" | `file` / `current file` | `source_span_provider` |
+| "What changed?" | `diff` | `diff_impact_provider` |
+| "Find text" | `search` | `text_search_provider` |
+| "Find likely code" | `codebase` retrieval | `semantic_context_provider` |
+| "Show structure" | `repo-map` | `symbol_map_provider` |
+| "Use external system" | `mcp` | `mcp_resource_provider` |
+| "Honor local rules" | `rules` | `agent_policy_provider` |
+
+Parceltongue should copy the product architecture more than the exact implementation:
+
+```text
+ContextProvider trait
+ContextProviderRegistry
+ContextPacketBuilder
+ContextBudgetAllocator
+ContextItem schema
+ContextSource health/status
+```
+
+The decisive Continue idea is that providers declare what indexes they depend on. Parceltongue should do the same:
+
+```text
+provider: symbol-impact
+requires: syntax_index, symbol_identity_index, resolution_edges
+
+provider: repo-map
+requires: syntax_index, symbol_identity_index
+
+provider: grep-search
+requires: filesystem
+
+provider: semantic-search
+requires: chunk_index, embedding_index
+
+provider: test-surface
+requires: syntax_index, import_edges, test_file_classifier
+```
+
+That lets the agent see a capability menu instead of discovering failure through trial and error.
+
+### Source Evidence: Cline
+
+Cline is not the strongest symbol graph reference. It is the strongest reference for the governed agent loop around tools.
+
+Important source facts:
+
+| Evidence | Source |
+|---|---|
+| Cline truncates large content at a configured byte limit and tells the agent to use search or targeted shell reads for specifics. | `apps/vscode/src/shared/content-limits.ts` lines 1-39 |
+| Cline tool policies route read, edit, command, browser, and MCP tools through approval settings. | `apps/vscode/src/sdk/sdk-tool-policies.ts` lines 13-40 and 48-78 |
+| The core tool catalog has read files, search codebase, run commands, editor, web fetch, skills, ask question, spawn agent, and teams. | `sdk/packages/core/src/extensions/tools/runtime.ts` lines 29-84 |
+| Tool selection resolves available tool IDs and maps them to headless tool names. | `sdk/packages/core/src/extensions/tools/runtime.ts` lines 206-253 |
+| The `read_files` tool supports multiple files, line ranges, output caps, paging through long files, and retry. | `sdk/packages/core/src/extensions/tools/definitions.ts` lines 240-325 |
+| The `search_codebase` tool supports multiple parallel regex searches and warns that narrow patterns beat broad ones. | `sdk/packages/core/src/extensions/tools/definitions.ts` lines 333-387 |
+| `createDefaultTools` composes read/search/bash/web/editor/skills/question tools based on enabled flags and executors. | `sdk/packages/core/src/extensions/tools/definitions.ts` lines 806-865 |
+| Cline's file indexer uses `rg --files`, a fallback walk, TTL cache, stale eviction, and a background worker. | `sdk/packages/core/src/services/workspace/file-indexer.ts` lines 83-118 and 315-363 |
+| Mention enrichment extracts `@file` tokens, validates them against the file index, and records matched versus ignored files. | `sdk/packages/core/src/services/workspace/mention-enricher.ts` lines 55-121 |
+| File context tracking marks files as active/stale when read, mentioned, edited by Cline, or edited by the user. | `apps/vscode/src/core/context/context-tracking/FileContextTracker.ts` lines 10-24 and 80-158 |
+| Cline mentions inject file/folder content and call the file context tracker for mentioned files. | `apps/vscode/src/core/mentions/index.ts` lines 182-255 |
+| Recursive listing reads gitignore incrementally to avoid out-of-memory problems on large ignored trees. | `apps/vscode/src/services/glob/list-files.ts` lines 50-61 and 120-147 |
+| File search uses host index when available and falls back to ripgrep. | `apps/vscode/src/services/search/file-search.ts` lines 37-52 and 194-260 |
+
+Cline's lesson is not:
+
+```text
+Build only grep and file reads.
+```
+
+The lesson is:
+
+```text
+The agent's context tools must have guardrails, paging, stale-state tracking, approval, and clear fallback behavior.
+```
+
+This is extremely relevant for Parceltongue inside Codex app.
+
+If Codex is the main agent and Parceltongue is a companion tool, Parceltongue should not try to become the whole agent. It should become a better read/search/graph tool for the agent loop.
+
+Cline shows the host loop:
+
+```text
+Agent chooses tool
+Tool checks policy/approval
+Tool reads/searches/lists with limits
+Tool returns bounded output
+Agent reasons
+Agent edits
+Host tracks stale files and context
+```
+
+Parceltongue should fit as:
+
+```text
+Agent chooses graph context tool
+Tool checks budget and provider health
+Tool returns bounded decision packet
+Agent opens exact spans
+Agent edits
+Tool can refresh affected graph slice
+Agent asks for blast radius and test surface
+```
+
+The missing Cline capability, based on inspected source, is dependency-aware context. It has excellent operational guardrails, but the inspected surfaces do not show a public semantic graph that answers:
+
+```text
+What calls this?
+What does this call?
+What file should I inspect next because of dependency direction?
+Which public interface is affected?
+Which tests likely cover this call chain?
+```
+
+That is Parceltongue's opening.
+
+### Source Evidence: AB498 Code Context Provider MCP
+
+AB498 is a tiny MCP reference. It is not as powerful as Aider, Continue, Cline, SCIP, Stack Graphs, or Parceltongue. But it is useful because it shows how simple the tool packaging can be.
+
+Important source facts:
+
+| Evidence | Source |
+|---|---|
+| README describes an MCP server that extracts directory structure and symbols using WebAssembly tree-sitter parsers with no native dependencies. | `README.md` lines 1-24 |
+| Available tool is `get_code_context` with `absolutePath`, `analyzeJs`, `includeSymbols`, `symbolType`, `filePatterns`, and `maxDepth`. | `README.md` lines 78-90 |
+| README says depth limiting is important for large projects and monorepos. | `README.md` lines 133-145 |
+| Supported symbolic analysis languages are JavaScript, JSX, TypeScript, TSX, and Python. | `README.md` lines 146-155 |
+| Package keywords are `mcp`, `context`, `code-analysis`, `ast`, and `tree-sitter`. | `package.json` lines 23-29 |
+| `index.js` loads WASM tree-sitter parsers for JS/TS and Python. | `index.js` lines 16-23 and 39-104 |
+| `extractCodeSymbols` parses files and extracts functions, variables, classes, imports, and exports. | `index.js` lines 113-604 |
+| `getDirectoryTree` walks the project, applies ignore rules, analyzes supported files, and prints tree plus optional symbol summaries. | `index.js` lines 716-902 |
+| The MCP server registers `get_code_context` and returns one text content item. | `index.js` lines 904-1032 |
+
+The AB498 loop:
+
+```text
+Agent calls get_code_context
+Tool traverses directory tree
+Tool optionally extracts symbols
+Tool returns one text overview
+Agent uses overview as context
+```
+
+This is a useful minimum, but the PMF ceiling is lower because:
+
+```text
+It returns an overview, not a decision packet.
+It has symbols, but not stable symbol identity.
+It has imports/exports, but not resolved dependency edges.
+It has maxDepth, but not token-aware ranking.
+It has no clear next-action recommendations.
+```
+
+Parceltongue should use AB498 as the MCP packaging skeleton, not as the graph architecture.
+
+### Ranking The Four For Parceltongue's PMF
+
+For our PMF definition:
+
+```text
+Can we use a library or tool for exploring a large codebase both as an agent for search and for seeing dependency graphs of what calls whom?
+```
+
+Here is the product fit:
+
+| Rank | Repo | PMF For Parceltongue | Why |
+|---:|---|---:|---|
+| 1 | `Aider-AI/aider` | 93 | Best least-token repo map and agent decision aid. It does not solve full dependency semantics, but its UX is closest to "help the LLM decide what to inspect next." |
+| 2 | `continuedev/continue` | 90 | Best provider architecture. It shows how to make context sources configurable, typed, indexed, and composable. |
+| 3 | `cline/cline` | 86 | Best governed agent loop reference. It shows paging, truncation, approval, file freshness, and MCP integration. |
+| 4 | `AB498/code-context-provider-mcp` | 70 | Useful minimal MCP packaging reference. Good skeleton, weak graph intelligence. |
+
+The surprising product conclusion:
+
+```text
+Aider is closest to Parceltongue's desired user journey.
+Continue is closest to Parceltongue's desired product architecture.
+Cline is closest to Parceltongue's desired Codex-agent integration posture.
+AB498 is closest to Parceltongue's minimal MCP wrapper.
+```
+
+That means Parceltongue should not choose one as the model. It should combine the product lessons:
+
+```text
+Aider-style ranking
+Continue-style provider registry
+Cline-style tool guardrails
+AB498-style MCP entrypoint
+SCIP/Stack-Graphs-style symbol identity and resolution
+```
+
+### The User Journey Parceltongue Should Own
+
+The ideal agent journey:
+
+```text
+User: Fix bug / add feature / explain code
+Codex: I need context
+Codex -> Parceltongue: context_packet(query, budget, mode)
+Parceltongue:
+  - detects likely symbols
+  - ranks files and spans
+  - includes callers/callees/imports/tests
+  - explains why each item is selected
+  - declares what is omitted
+  - suggests next graph queries
+Codex:
+  - opens only high-value spans
+  - edits with exact source
+  - asks Parceltongue for blast radius
+  - runs tests
+```
+
+The current default agent journey in many tools is weaker:
+
+```text
+User asks task
+Agent rg-searches broad words
+Agent opens too many files
+Agent loses the dependency path
+Agent edits from partial memory
+Agent discovers breakage late
+```
+
+Parceltongue can improve that journey by giving the agent a compact, dependency-aware menu.
+
+### Bi-Directional Workflows
+
+The product should support both directions:
+
+```text
+Query -> graph -> context
+Edit -> graph -> impact
+```
+
+#### Direction 1: Query To Context
+
+```text
+User asks: "Why does login fail?"
+Codex sends query to Parceltongue.
+Parceltongue finds login-related symbols.
+Parceltongue returns:
+  - entry points
+  - callees
+  - callers
+  - config/env dependencies
+  - likely tests
+  - stale/unknown edges
+Codex opens exact spans.
+```
+
+#### Direction 2: Edit To Impact
+
+```text
+Codex edits `validate_token`.
+Codex asks Parceltongue for blast radius.
+Parceltongue returns:
+  - direct callers
+  - public API exports
+  - transitive hot paths
+  - tests to run
+  - docs likely stale
+Codex verifies.
+```
+
+#### Direction 3: File To Graph
+
+```text
+Codex already has `auth.rs` open.
+Codex asks Parceltongue: "What surrounds this?"
+Parceltongue returns:
+  - symbols in file
+  - outbound calls
+  - inbound calls
+  - same-module siblings
+  - test files
+```
+
+#### Direction 4: Graph To Files
+
+```text
+Codex asks: "Show me payment dependency path."
+Parceltongue returns:
+  - compact path from API handler to DB write
+  - only the spans needed to prove each edge
+  - next spans to open if the agent needs exact code
+```
+
+#### Direction 5: Context Freshness
+
+```text
+User edits a file outside Codex.
+Parceltongue marks affected graph slice stale.
+Codex asks for context.
+Parceltongue returns stale warning before suggesting edits.
+```
+
+Cline's file context tracker makes this explicit for files. Parceltongue should make it explicit for symbols and edges.
+
+### The Context Packet Interface
+
+Parceltongue should expose a packet that is optimized for agents, not humans browsing a graph UI.
+
+Suggested JSON shape:
+
+```json
+{
+  "query": "why does auth fail",
+  "budget": {
+    "requested_tokens": 4000,
+    "estimated_tokens": 3180,
+    "reserved_answer_tokens": 1200
+  },
+  "mode": "debug",
+  "packets": [
+    {
+      "id": "symbol-impact:auth.validate_token",
+      "title": "validate_token impact surface",
+      "source_provider": "symbol-impact",
+      "why_selected": "Direct lexical and call-graph match for auth token validation.",
+      "confidence": 0.87,
+      "token_estimate": 740,
+      "items": [
+        {
+          "kind": "definition",
+          "symbol_id": "rust crate auth validate_token",
+          "path": "src/auth/token.rs",
+          "start_line": 41,
+          "end_line": 88,
+          "summary": "Token validation entry point."
+        },
+        {
+          "kind": "caller",
+          "symbol_id": "rust crate api login_handler",
+          "path": "src/api/login.rs",
+          "start_line": 22,
+          "end_line": 69,
+          "summary": "Main login route that calls token validation."
+        }
+      ],
+      "next_queries": [
+        "callers auth.validate_token depth 2",
+        "tests auth.validate_token",
+        "blast-radius auth.validate_token"
+      ],
+      "omissions": [
+        "External JWT library internals omitted.",
+        "Unresolved dynamic dispatch call omitted."
+      ]
+    }
+  ]
+}
+```
+
+The crucial fields are:
+
+| Field | Why It Matters |
+|---|---|
+| `source_provider` | The agent knows whether this came from search, graph, repo map, tests, docs, or MCP. |
+| `why_selected` | Prevents mysterious retrieval. The agent can judge whether the packet is relevant. |
+| `confidence` | Allows the agent to decide whether to trust, verify, or ask a follow-up. |
+| `token_estimate` | Keeps the agent budget-aware. |
+| `items.kind` | Distinguishes definition, caller, callee, test, import, export, config, doc, or omission. |
+| `symbol_id` | Connects back to Concept 37's stable identity layer. |
+| `next_queries` | Converts context into an agent action menu. |
+| `omissions` | Makes uncertainty visible rather than hiding it. |
+
+### Provider Registry Design
+
+Borrow Continue's provider architecture, but make it graph-native.
+
+```rust
+pub trait ContextProvider {
+    fn provider_id(&self) -> &'static str;
+    fn required_indexes(&self) -> Vec<IndexRequirement>;
+    fn health(&self) -> ProviderHealth;
+    fn get_context_packet(
+        &self,
+        request: ContextRequest,
+        budget: TokenBudget,
+    ) -> Result<ContextPacket, ContextProviderError>;
+}
+```
+
+Initial providers:
+
+| Provider | Inputs | Output |
+|---|---|---|
+| `repo-map` | query, files in chat, mentioned identifiers | Ranked file/symbol overview under budget. |
+| `symbol-impact` | symbol name/path/span | Callers, callees, imports, exports, tests, public interfaces. |
+| `text-search` | regex/literal query | Bounded grep-style matches with path summaries. |
+| `open-files` | current editor files | Symbol summary and dependencies around open files. |
+| `diff-impact` | git diff or edited spans | Affected symbols, callers, tests, docs. |
+| `test-surface` | symbol/file/change | Tests likely to cover the change. |
+| `mcp-resource` | external MCP resource id | Text resource converted to context item. |
+| `docs-rag` | query | Project docs snippets linked to code symbols when possible. |
+
+This keeps the tool interface small:
+
+```text
+parseltongue context providers list
+parseltongue context packet --query "..." --budget 4000 --mode debug
+parseltongue context symbol --symbol "..." --budget 3000
+parseltongue context diff --base origin/main --budget 6000
+parseltongue context tests --symbol "..." --budget 2000
+```
+
+And MCP can wrap the same surface:
+
+```text
+get_context_packet
+get_symbol_impact
+get_repo_map
+get_test_surface
+get_provider_health
+```
+
+### Token Budget Policy
+
+Aider is strongest here. The packet builder should not simply return all provider results.
+
+Suggested budget split:
+
+| Task Mode | Repo Map | Symbol Graph | Exact Spans | Tests | Omissions/Next Steps |
+|---|---:|---:|---:|---:|---:|
+| `orient` | 55% | 20% | 10% | 5% | 10% |
+| `debug` | 20% | 35% | 25% | 10% | 10% |
+| `edit` | 10% | 30% | 35% | 15% | 10% |
+| `review` | 15% | 35% | 20% | 20% | 10% |
+| `refactor` | 15% | 40% | 20% | 15% | 10% |
+
+The important behavior:
+
+```text
+Always reserve space for the agent's answer.
+Always reserve space for omissions and next steps.
+Never spend the whole budget on raw source.
+```
+
+Aider proves this with map token limits and binary search. Continue proves it with snippet caps and context-length-derived result counts. Cline proves it with read/search output caps and truncation instructions.
+
+### Agent Prompting Contract
+
+Parceltongue's tool output should tell Codex how to use it.
+
+The top of every packet can include a small instruction:
+
+```text
+Use this as a navigation packet, not final proof.
+Open exact spans before editing.
+Prefer packets with higher confidence unless the user's wording names another file.
+If omissions mention unresolved references, ask a follow-up graph query before broad edits.
+```
+
+This copies the best part of Continue's retrieval item, which returns a context instruction along with snippets.
+
+But Parceltongue should be more explicit:
+
+```text
+Do not inspect unrelated files until you have consumed `next_queries`.
+If exact source is needed, open only the listed spans first.
+If confidence is below 0.6, call `context packet` again with a narrower query.
+```
+
+### Product Insight Observations
+
+Observation 1:
+
+```text
+The winning product is not "search".
+The winning product is "reduce the agent's next-decision entropy".
+```
+
+Search returns matches. A context packet returns a decision menu.
+
+Observation 2:
+
+```text
+Least-token is not the same as shortest output.
+Least-token means the smallest output that prevents the next wrong turn.
+```
+
+Aider's repo map may spend 1,000 tokens, but those 1,000 tokens can save 20,000 tokens of wrong file reads.
+
+Observation 3:
+
+```text
+Provider architecture matters because no one context source wins every task.
+```
+
+Exact search is best for literal error strings. Symbol graph is best for dependency direction. Repo map is best for first orientation. Current file is best for local edit work. Tests are best before commit. MCP is best for external systems.
+
+Observation 4:
+
+```text
+A graph without packaging is too raw for an agent.
+```
+
+If Parceltongue returns raw nodes and edges, Codex still has to solve ranking, budget, source selection, and next action planning. That repeats the problem Parceltongue exists to solve.
+
+Observation 5:
+
+```text
+A packet without symbol identity has a low ceiling.
+```
+
+AB498 returns useful directory and symbol summaries, but without stable symbol ids and resolution edges, it cannot reliably answer "what calls whom" or "what breaks if I edit this?"
+
+Observation 6:
+
+```text
+A packet without freshness tracking can become dangerous.
+```
+
+Cline's stale file tracking is a practical warning. Parceltongue should track stale graph slices after edits, not only stale file reads.
+
+Observation 7:
+
+```text
+The best Codex companion tool should be boring to call and rich in output structure.
+```
+
+The agent should not need 12 graph commands up front. It should start with one:
+
+```text
+get_context_packet
+```
+
+Then the packet can recommend more specific calls:
+
+```text
+get_symbol_impact
+get_callers
+get_tests
+get_blast_radius
+```
+
+### What Parceltongue Should Build Next
+
+The next build should be a thin vertical slice, not the whole dream.
+
+#### Slice 1: Provider Health
+
+```text
+parseltongue context providers list
+```
+
+Output:
+
+```json
+{
+  "providers": [
+    {
+      "id": "repo-map",
+      "status": "ready",
+      "requires": ["syntax_index", "symbol_identity_index"]
+    },
+    {
+      "id": "symbol-impact",
+      "status": "degraded",
+      "requires": ["syntax_index", "symbol_identity_index", "resolution_edges"],
+      "missing": ["resolution_edges"]
+    }
+  ]
+}
+```
+
+#### Slice 2: Repo Map Packet
+
+Implement the Aider-inspired packet first:
+
+```text
+parseltongue context packet --query "auth token validation" --budget 3000 --provider repo-map
+```
+
+MVP output:
+
+```text
+ranked files
+ranked symbols
+why selected
+estimated tokens
+next spans to open
+omissions
+```
+
+#### Slice 3: Symbol Impact Packet
+
+Use Concept 37's symbol identity layer:
+
+```text
+parseltongue context symbol --symbol "validate_token" --budget 3000
+```
+
+MVP output:
+
+```text
+definition
+callers
+callees
+imports/exports
+tests if detectable
+unresolved references
+```
+
+#### Slice 4: MCP Wrapper
+
+Expose the same functions through MCP:
+
+```text
+get_context_packet
+get_symbol_impact
+get_provider_health
+```
+
+Do not start with 20 MCP tools. Start with 3.
+
+#### Slice 5: Codex Prompt Integration
+
+Create a small Codex instruction:
+
+```text
+Before opening many files, ask Parceltongue for a context packet.
+Before editing public functions, ask for symbol impact.
+Before committing, ask for test surface.
+```
+
+This turns Parceltongue into a habit, not a dashboard.
+
+### Tests To Add
+
+```text
+T608: provider registry lists repo-map, symbol-impact, text-search, open-files.
+T609: provider registry reports missing indexes as degraded, not ready.
+T610: context packet reserves answer tokens and never spends full budget.
+T611: repo-map provider returns ranked files under token budget.
+T612: repo-map provider explains why each file was selected.
+T613: repo-map provider includes omissions when files are excluded by budget.
+T614: repo-map provider expands when no files are in chat.
+T615: repo-map provider narrows when current files are supplied.
+T616: symbol-impact provider returns definition plus direct callers.
+T617: symbol-impact provider returns direct callees.
+T618: symbol-impact provider marks unresolved references.
+T619: symbol-impact provider includes public export/interface edges when known.
+T620: text-search provider caps matches and reports truncation.
+T621: open-files provider summarizes symbols in current files.
+T622: diff-impact provider maps changed lines to changed symbols.
+T623: test-surface provider returns likely tests for changed symbols.
+T624: context packet includes next_queries.
+T625: context packet includes source_provider for every item.
+T626: context packet includes confidence for every packet.
+T627: context packet includes token_estimate for every packet.
+T628: stale graph slice produces a warning before edit recommendations.
+T629: MCP get_context_packet validates absolute path and budget.
+T630: MCP get_context_packet returns structured JSON, not only plaintext.
+T631: CLI and MCP packet outputs are schema-equivalent.
+T632: failed provider does not poison other providers.
+T633: provider timeout returns degraded packet with partial results.
+T634: large repo packet does not include full file bodies by default.
+T635: exact source escalation requires explicit span ids.
+T636: source span packet includes line numbers and stable symbol ids.
+T637: packet builder sorts by value per token, not only raw score.
+T638: packet builder keeps named omissions even when context is tight.
+T639: packet output is deterministic for same index and query.
+T640: packet output changes when graph is refreshed after edit.
+```
+
+### Anti-Patterns To Avoid
+
+Do not build:
+
+```text
+Raw graph dump as primary output.
+One giant MCP tool with every option.
+Full-file dumping as default.
+Plain text only response with no schema.
+Symbol names without stable identity.
+Dependency edges without source spans.
+Context packets without omissions.
+Context packets without next action recommendations.
+Search results without token caps.
+Graph freshness hidden from agent.
+Provider failures hidden from agent.
+```
+
+Especially avoid this:
+
+```text
+"Here is the entire repository context."
+```
+
+That is the anti-product.
+
+The product is:
+
+```text
+"Here is the smallest dependency-aware packet that should guide your next move."
+```
+
+### Search Keywords This Concept Adds
+
+```text
+Aider repo map tree-sitter tags
+Aider networkx pagerank repository map
+Aider map tokens repo map
+Aider TreeContext code context
+Aider ranked tags definitions references
+Continue context provider architecture
+Continue repo-map context provider
+Continue codebase provider embeddings full text chunk
+Continue tree-sitter chunking code structure
+Continue MCP context provider resources
+Continue context items retrieval pipeline
+Cline read_files line range paging
+Cline search_codebase regex tool
+Cline tool policies auto approval MCP
+Cline file context tracker stale files
+Cline mention enricher file index
+Cline content truncation search_files
+code context provider MCP tree-sitter WASM
+get_code_context MCP absolutePath maxDepth
+agent context packet schema
+context provider registry coding agent
+LLM code context provider architecture
+repo map as agent decision aid
+least token codebase context agent
+dependency graph context packet
+call graph context packet Codex
+public API code graph provider
+symbol impact context provider
+stale graph slice agent context
+MCP code context tree-sitter symbols
+agent asks tool relevant code context
+context packet next queries
+token budget code graph retrieval
+provider health code intelligence
+graph aware code assistant Codex
+```
+
+### Final Recommendation
+
+The product answer is:
+
+```text
+Build Parceltongue as a context packet provider for Codex, not as a standalone graph explorer first.
+```
+
+The most relevant blend is:
+
+```text
+Aider's repo-map ranking
+Continue's context-provider registry
+Cline's agent-tool guardrails
+AB498's MCP packaging simplicity
+SCIP and Stack Graphs symbol semantics from Concept 37
+```
+
+The first lovable product surface:
+
+```text
+Codex asks Parceltongue:
+  "Give me the best context packet for this query under 4000 tokens."
+
+Parceltongue answers:
+  "Inspect these symbols and spans first.
+   Here is why.
+   Here is what calls what.
+   Here is what I omitted.
+   Here is the next graph query if you need more."
+```
+
+That is high PMF for a solo Codex power user working across CRUD apps, Rust, C, C++, and large unfamiliar codebases.
+
+## Concept 39: Treat Embedded And Data Languages As First-Class Context Layers
+
+### Why This Concept Exists
+
+Concept 37 said Parceltongue needs:
+
+```text
+syntax span -> occurrence role -> stable symbol identity -> resolution edge
+```
+
+Concept 38 said the public surface should be:
+
+```text
+context provider -> context packet -> next agent choice
+```
+
+Concept 39 adds a missing layer:
+
+```text
+Not all useful code context is a function, class, method, or import.
+```
+
+Large real codebases contain:
+
+```text
+HTML inside PHP.
+Ruby inside ERB.
+JavaScript inside EJS.
+Lua inside etlua.
+PHPDoc inside PHP comments.
+Heredoc or nowdoc bodies that declare their own language.
+JSON keys that behave like configuration APIs.
+Regex captures that behave like tiny named symbols.
+Ruby locals that are not method references.
+Dynamic method calls that cannot be resolved like static imports.
+```
+
+So Parceltongue needs a first-class model for:
+
+```text
+language layers
+embedded spans
+data paths
+query-provided tags
+scanner-backed syntax state
+micro-language symbols
+```
+
+If it does not, Codex will keep doing what agents do today:
+
+```text
+Open host file.
+Miss embedded code.
+Search broad text.
+Edit the wrong layer.
+Break a template, config, regex, or heredoc body.
+```
+
+### Repos Inspected
+
+This concept inspected five official grammar repos:
+
+| Repo | Local Clone | Why It Matters |
+|---|---|---|
+| `tree-sitter/tree-sitter-embedded-template` | `tree-sitter__tree-sitter-embedded-template` | Shows clean host/embedded code splitting and injection queries for EJS, ERB, and etlua. |
+| `tree-sitter/tree-sitter-json` | `tree-sitter__tree-sitter-json` | Shows a data language where key paths matter more than function symbols. |
+| `tree-sitter/tree-sitter-regex` | `tree-sitter__tree-sitter-regex` | Shows a micro-language with captures, groups, quantifiers, assertions, and backreferences. |
+| `tree-sitter/tree-sitter-php` | `tree-sitter__tree-sitter-php` | Shows a web language with text/PHP interpolation, PHPDoc injection, heredoc/nowdoc language injection, and tags. |
+| `tree-sitter/tree-sitter-ruby` | `tree-sitter__tree-sitter-ruby` | Shows dynamic-language ambiguity, locals, tags, operators-as-methods, heredoc/regex scanner behavior, and method call grammar complexity. |
+
+### CodeGraphContext Evidence
+
+CodeGraphContext completed for three smaller grammar repos:
+
+| Repo | CGC Result |
+|---|---:|
+| `tree-sitter__tree-sitter-embedded-template` | 36 files, 26 functions, 9 classes, 14 structs, 1 enum, 37 modules |
+| `tree-sitter__tree-sitter-json` | 37 files, 27 functions, 8 classes, 11 structs, 1 enum, 35 modules |
+| `tree-sitter__tree-sitter-regex` | 37 files, 28 functions, 10 classes, 22 structs, 3 enums, 37 modules |
+
+CGC was started for PHP and Ruby too, but those runs stayed quiet after repeated polls. I stopped them and removed the generated `.cgcignore` files. The PHP/Ruby evidence below is therefore direct-source evidence, not completed CGC evidence.
+
+The CGC lesson is modest but useful:
+
+```text
+For generated grammar repos, a general code graph can index generated parser/binding code,
+but the product evidence mostly lives in grammar.js, queries, scanners, and corpus files.
+```
+
+So Parceltongue should not treat CGC-like source graph stats as enough for grammar understanding. It needs grammar-aware extraction.
+
+### Source Evidence: Embedded Template
+
+The embedded-template grammar is tiny but product-rich.
+
+Important source facts:
+
+| Evidence | Source |
+|---|---|
+| Grammar name is `embedded_template`. | `grammar.js` lines 10-12 |
+| Root `template` repeats directive, output directive, comment directive, GraphQL directive, and content. | `grammar.js` lines 15-22 |
+| `code` is separate from `content`. | `grammar.js` lines 24-27 |
+| Directives cover control syntax such as `<%`, output syntax such as `<%=`, comments `<%#`, and GraphQL `<%graphql`. | `grammar.js` lines 28-50 |
+| EJS injection maps `content` to HTML and `code` to JavaScript with `injection.combined`. | `queries/injections-ejs.scm` lines 1-7 |
+| ERB injection maps `content` to HTML and `code` to Ruby with `injection.combined`. | `queries/injections-erb.scm` lines 1-7 |
+| etlua injection maps `content` to HTML and `code` to Lua with `injection.combined`. | `queries/injections-etlua.scm` lines 1-7 |
+| Corpus verifies escaped directive starts, comments, empty directives, GraphQL directives, and output directives. | `test/corpus/main.txt` lines 1-176 |
+
+The extraction lesson:
+
+```text
+The same syntax node name can have different embedded language meaning depending on the injection query.
+```
+
+In EJS:
+
+```text
+content -> html
+code -> javascript
+```
+
+In ERB:
+
+```text
+content -> html
+code -> ruby
+```
+
+In etlua:
+
+```text
+content -> html
+code -> lua
+```
+
+For Parceltongue, this means the parser result alone is insufficient. The injection query is part of the semantic evidence.
+
+Suggested fact:
+
+```rust
+pub struct LanguageLayerFact {
+    pub path: PathBuf,
+    pub host_language: LanguageId,
+    pub embedded_language: LanguageId,
+    pub span: SourceSpan,
+    pub source_node_kind: String,
+    pub injection_query: String,
+    pub combined: bool,
+}
+```
+
+Agent journey:
+
+```text
+User asks: "Why is this Rails view broken?"
+Codex opens `.erb`.
+Parceltongue returns two layers:
+  - HTML content spans
+  - Ruby code directive spans
+Codex asks for Ruby symbol impact only inside directive spans.
+Codex asks for HTML structure only inside content spans.
+```
+
+Without this layer, the agent treats the template as one flat file and wastes context.
+
+### Source Evidence: JSON
+
+JSON has almost no code-navigation surface in the traditional sense, but it is still critical in real software.
+
+Important source facts:
+
+| Evidence | Source |
+|---|---|
+| JSON root `document` repeats values, allowing multiple top-level values. | `grammar.js` lines 23-34 |
+| Values include object, array, number, string, true, false, and null. | `grammar.js` lines 26-34 |
+| Object pairs have field names `key` and `value`. | `grammar.js` lines 36-44 |
+| Arrays are comma-separated values. | `grammar.js` lines 46-48 |
+| Strings expose `string_content` and `escape_sequence`. | `grammar.js` lines 50-65 |
+| Numbers handle signed integers, decimal literals, and exponent parts. | `grammar.js` lines 67-86 |
+| Comments are allowed even though strict JSON does not allow them, because many tools permit comments in `.json` files. | `grammar.js` lines 94-101 and `test/corpus/main.txt` lines 91-129 |
+| Highlight query marks pair keys as `string.special.key`. | `queries/highlights.scm` lines 1-14 |
+
+The extraction lesson:
+
+```text
+For data languages, the useful entity is often a path, not a symbol.
+```
+
+For a JSON file, these facts matter:
+
+```text
+$.scripts.test
+$.dependencies.react
+$.compilerOptions.paths.*
+$.mcpServers.docs.command
+$.features.experimentalThing
+```
+
+Not:
+
+```text
+definition.function
+reference.call
+```
+
+Suggested fact:
+
+```rust
+pub struct DataPathFact {
+    pub path: PathBuf,
+    pub data_language: LanguageId,
+    pub json_pointer: String,
+    pub key: Option<String>,
+    pub value_kind: DataValueKind,
+    pub value_span: SourceSpan,
+    pub parent_span: SourceSpan,
+    pub comments_nearby: Vec<SourceSpan>,
+}
+```
+
+Agent journey:
+
+```text
+User asks: "Why is the CLI command not running?"
+Parceltongue sees `package.json`.
+Parceltongue returns `$.scripts`, `$.bin`, `$.type`, and dependency paths first.
+Codex inspects those paths before opening random TypeScript files.
+```
+
+This is important for CRUD apps because configuration files often decide runtime behavior.
+
+### Source Evidence: Regex
+
+Regex is a micro-language. It often lives inside a string literal in another language. It has its own local symbol-like entities.
+
+Important source facts:
+
+| Evidence | Source |
+|---|---|
+| Regex grammar has `pattern`, `alternation`, and `term` roots. | `grammar.js` lines 42-80 |
+| Terms include assertions, lookarounds, pattern characters, character classes, escapes, backreferences, named groups, non-capturing groups, and inline flags. | `grammar.js` lines 53-80 |
+| Character classes include negation, ranges, POSIX classes, and escaped class atoms. | `grammar.js` lines 107-150 |
+| Groups include anonymous capturing, named capturing, non-capturing, and inline flags. | `grammar.js` lines 152-169 |
+| Quantifiers include `*`, `+`, `?`, and count quantifiers with lazy suffix support. | `grammar.js` lines 171-184 |
+| Backreference forms include `\k<name>` and `(?P=name)`. | `grammar.js` lines 186-190 |
+| Unicode property expressions are parsed. | `grammar.js` lines 192-210 |
+| Highlight query marks group names, escapes, operators, flags, class ranges, class characters, and pattern characters separately. | `queries/highlights.scm` lines 1-63 |
+| Corpus verifies quantifiers, alternations, assertions, lookarounds, character classes, escapes, named captures, backreferences, and date-style named captures. | `test/corpus/main.txt` lines 29-542 |
+
+The extraction lesson:
+
+```text
+Regex has local dependency relationships.
+```
+
+Example:
+
+```text
+(?<year>[0-9]{4})-(?<month>[0-9]{2})-(?<day>[0-9]{2})
+```
+
+The named captures are not functions, but they are entities an agent needs:
+
+```text
+capture year
+capture month
+capture day
+```
+
+Backreferences are not calls, but they are references:
+
+```text
+(?<the_world>.*)\k<the_world>
+```
+
+Suggested facts:
+
+```rust
+pub struct RegexCaptureFact {
+    pub host_path: PathBuf,
+    pub host_span: SourceSpan,
+    pub regex_span: SourceSpan,
+    pub name: Option<String>,
+    pub ordinal: usize,
+    pub body_span: SourceSpan,
+}
+
+pub struct RegexReferenceFact {
+    pub host_path: PathBuf,
+    pub reference_span: SourceSpan,
+    pub target_name: Option<String>,
+    pub target_ordinal: Option<usize>,
+    pub reference_kind: RegexReferenceKind,
+}
+```
+
+Agent journey:
+
+```text
+User asks: "Why does date parsing fail?"
+Codex finds a regex literal.
+Parceltongue injects regex grammar.
+Parceltongue returns captures, quantifiers, assertions, and backrefs.
+Codex reasons about the regex without reading unrelated parser code.
+```
+
+This is a huge token win in debugging tasks.
+
+### Source Evidence: PHP
+
+PHP is a web-template language, a dynamic language, and a host for embedded text all at once.
+
+Important source facts:
+
+| Evidence | Source |
+|---|---|
+| The repo has two dialect wrappers: `php` and `php_only`, both built by `common/define-grammar.js`. | `php/grammar.js` lines 1-3 and `php_only/grammar.js` lines 1-3 |
+| `defineGrammar` rejects unknown dialects and names the grammar by dialect. | `common/define-grammar.js` lines 73-80 |
+| The grammar has explicit conflicts for arrays, types, namespaces, heredoc bodies, and if statements. | `common/define-grammar.js` lines 81-93 |
+| External scanner tokens include automatic semicolon, string chars, heredoc chars, EOF, heredoc start/end, nowdoc string, and sentinel error. | `common/define-grammar.js` lines 95-108 |
+| `php` dialect extras include `text_interpolation`; `php_only` does not. | `common/define-grammar.js` lines 110-121 |
+| `program` differs by dialect: `php` can have text and PHP tags, while `php_only` is only statements around optional tags. | `common/define-grammar.js` lines 147-164 |
+| `text_interpolation` models transitions from PHP end tag to text and back to PHP tag or EOF. | `common/define-grammar.js` lines 169-178 |
+| PHP declarations cover namespace, trait, interface, class, enum, properties, methods, functions, parameters, types, and traits. | `common/define-grammar.js` lines 236-657 |
+| PHP injection query maps comments to `phpdoc` and heredoc/nowdoc bodies to the language named by the heredoc end marker. | `queries/injections.scm` lines 1-10 |
+| Text injection query maps `(text)` to HTML with `injection.combined`. | `queries/injections-text.scm` lines 1-3 |
+| Tags query marks namespaces, interfaces, traits, classes, properties, functions, methods, class references, constructor/class references, and call references. | `queries/tags.scm` lines 1-40 |
+| Corpus verifies PHP/text interpolation, short tags, comments, WordPress colon blocks, and text/PHP transitions. | `test/corpus/interpolation.txt` lines 1-245 |
+| Scanner serializes heredoc state and open heredoc words. | `common/scanner.h` lines 35-82 |
+| Scanner reads heredoc/nowdoc words and handles content/end-tag detection. | `common/scanner.h` lines 176-246 and 248-320 |
+
+The extraction lesson:
+
+```text
+PHP requires host-language layering plus normal symbol extraction plus scanner-state awareness.
+```
+
+For PHP files, Parceltongue should emit:
+
+```text
+LanguageLayerFact: HTML text regions
+LanguageLayerFact: PHP code regions
+LanguageLayerFact: PHPDoc comment regions
+LanguageLayerFact: heredoc/nowdoc embedded language regions
+SymbolIdentityFact: namespace, class, interface, trait, enum, method, function, property
+OccurrenceFact: implementation reference, class reference, call reference
+ScannerStateFact: heredoc/nowdoc delimiter and body span
+```
+
+The tags query is especially important because it already speaks the same language as Aider-style repo maps:
+
+```text
+@definition.class
+@definition.function
+@reference.call
+@reference.implementation
+```
+
+Parceltongue should import these as raw occurrence evidence, then normalize them into its public schema.
+
+Agent journey:
+
+```text
+User asks: "Why is this WordPress template failing?"
+Parceltongue returns:
+  - PHP code regions
+  - HTML text regions
+  - function/method calls inside PHP
+  - PHPDoc and heredoc language layers
+  - colon-block control flow boundaries
+Codex edits only the PHP layer or only the HTML layer depending on the bug.
+```
+
+### Source Evidence: Ruby
+
+Ruby is the dynamic-language warning label. Static graph extraction is useful, but must be humble.
+
+Important source facts:
+
+| Evidence | Source |
+|---|---|
+| Ruby grammar has many external scanner tokens for line breaks, delimited literals, regex starts, heredocs, operators, and interpolation. | `grammar.js` lines 37-75 |
+| Extras include comments, heredoc bodies, whitespace, and escaped line continuations. | `grammar.js` lines 77-82 |
+| Supertypes include statements, arguments, call operators, method names, expressions, variables, primaries, pattern expressions, and pattern constants. | `grammar.js` lines 86-102 |
+| Methods and singleton methods split object/name/body/parameter fields. | `grammar.js` lines 145-180 |
+| Classes and modules have named fields for class/module name, superclass, body, and singleton class value. | `grammar.js` lines 269-297 |
+| Pattern matching has array, hash, find, alternative, as-pattern, variable-reference, and expression-reference shapes. | `grammar.js` lines 375-562 |
+| The grammar comments explain Ruby command calls and why `_expression` and `_arg` variants exist. | `grammar.js` lines 630-644 |
+| Calls have receiver/operator/method fields, including `.`, safe navigation, and `::`. | `grammar.js` lines 721-806 |
+| Tags query marks methods, singleton methods, aliases, classes, singleton classes, modules, and calls. | `queries/tags.scm` lines 1-64 |
+| Locals query defines method/block/lambda scopes, parameter definitions, assignment definitions, and identifier references. | `queries/locals.scm` lines 1-27 |
+| Scanner serializes literal stack and open heredocs, including interpolation permission. | `src/scanner.c` lines 49-68 and 90-164 |
+| Scanner handles line-break sensitivity and heredoc body start. | `src/scanner.c` lines 166-235 |
+| Corpus verifies normal methods, `?`/`!` methods, end-less methods, singleton methods, setters, operator methods, slash-method versus regex ambiguity, and `super`. | `test/corpus/declarations.txt` lines 1-153 |
+| Corpus verifies symbols, operator symbols, delimited symbols, interpolation, percent symbols, and global variables. | `test/corpus/literals.txt` lines 1-260 |
+
+The extraction lesson:
+
+```text
+Dynamic languages need confidence and scope qualifiers.
+```
+
+Ruby's tags query can identify:
+
+```text
+definition.method
+definition.class
+definition.module
+reference.call
+```
+
+Ruby's locals query can identify:
+
+```text
+local.scope
+local.definition
+local.reference
+```
+
+Those two query families should not be conflated.
+
+Suggested facts:
+
+```rust
+pub enum OccurrenceConfidence {
+    Exact,
+    QueryTagged,
+    LocalScopeOnly,
+    DynamicLikely,
+    Unresolved,
+}
+
+pub struct LocalScopeFact {
+    pub path: PathBuf,
+    pub scope_span: SourceSpan,
+    pub inherits_parent_scope: bool,
+    pub language: LanguageId,
+}
+
+pub struct DynamicCallFact {
+    pub path: PathBuf,
+    pub call_span: SourceSpan,
+    pub receiver_span: Option<SourceSpan>,
+    pub method_name: String,
+    pub confidence: OccurrenceConfidence,
+}
+```
+
+Agent journey:
+
+```text
+User asks: "Where is this Ruby method coming from?"
+Parceltongue returns:
+  - exact method definitions if query-tagged
+  - possible dynamic calls
+  - local definitions that shadow method-like identifiers
+  - confidence labels
+  - next query suggestions
+```
+
+This is better than pretending Ruby has Rust-like static call edges.
+
+### Universal Design Pattern
+
+These five grammars imply a broader Parceltongue model:
+
+```text
+File
+  has one or more LanguageLayerFacts
+  each layer has syntax nodes
+  syntax nodes may emit:
+    SymbolIdentityFact
+    OccurrenceFact
+    LocalScopeFact
+    DataPathFact
+    RegexCaptureFact
+    RegexReferenceFact
+    ScannerStateFact
+    InjectionFact
+```
+
+The core graph should separate:
+
+```text
+program symbols
+data paths
+embedded-language spans
+micro-language captures
+local scope facts
+scanner state facts
+query tag facts
+```
+
+If everything is forced into "symbol", the graph becomes misleading.
+
+### Context Packet Implications
+
+Concept 38's context packet should gain layer fields:
+
+```json
+{
+  "items": [
+    {
+      "kind": "language_layer",
+      "path": "views/index.erb",
+      "host_language": "embedded_template",
+      "embedded_language": "ruby",
+      "start_line": 12,
+      "end_line": 12,
+      "why_selected": "Ruby directive inside ERB likely controls rendered branch."
+    },
+    {
+      "kind": "data_path",
+      "path": "package.json",
+      "data_path": "$.scripts.test",
+      "value_kind": "string",
+      "why_selected": "Test command controls verification path."
+    },
+    {
+      "kind": "regex_capture",
+      "path": "src/date.ts",
+      "capture_name": "year",
+      "why_selected": "Named capture participates in parser output."
+    }
+  ]
+}
+```
+
+The packet should tell Codex:
+
+```text
+This is code.
+This is embedded code.
+This is data config.
+This is a regex mini-language.
+This is a local-only identifier.
+This is a dynamic likely call, not a proven edge.
+```
+
+That prevents false confidence.
+
+### Shreyas Doshi Product Read
+
+For a solo Codex power user, this concept has very high PMF because many agent failures in large codebases are not failures of intelligence. They are failures of context shape.
+
+The product pain is:
+
+```text
+The agent opens the host file but misses the embedded layer.
+The agent edits the string but does not understand the regex.
+The agent searches for a function but the bug is in JSON config.
+The agent treats Ruby locals as method calls.
+The agent sees PHP text and code as one undifferentiated blob.
+```
+
+The product promise:
+
+```text
+Parceltongue tells Codex what kind of context it is looking at before Codex reasons.
+```
+
+This is subtle PMF. It is not flashy. But it removes a whole class of "agent went sideways" moments.
+
+### What Parceltongue Should Build Next
+
+Add a language-layer extraction pass:
+
+```text
+parse file
+apply injections queries
+emit LanguageLayerFact
+route embedded spans to embedded parser
+merge child spans back into parent context packet
+```
+
+Add data-language extraction:
+
+```text
+JSON: object path, array path, key, value kind, comment proximity
+TOML/YAML later: table path, key path, anchor/ref, environment-like names
+```
+
+Add regex extraction:
+
+```text
+capture groups
+named groups
+backreferences
+lookarounds
+quantifiers
+flags
+class ranges
+```
+
+Add dynamic-language confidence:
+
+```text
+exact local
+query-tagged definition
+query-tagged call
+dynamic likely call
+unresolved
+```
+
+Add scanner-state awareness:
+
+```text
+heredoc delimiter
+nowdoc delimiter
+literal stack
+interpolation allowed
+line-break sensitive token
+```
+
+Not all scanner state needs to be public, but the important language boundaries should be public.
+
+### Tests To Add
+
+```text
+T641: embedded-template EJS content emits HTML LanguageLayerFact.
+T642: embedded-template EJS code emits JavaScript LanguageLayerFact.
+T643: embedded-template ERB code emits Ruby LanguageLayerFact.
+T644: embedded-template etlua code emits Lua LanguageLayerFact.
+T645: escaped directive start `<%%` remains content, not code.
+T646: comment directive emits comment layer and does not create code occurrence.
+T647: JSON pair emits DataPathFact for key and value.
+T648: JSON nested object emits JSON pointer style path.
+T649: JSON array emits index-aware data path.
+T650: JSON comments are preserved as nearby comment facts.
+T651: regex named capturing group emits RegexCaptureFact.
+T652: regex anonymous capturing group emits ordinal RegexCaptureFact.
+T653: regex named backreference emits RegexReferenceFact.
+T654: regex count quantifier emits quantifier fact.
+T655: regex lookahead/lookbehind emits assertion fact.
+T656: PHP `php` dialect emits HTML text layer plus PHP code layer.
+T657: PHP `php_only` dialect emits only PHP code layer.
+T658: PHP heredoc emits embedded LanguageLayerFact from heredoc marker.
+T659: PHP nowdoc emits embedded LanguageLayerFact from nowdoc marker.
+T660: PHP tags query emits class/function/method/property definitions.
+T661: PHP tags query emits call and implementation references.
+T662: Ruby locals query emits local scope for method without parent inheritance.
+T663: Ruby locals query emits block/lambda scope with inherited semantics.
+T664: Ruby tags query emits class/module/method definitions.
+T665: Ruby call reference is marked DynamicLikely unless resolved by stronger evidence.
+T666: Ruby local reference shadows method-like call candidate.
+T667: Ruby regex literal is routed to regex parser when injection is available.
+T668: Ruby heredoc scanner state creates language-boundary warning if language unknown.
+T669: context packet includes `kind` for language_layer/data_path/regex_capture.
+T670: context packet never presents dynamic calls as exact call graph edges.
+```
+
+### Anti-Patterns To Avoid
+
+Do not do this:
+
+```text
+Treat all file spans as one language.
+Treat all identifiers as symbols.
+Treat JSON keys as strings only.
+Treat regexes as opaque strings.
+Treat embedded template code as comments or text.
+Treat Ruby calls as exact static edges.
+Treat PHP heredoc bodies as plain PHP strings.
+Ignore injection queries.
+Ignore locals queries.
+Ignore tags queries.
+Hide confidence from the agent.
+```
+
+Especially avoid:
+
+```text
+The parser said "identifier", so this must be a dependency edge.
+```
+
+The better rule:
+
+```text
+The parser found syntax.
+Queries and scanners reveal language layers.
+Language-specific extractors decide what facts are safe to emit.
+Packets expose confidence and kind.
+```
+
+### Search Keywords This Concept Adds
+
+```text
+tree-sitter injections combined embedded language
+tree-sitter embedded template EJS ERB etlua
+tree-sitter injection.language html ruby javascript lua
+tree-sitter JSON pair key value data path
+tree-sitter JSON comments config extraction
+JSON pointer code assistant context
+regex tree-sitter named capturing group backreference
+regex tree-sitter lookaround quantifier flags
+regex micro language code intelligence
+PHP tree-sitter text_interpolation
+PHP tree-sitter heredoc nowdoc injection language
+PHP tree-sitter tags definitions references
+PHP tree-sitter php_only dialect
+PHPDoc injection tree-sitter
+Ruby tree-sitter locals query scope definition reference
+Ruby tree-sitter tags method class module calls
+Ruby dynamic call confidence code graph
+Ruby heredoc scanner literal stack
+tree-sitter scanner state heredoc interpolation
+language layer fact code graph
+embedded language context packet
+data path fact code assistant
+regex capture fact dependency graph
+dynamic language occurrence confidence
+agent context embedded code layer
+Codex code graph template injection
+large codebase config path retrieval
+configuration graph JSON keys
+micro language parser extraction
+```
+
+### Summary
+
+The lesson from these official grammars:
+
+```text
+Parceltongue must model context layers, not just code symbols.
+```
+
+The universal relationship model becomes:
+
+```text
+File
+  -> language layer
+  -> syntax span
+  -> language-specific fact
+  -> confidence
+  -> context packet item
+```
+
+For Rust or TypeScript, the language-specific fact might be:
+
+```text
+SymbolIdentityFact
+OccurrenceFact
+ResolutionEdgeFact
+```
+
+For JSON:
+
+```text
+DataPathFact
+```
+
+For regex:
+
+```text
+RegexCaptureFact
+RegexReferenceFact
+```
+
+For PHP/Ruby templates:
+
+```text
+LanguageLayerFact
+ScannerStateFact
+TagQueryFact
+LocalScopeFact
+DynamicCallFact
+```
+
+That is how Parceltongue becomes useful across all languages, CRUD apps, Rust/C/C++ systems code, and mixed web stacks.
+
+## Concept 40: Use SCIP As The Semantic Contract, Not The Whole Engine
+
+### Why This Concept Exists
+
+The previous concepts built the tree-sitter side of the story:
+
+```text
+Parse source code.
+Extract entities.
+Extract syntax-level relationships.
+Build a graph.
+Give the agent useful context.
+```
+
+The SCIP indexer repos force a sharper conclusion:
+
+```text
+Tree-sitter tells Parceltongue where syntax is.
+SCIP-style indexers show Parceltongue what semantic identity must look like.
+```
+
+Those are not the same thing.
+
+This is the important distinction:
+
+```text
+Tree-sitter layer:
+  "There is a function-like node here."
+
+SCIP/compiler layer:
+  "This occurrence refers to this stable symbol from this package/version,
+   with this definition/reference role, and these implementation relationships."
+```
+
+For an agent working inside Codex, the second sentence is the one that saves tokens.
+
+The agent does not need a pretty graph first. It needs a compact, honest answer:
+
+```text
+You asked about this thing.
+Here are the likely semantic identities.
+Here are the files and spans worth reading now.
+Here are the edges I trust.
+Here are the edges that are syntax-only guesses.
+Here is the next cheapest tool call.
+```
+
+That is the core product lesson from the SCIP family.
+
+### Repos Inspected
+
+This concept inspected four local shallow clones:
+
+```text
+git-ref-repo/ignore-this-folder-repos/scip-code__scip-rust
+git-ref-repo/ignore-this-folder-repos/sourcegraph__scip-typescript
+git-ref-repo/ignore-this-folder-repos/sourcegraph__scip-python
+git-ref-repo/ignore-this-folder-repos/sourcegraph__scip-clang
+```
+
+I used CodeGraphContext where it produced useful graph evidence, then verified the conclusion by reading source.
+
+| Repo | CGC Result | Direct Source Anchors | What It Proves |
+|---|---:|---|---|
+| `scip-code__scip-rust` | 1 repo, 4 files, 0 functions, 0 classes, 0 modules | `README.md:3`, `README.md:11`, `scip-rust:30`, `flake.nix:20` | This repo is a wrapper. The real semantic engine is `rust-analyzer scip`. |
+| `sourcegraph__scip-typescript` | 1 repo, 162 files, 495 functions, 57 classes, 43 interfaces, 42 modules | `Descriptor.ts:8`, `Descriptor.ts:36`, `Packages.ts:7`, `ScipSymbol.ts:23`, `FileIndexer.ts:168`, `FileIndexer.ts:420`, `ProjectIndexer.ts:70`, `main.ts:29`, `main.ts:109` | TypeScript semantic indexing is built around package descriptors, TypeScript compiler symbols, occurrence roles, symbol information, and project traversal. |
+| `sourcegraph__scip-python` | Root CGC run was interrupted after repeated quiet polls; the root repo is too broad because it includes Pyright internals and bundled type stubs. Source reads focused on `packages/pyright-scip`. | `indexer.ts:33`, `indexer.ts:135`, `indexer.ts:175`, `indexer.ts:195`, `indexer.ts:273`, `treeVisitor.ts:220`, `treeVisitor.ts:376`, `treeVisitor.ts:455`, `treeVisitor.ts:481`, `treeVisitor.ts:859`, `treeVisitor.ts:1393`, `treeVisitor.ts:1413`, `environment.ts:189`, `environment.ts:227`, `PythonEnvironment.ts:35`, `PythonPackage.ts:8` | Python semantic indexing is inseparable from environment discovery, package metadata, Pyright analysis, imports, stdlib handling, external symbols, and local/global symbol separation. |
+| `sourcegraph__scip-clang` | 1 repo, 108 files, 203 functions, 111 classes, 76 structs, 20 enums, 111 modules | `FileMetadata.h:38`, `FileMetadata.h:52`, `FileMetadata.h:58`, `FileMetadata.h:76`, `PackageMap.h:21`, `PackageMap.cc:65`, `PackageMap.cc:170`, `SymbolFormatter.cc:67`, `SymbolFormatter.cc:101`, `SymbolFormatter.cc:154`, `SymbolFormatter.cc:188`, `ScipExtras.h:165`, `ScipExtras.h:215`, `Indexer.cc:690`, `Indexer.cc:923`, `Indexer.cc:995`, `Indexer.cc:1014`, `Indexer.cc:1154`, `Indexer.cc:1177`, `AstConsumer.cc:103`, `AstConsumer.cc:170` | C/C++ indexing needs compilation databases, file-kind metadata, package maps, macro occurrences, includes, forward declarations, generated files, external files, and AST traversal. |
+
+### The First Big Lesson
+
+The `scip-rust` repo is small because it delegates:
+
+```text
+scip-rust -> rust-analyzer scip
+```
+
+That is not a weakness.
+
+For Parceltongue, it is a design clue:
+
+```text
+If a language already has a strong semantic indexer, wrap it.
+If a language only has tree-sitter grammar coverage, extract syntax facts.
+If semantic certainty is missing, say so in the context packet.
+```
+
+Do not make Parceltongue a fake compiler for every language.
+
+Make it a router and normalizer:
+
+```text
+Language source
+  -> best available extractor
+  -> normalized facts
+  -> ranked context packet
+  -> Codex reads less and decides better
+```
+
+### The Second Big Lesson
+
+`scip-typescript` has a clean conceptual spine:
+
+```text
+Descriptor
+Package
+ScipSymbol
+ProjectIndexer
+FileIndexer
+Occurrence
+SymbolInformation
+Relationship
+```
+
+The files make the separation obvious:
+
+```text
+Descriptor.ts
+  Defines package/type/term/meta/method/parameter/type-parameter descriptors.
+
+Packages.ts
+  Walks upward from a file path to package.json.
+  Falls back to anonymous package when metadata is missing.
+
+ScipSymbol.ts
+  Builds stable SCIP symbol strings.
+
+ProjectIndexer.ts
+  Uses TypeScript compiler program and type checker.
+  Filters source files to index.
+  Creates one SCIP document per source file.
+
+FileIndexer.ts
+  Converts compiler symbols and syntax nodes into occurrences,
+  symbol information, local symbols, globals, and implementation relationships.
+
+main.ts
+  Handles workspaces, project references, tsconfig discovery, metadata,
+  output writing, and project ordering.
+```
+
+This tells Parceltongue:
+
+```text
+Do not make "symbol" a flat string in the graph.
+Make symbol identity structured.
+```
+
+Minimum useful structure:
+
+```text
+SymbolIdentityFact {
+  scheme
+  manager
+  package_name
+  package_version
+  descriptors
+  local_or_global
+  source_engine
+  confidence
+}
+```
+
+For tree-sitter-only languages, the symbol may look like:
+
+```text
+source_engine = "tree-sitter-tags"
+confidence = "syntactic"
+```
+
+For TypeScript with compiler evidence, the symbol may look like:
+
+```text
+source_engine = "typescript-compiler"
+confidence = "semantic"
+```
+
+The agent should see that difference.
+
+### The Third Big Lesson
+
+`scip-python` is messy in exactly the way real Python is messy.
+
+It does not just parse `.py` files and call it done.
+
+It does all of this:
+
+```text
+Infer project name/version from pyproject.toml.
+Optionally infer project version from git commit.
+Build Pyright config.
+Match project files.
+Run Pyright analysis.
+Index workspace imports.
+Track dependencies.
+Discover Python environment packages.
+Map module names to packages.
+Emit project documents.
+Emit external symbols separately.
+Handle stdlib and builtins.
+Separate local document symbols from global symbols.
+```
+
+The product implication is not "Parceltongue should reimplement Pyright."
+
+The product implication is:
+
+```text
+Parceltongue needs an EnvironmentFact layer.
+```
+
+For Python:
+
+```text
+EnvironmentFact {
+  language = "python"
+  project_name
+  project_version
+  execution_environment
+  package_inventory
+  module_to_package_map
+  stdlib_version
+  unresolved_imports
+}
+```
+
+For Node:
+
+```text
+EnvironmentFact {
+  language = "typescript"
+  package_json_name
+  package_json_version
+  workspace_kind
+  tsconfig_path
+  project_references
+  package_manager
+}
+```
+
+For C/C++:
+
+```text
+EnvironmentFact {
+  language = "cxx"
+  project_root
+  build_root
+  compilation_database
+  package_map
+  toolchain_kind
+  include_roots
+}
+```
+
+Without this layer, a dependency graph looks precise but lies.
+
+### The Fourth Big Lesson
+
+`scip-clang` is the strongest warning against overclaiming.
+
+It explicitly models different file kinds:
+
+```text
+in-project files
+generated files
+external files
+magic files
+```
+
+It keeps package metadata separate from path identity.
+
+It uses compilation database entries.
+
+It tracks macros.
+
+It tracks includes.
+
+It tracks forward declarations.
+
+It emits external symbols separately.
+
+It filters which files should be indexed.
+
+It uses source expansion locations, not just spelling locations.
+
+The important product lesson:
+
+```text
+For C/C++, "what calls what" is not a tree-sitter question.
+It is a build-configuration question.
+```
+
+Tree-sitter can say:
+
+```text
+This looks like a function call expression.
+```
+
+Clang-style semantic evidence can say:
+
+```text
+This occurrence references this canonical declaration,
+through this macro-expanded or non-macro source location,
+inside this translation unit,
+under this compilation command.
+```
+
+Those facts belong in different confidence buckets.
+
+### Shreyas Doshi POV: What Is The User Journey?
+
+The user is not shopping for a graph database.
+
+The user is a solo Codex app power user trying to move quickly inside a large codebase.
+
+The user journey is:
+
+```text
+1. User asks Codex to fix or understand something.
+2. Codex needs to choose what to read next.
+3. Codex asks Parceltongue for context.
+4. Parceltongue returns a small ranked packet.
+5. Codex reads fewer files.
+6. Codex makes a better edit.
+7. Tests or build verify.
+```
+
+That means the killer feature is not:
+
+```text
+Show me a dependency graph.
+```
+
+The killer feature is:
+
+```text
+Tell my agent the next 5 to 20 facts it should know,
+and why those facts are worth tokens.
+```
+
+The SCIP repos teach that the facts must be typed:
+
+```text
+definition
+reference
+read access
+write access
+implementation
+type definition
+external symbol
+local symbol
+global symbol
+package descriptor
+module descriptor
+file descriptor
+macro occurrence
+forward declaration
+include edge
+unresolved import
+syntactic guess
+semantic proof
+```
+
+### The Agent-Facing Product Shape
+
+The most useful Codex-facing command is not a dashboard command.
+
+It is something like:
+
+```text
+parceltongue context --query "Where is auth token refresh decided?" --budget 4000
+```
+
+The output should be a context packet:
+
+```text
+ContextPacket {
+  query
+  target_candidates
+  high_confidence_facts
+  medium_confidence_facts
+  low_confidence_facts
+  files_to_read_now
+  spans_to_read_now
+  relationships_to_follow_next
+  relationships_to_ignore_for_now
+  uncertainty_notes
+  suggested_next_tool_calls
+}
+```
+
+Example:
+
+```text
+query:
+  "Where is auth token refresh decided?"
+
+target_candidates:
+  1. refresh_auth_token() in src/auth/session.rs
+     confidence: semantic
+     reason: exact symbol match and incoming call edges
+
+files_to_read_now:
+  1. src/auth/session.rs
+     reason: definition plus direct callers
+  2. src/http/client.rs
+     reason: high-confidence caller edge
+  3. src/config/env.rs
+     reason: dependency edge from token policy
+
+do_not_read_yet:
+  1. generated/openapi/types.ts
+     reason: high fanout, no direct edge to decision point
+
+uncertainty:
+  "Rust adapter is semantic. Shell scripts and config references are syntactic only."
+```
+
+This is how Parceltongue saves tokens.
+
+It does not merely return "more context."
+
+It returns context with a reason.
+
+### The Universal Model Suggested By SCIP
+
+The universal model should separate four layers:
+
+```text
+1. Syntax Facts
+2. Semantic Facts
+3. Environment Facts
+4. Agent Packet Facts
+```
+
+Detailed shape:
+
+```text
+SyntaxFact {
+  file
+  byte_range
+  line_range
+  language_layer
+  node_kind
+  capture_name
+  source_engine
+}
+
+SemanticFact {
+  symbol_identity
+  occurrence_role
+  relationship_kind
+  package_identity
+  local_or_global
+  source_engine
+  confidence
+}
+
+EnvironmentFact {
+  package_manager
+  package_name
+  package_version
+  build_root
+  project_root
+  resolver
+  unresolved_items
+}
+
+AgentPacketFact {
+  rank
+  token_cost
+  expected_value
+  reason
+  uncertainty
+  next_action
+}
+```
+
+The important thing is that `AgentPacketFact` is not a raw code graph row.
+
+It is a product decision.
+
+It says:
+
+```text
+This fact is worth spending context tokens on right now.
+```
+
+### How Each SCIP Repo Maps To Parceltongue
+
+| SCIP Evidence | Parceltongue Design Lesson |
+|---|---|
+| `scip-rust` delegates to `rust-analyzer scip` | Prefer adapter mode when a mature semantic backend exists. |
+| `scip-typescript` uses descriptors, packages, compiler symbols, occurrences, and project references | Use stable structured symbol IDs, not just names. |
+| `scip-python` infers project metadata and discovers virtualenv packages | Model environment/package facts as first-class context. |
+| `scip-python` emits external symbols separately | Separate project facts from dependency facts. |
+| `scip-clang` models in-project/generated/external/magic files | File identity must include provenance and confidence. |
+| `scip-clang` uses compilation databases | Build configuration is part of code understanding. |
+| `scip-clang` tracks macros and includes | Preprocessor facts are not ordinary function edges. |
+| `scip-clang` stores forward declarations | Declarations and definitions are different facts. |
+| `scip-typescript` and `scip-python` distinguish local and global symbols | Local scope facts must not pollute global dependency graphs. |
+| `scip-clang` and `scip-typescript` dedupe/merge symbol information | The graph writer must tolerate repeated evidence from multiple files and passes. |
+
+### What Parceltongue Should Not Do
+
+It should not claim:
+
+```text
+Every function call is known exactly.
+```
+
+It should not claim:
+
+```text
+Every edge is equally reliable.
+```
+
+It should not claim:
+
+```text
+Tree-sitter alone can solve semantic navigation for Rust, C++, TypeScript, and Python.
+```
+
+A better statement:
+
+```text
+Parceltongue provides a confidence-scored context graph.
+Some facts are semantic.
+Some facts are syntactic.
+Some facts are environment-derived.
+The agent sees the difference.
+```
+
+That difference is product gold.
+
+### Confidence Buckets
+
+Parceltongue should assign confidence at the fact level:
+
+| Confidence | Evidence Type | Example |
+|---|---|---|
+| `semantic_exact` | Compiler, LSP, SCIP, language server, type checker | TypeScript `checker.getSymbolAtLocation`; Pyright declaration; Clang `NamedDecl`; rust-analyzer SCIP |
+| `semantic_environment` | Package manager, pyproject, tsconfig, compilation database, package map | `package.json`, `pyproject.toml`, `compile_commands.json`, virtualenv inventory |
+| `syntactic_strong` | Tree-sitter tags, locals, injections, grammar fields | function/class definitions, import syntax, JSON paths |
+| `syntactic_weak` | Name matching without resolver | `foo()` text occurrence, string references |
+| `unknown_or_unresolved` | Resolver failed, dynamic call, macro ambiguity, import missing | unresolved Python import, dynamic Ruby send, C macro reference without file-backed definition |
+
+Then the agent can reason:
+
+```text
+Read semantic_exact facts first.
+Use semantic_environment facts to explain why a file is relevant.
+Use syntactic_strong facts for orientation.
+Treat syntactic_weak facts as search leads.
+Expose unknown_or_unresolved facts as warnings, not graph edges.
+```
+
+### The Minimum Viable Architecture
+
+Parceltongue does not need to start by emitting full SCIP.
+
+It can start with a SCIP-inspired internal schema:
+
+```text
+parceltongue index
+  -> run tree-sitter extractor
+  -> run optional semantic adapters
+  -> normalize facts
+  -> store facts
+
+parceltongue context
+  -> accept query
+  -> resolve target candidates
+  -> score facts by confidence and token value
+  -> return compact packet
+
+parceltongue explain-edge
+  -> explain why A is connected to B
+  -> show evidence source
+  -> show confidence
+```
+
+The adapters can be incremental:
+
+```text
+Rust:
+  run rust-analyzer scip when available
+  fallback to tree-sitter-rust facts
+
+TypeScript:
+  run scip-typescript or TypeScript compiler adapter when available
+  fallback to tree-sitter-typescript facts
+
+Python:
+  run pyright-scip or Pyright adapter when available
+  fallback to tree-sitter-python facts plus import syntax
+
+C/C++:
+  run scip-clang when compile_commands.json exists
+  fallback to tree-sitter-c/tree-sitter-cpp facts plus include syntax
+```
+
+This is a practical design for a solo power user:
+
+```text
+Fast enough to run locally.
+Honest about uncertainty.
+Useful to Codex immediately.
+Upgradeable per language.
+```
+
+### Why This Helps Codex Specifically
+
+Codex already has shell, files, search, build, tests, and edit tools.
+
+So Parceltongue should not compete with those.
+
+It should answer the question Codex is bad at answering cheaply:
+
+```text
+What is the smallest set of code relationships I should inspect next?
+```
+
+That is exactly where SCIP-style evidence helps.
+
+A context packet can say:
+
+```text
+The user asked about method X.
+
+High-confidence:
+  X is a definition in package A.
+  X implements interface method Y.
+  X is referenced from files B and C.
+
+Medium-confidence:
+  Config key Z likely influences X.
+  Tests named XTest touch this behavior.
+
+Low-confidence:
+  String "X" appears in generated file G.
+
+Recommended next read:
+  Read file B lines 40-95 before file C because B is a direct caller and cheaper.
+```
+
+That is the difference between a graph and a product.
+
+### Tests To Add Later
+
+These are executable-spec style tests for a Parceltongue implementation inspired by this concept.
+
+```text
+T671: SCIP-style descriptor formatting
+WHEN a symbol descriptor is created for namespace, type, term, method, parameter, and type parameter
+THEN Parceltongue SHALL preserve descriptor kind separately from display text.
+
+T672: package identity is not a filename
+WHEN a TypeScript file belongs to a package.json with name and version
+THEN Parceltongue SHALL store package name/version as package identity.
+
+T673: anonymous package fallback
+WHEN package metadata is missing or invalid
+THEN Parceltongue SHALL emit an anonymous or unknown package fact instead of inventing a package name.
+
+T674: Rust semantic adapter delegation
+WHEN rust-analyzer SCIP is available
+THEN Parceltongue SHALL prefer rust-analyzer semantic facts over tree-sitter-only reference guesses.
+
+T675: Rust tree-sitter fallback
+WHEN rust-analyzer SCIP is not available
+THEN Parceltongue SHALL still emit syntax facts with confidence syntactic_strong or syntactic_weak.
+
+T676: TypeScript compiler role confidence
+WHEN the TypeScript checker resolves a symbol at an occurrence
+THEN Parceltongue SHALL mark the occurrence confidence as semantic_exact.
+
+T677: TypeScript project references
+WHEN tsconfig project references exist
+THEN Parceltongue SHALL store project traversal and dependency facts separately from symbol occurrence facts.
+
+T678: Python pyproject metadata
+WHEN pyproject.toml defines project name/version
+THEN Parceltongue SHALL use that as project package identity.
+
+T679: Python virtualenv package inventory
+WHEN Python package discovery succeeds
+THEN Parceltongue SHALL map modules to package identities and versions.
+
+T680: Python unresolved import
+WHEN Pyright or fallback import discovery cannot resolve a module
+THEN Parceltongue SHALL emit an unresolved import fact instead of a fake dependency edge.
+
+T681: Python stdlib identity
+WHEN a symbol belongs to the Python standard library
+THEN Parceltongue SHALL mark it as external stdlib context and not project code.
+
+T682: C/C++ compilation database required
+WHEN compile_commands.json is missing
+THEN Parceltongue SHALL downgrade C/C++ call/reference confidence to syntax-only.
+
+T683: C/C++ file provenance
+WHEN a file is generated, external, magic, or in-project
+THEN Parceltongue SHALL store that provenance on the file fact.
+
+T684: C/C++ package map
+WHEN a package map provides path to package@version data
+THEN Parceltongue SHALL associate external file facts with package identity.
+
+T685: C/C++ macro occurrence
+WHEN a macro definition or reference is found
+THEN Parceltongue SHALL store it as a MacroOccurrenceFact, not a function call edge.
+
+T686: C/C++ forward declaration
+WHEN a declaration lacks a definition
+THEN Parceltongue SHALL store declaration and definition facts separately.
+
+T687: local symbol isolation
+WHEN a symbol is local to a function/block/document
+THEN Parceltongue SHALL not expose it as a global dependency graph node.
+
+T688: external symbol packet policy
+WHEN a symbol belongs to dependency code
+THEN Parceltongue SHALL include it only if it explains project behavior or an agent next step.
+
+T689: edge explanation
+WHEN the agent asks why file A is related to file B
+THEN Parceltongue SHALL return evidence source, relationship kind, confidence, and source spans.
+
+T690: context packet token budget
+WHEN a context query has a 4000-token budget
+THEN Parceltongue SHALL rank packet facts by expected agent value and stop before the budget.
+
+T691: uncertainty is explicit
+WHEN facts are syntax-only or resolver-derived with missing environment data
+THEN Parceltongue SHALL include uncertainty notes in the packet.
+
+T692: do-not-read-yet list
+WHEN a file has high fanout but low query relevance
+THEN Parceltongue SHALL explain why it is excluded from the first context packet.
+
+T693: cross-language query
+WHEN a query touches TypeScript frontend, Rust service, and JSON config
+THEN Parceltongue SHALL return separate language-layer facts with separate confidence values.
+
+T694: generated-file handling
+WHEN a file is generated
+THEN Parceltongue SHALL deprioritize it unless the query explicitly targets generated code.
+
+T695: evidence source retention
+WHEN a fact comes from CGC, tree-sitter, SCIP, LSP, package manager, or direct source parse
+THEN Parceltongue SHALL retain the source engine for auditability.
+```
+
+### Final Product Recommendation
+
+Build Parceltongue as:
+
+```text
+an agent-facing context graph and packet generator
+```
+
+Not as:
+
+```text
+a generic graph dashboard
+```
+
+Use SCIP as the semantic vocabulary:
+
+```text
+package
+descriptor
+symbol
+occurrence
+role
+relationship
+external symbol
+document
+metadata
+```
+
+But do not require full SCIP output on day one.
+
+Internally, normalize all evidence into:
+
+```text
+Fact {
+  subject
+  predicate
+  object
+  span
+  source_engine
+  confidence
+  token_value
+  explanation
+}
+```
+
+Then expose a Codex-friendly interface:
+
+```text
+parceltongue context
+parceltongue explain-edge
+parceltongue next-files
+parceltongue symbol
+parceltongue blast-radius
+```
+
+The north star:
+
+```text
+LLM asks query to tool.
+Tool returns minimal relevant context plus dependency reasoning.
+LLM decides better with fewer tokens.
+```
+
+SCIP tells us how to make the facts semantically honest.
+
+Tree-sitter tells us how to cover many languages.
+
+Parceltongue should combine both, then optimize for the agent journey.
+
 ### Next Concepts To Add
 
-1. Inspect Tree-sitter grammar repos for `node-types.json`, query files, corpus tests, injections, locals, highlights, and language-specific schema patterns that can make Parceltongue's fact extraction less brittle.
-2. Inspect `BloopAI__bloop`, `sourcegraph__scip`, and similar code-intelligence repos for cross-language symbol identity and repository-scale indexing patterns that could feed `PublicContractFact`.
-3. Inspect `Cody`, `Aider`, `Continue`, and MCP-oriented code tools for how agent-facing code context should package summaries, snippets, and next-step recommendations.
+1. Inspect agent runtime integration patterns for exposing Parceltongue to Codex as a tiny MCP/CLI surface rather than a large dashboard-first tool.
+2. Inspect non-SCIP C/C++ and Rust parser/indexer repos for how preprocessor, macro, module, trait, and type-resolution facts should be represented without overclaiming exact call graph edges.
+3. Inspect context-provider tools that already answer "LLM asks query to tool, tool responds with relevant context" and compare their packet shape against the SCIP-inspired model above.
