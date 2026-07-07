@@ -26830,6 +26830,5566 @@ That is a real product for a solo agent power user.
 | `git-ref-repo/ignore-this-folder-repos/tirth8205__code-review-graph/code_review_graph/context_savings.py` | lines 1-260 | Estimated token savings, file token estimates, attached metadata, optional tiktoken verification, and CLI savings panel. |
 | `git-ref-repo/ignore-this-folder-repos/tirth8205__code-review-graph/code_review_graph/main.py` | lines 164-310 | MCP entry points for minimal context, impact radius, query graph, review context, and semantic search with compact/detail controls. |
 
+## Concept 30: Choose Tool Roles, Not One Mega Tool
+
+The wrong question is:
+
+```text
+Which repo should become the mega coding agent?
+```
+
+The better question is:
+
+```text
+When Codex is working in a large repo,
+what role does it need filled at each moment,
+and which tool fills that role with the least friction?
+```
+
+This matters because the tools in `J001`, `J002`, and the clone folder are not one species.
+They are not all "Tree-sitter code graph tools."
+They are different products hiding behind similar language.
+
+Some are fast search tools.
+Some are semantic retrieval tools.
+Some are file-level dependency visualizers.
+Some are graph database backends.
+Some are graph report generators.
+Some are review-context compressors.
+Some are AST viewers.
+
+For a solo Codex power user, the PMF question is not:
+
+```text
+Can this tool understand code?
+```
+
+The PMF question is:
+
+```text
+Can this tool help the agent decide what to read next
+with fewer tokens,
+less hallucination,
+and lower chance of missing the dependency that matters?
+```
+
+That framing changes the ranking.
+
+### The Product Stack I Would Actually Use With Codex
+
+The Codex stack should be role-based:
+
+| Role | Best Current Candidate | Why This Role Exists | What Codex Should Ask |
+|---|---|---|---|
+| Fast exact/fuzzy locate | `dmtrKovalenko/fff` | Agent needs to find files, paths, definitions, and text fast without paying graph-build cost. | "Where is the likely file or symbol?" |
+| Semantic code retrieval | `glommer/codemogger`, `cocoindex-io/cocoindex-code` | Agent does not know exact names and needs AST-aware semantic chunks. | "Which chunks are relevant to this intent?" |
+| File-level dependency impact | `LegacyCodeHQ/clarity-cli` | Agent needs to know what files depend on the file being edited and how the change shape looks. | "What depends on this file, and what changed structurally?" |
+| Persistent project graph memory | `Graphify-Labs/graphify` | Agent needs a reusable project graph across code, docs, reports, papers, and other artifacts. | "What does the project graph already know?" |
+| Deep symbol and relationship graph | `CodeGraphContext/CodeGraphContext` | Agent needs richer symbol, call, import, inheritance, datasource, and module relationship traversal. | "What are the callers, callees, imports, class hierarchy, and storage edges?" |
+| Minimal edit context and public-interface impact | `Parceltongue V2` | Agent needs a small, deterministic, local dependency oracle tuned for editing with Codex. | "What must I read before changing this public surface?" |
+
+This is not an argument against building Parceltongue.
+It is an argument against building Parceltongue as a vague mega-tool.
+
+The more precise product thesis is:
+
+```text
+Parceltongue should be the bounded dependency-context oracle
+for Codex edits in large codebases.
+```
+
+Not the fastest text searcher.
+Not the best embedding searcher.
+Not the biggest graph database.
+Not the prettiest knowledge graph.
+Not the generic MCP buffet.
+
+It should answer the narrow question that keeps biting agents:
+
+```text
+Before I edit this symbol, file, trait, public function, API route,
+schema object, or module boundary,
+what is the smallest dependency-shaped context I must inspect?
+```
+
+That is the gap.
+
+### Concept 30A: fff Is The Low-Token Locator, Not The Graph
+
+`fff` is extremely relevant, but not because it replaces Parceltongue.
+It is relevant because every agent session starts with locating.
+
+The agent asks:
+
+```text
+Where is the thing?
+Where are the nearby names?
+Where is the likely definition?
+Where is the text pattern?
+Which files should I open first?
+```
+
+`fff` is built for that moment.
+
+The README positions it as a file search toolkit for humans and AI agents, with typo-resistant path and content search, frecency, a watcher, and an in-memory index.
+Its MCP section explicitly mentions working with Claude Code, Codex, OpenCode, Cursor, and other clients.
+The exposed tools include content search, file search, and multi-grep.
+The agent-facing details include context, cursor pagination, weak-match detection, definition-first hints, smart-case behavior, fuzzy fallback, and git-aware annotations.
+
+That makes it a likely "least tokens to first useful clue" tool.
+
+But:
+
+```text
+fff does not know that changing `Foo::new` breaks a trait implementor.
+fff does not know that a public TypeScript export is the contract boundary.
+fff does not know that a Rust enum variant is serialized into a config file.
+fff does not know that a helper has no callers because the call edge is dynamic.
+fff does not give the agent a dependency proof.
+```
+
+So the role is:
+
+```text
+Use fff to find candidate files and exact text fast.
+Use Parceltongue to decide dependency context after the candidate is found.
+```
+
+Shreyas-style PMF read:
+
+```text
+High frequency, low ceremony, obvious daily pull.
+But it is a search primitive, not the product strategy.
+```
+
+### Concept 30B: Codemogger And CocoIndex Are Semantic Retrieval, Not Dependency Truth
+
+`glommer/codemogger` and `cocoindex-io/cocoindex-code` are also highly relevant.
+They solve the case where the agent does not know the exact names.
+
+The agent asks:
+
+```text
+I need the billing renewal logic.
+I need the place where websocket reconnects are handled.
+I need the Rust code that parses this DSL.
+I need the code related to "public API compatibility".
+```
+
+A pure lexical search can miss that.
+An AST-aware semantic index can find the right chunk faster.
+
+`codemogger` is especially interesting because its README describes:
+
+```text
+Tree-sitter chunking into semantic units
+local embeddings
+SQLite with vector plus FTS
+no Docker
+no server
+no API keys
+one database file per codebase
+Turso embedded storage
+incremental indexing by file hash
+MCP tools for search, index, and reindex
+```
+
+That is very close to the "agent-native local memory" shape.
+
+`cocoindex-code` is interesting because it packages AST-based semantic code search as CLI, MCP, and skill.
+Its MCP shape is intentionally simple: one `search` tool with query, limit, offset, refresh, language, and path filters.
+The realtime indexing demo describes Tree-sitter chunking, incremental processing, live updates, and a vector target.
+
+But semantic retrieval is not dependency analysis.
+
+Semantic search answers:
+
+```text
+What code seems related to this meaning?
+```
+
+Dependency context answers:
+
+```text
+What code must be considered because it calls, imports, implements,
+overrides, serializes, exposes, reads, writes, or depends on this thing?
+```
+
+Those are different promises.
+
+For Parceltongue, the right lesson is:
+
+```text
+Borrow AST chunking and local index ergonomics.
+Do not confuse similarity with graph evidence.
+```
+
+A Codex agent should happily use semantic retrieval before graph traversal:
+
+```text
+semantic search -> candidate symbol -> dependency graph -> minimal edit context
+```
+
+If Parceltongue does embeddings one day, that should be the front door.
+The core should still be dependency-shaped facts with evidence and confidence.
+
+### Concept 30C: Clarity Is The Best Immediate Codex Companion
+
+`LegacyCodeHQ/clarity-cli` has the strongest immediate product taste for Codex.
+
+It does not try to be everything.
+It says, in effect:
+
+```text
+Show me the dependency shape of a code change.
+Show me what depends on this file.
+Show me file/module coupling.
+Show me cycles.
+Show me paths between areas.
+Let me verify the structure before I commit.
+```
+
+That is a beautiful fit for an agent.
+
+The Clarity README is explicit that it builds dependency impact graphs from source and shows files, modules, tests, docs, and their connections.
+It is also explicit about the limitation: file granularity, coupling shape, not runtime behavior or full API contracts.
+
+That honesty is product-positive.
+
+The `AGENTS.md` in the Clarity clone is even more revealing.
+It tells agents when to use Clarity:
+
+```text
+Use it for design discussion.
+Use it for refactoring verification.
+Generate graph output for developer review.
+Read DOT or Mermaid directly for agent verification.
+Before refactoring a file, inspect dependents with `clarity show <file> --reach up`.
+Use bounded reach for blast radius.
+Use whole-tree collapsed views for architecture.
+Use `--between` to inspect paths between files.
+```
+
+That is exactly the user journey Codex needs:
+
+```text
+1. Agent identifies file to edit.
+2. Agent asks Clarity what depends on it.
+3. Agent edits.
+4. Agent asks Clarity what the change shape now looks like.
+5. Agent tests.
+6. Agent commits only if the graph shape and tests agree.
+```
+
+This is not just a tool.
+It is an agent habit.
+
+For Parceltongue, Clarity is the strongest product design reference:
+
+```text
+make the correct graph question feel obvious
+make the output inspectable by both human and agent
+support before/after structural verification
+stay honest about granularity
+```
+
+Where Parceltongue can go beyond Clarity:
+
+```text
+symbol-level facts
+public interface boundaries
+callers/callees where reliable
+trait/interface implementation impact
+test-selection hints
+token-budgeted context bundles
+confidence-tagged edges
+language-pack precision
+```
+
+The PMF is not "replace Clarity."
+
+The PMF is:
+
+```text
+Clarity for file-level change shape.
+Parceltongue for dependency-shaped minimal edit context.
+```
+
+### Concept 30D: Graphify Is Project Memory And Graph Ritual
+
+`Graphify-Labs/graphify` is not a narrow code dependency tool.
+It is a project knowledge graph workflow.
+
+Its README and skill file describe a tool that can ingest code, docs, papers, images, and videos, then output:
+
+```text
+graph.html
+GRAPH_REPORT.md
+graph.json
+Obsidian-style outputs
+GraphRAG-ready JSON
+plain-language report
+MCP query/path/explain tools
+```
+
+Its architecture document is product-relevant because the extraction schema is simple:
+
+```text
+nodes: id, label, source_file, source_location
+edges: source, target, relation, confidence
+confidence: EXTRACTED, INFERRED, AMBIGUOUS
+```
+
+That is an important pattern.
+
+For agents, confidence is not decoration.
+It is the difference between:
+
+```text
+I can safely use this edge as a fact.
+I should inspect the source before trusting this edge.
+I should ask a human or run another tool.
+```
+
+Graphify's Codex skill is also worth copying as a workflow idea.
+It says: if `graphify-out/graph.json` exists and the user asks a natural language codebase question, use the graph first.
+That creates a persistent "graph-first" ritual.
+
+This is the agent-memory product pattern:
+
+```text
+if graph exists -> query graph before rereading repo
+if graph is stale -> update graph
+if edge is inferred -> verify with source
+if answer is broad -> use report/community/god-node view
+```
+
+For Parceltongue, Graphify's lesson is:
+
+```text
+make the graph artifact reusable across sessions
+make confidence labels first-class
+make query/path/explain a normal part of agent behavior
+make the output useful even when no MCP server is running
+```
+
+But Graphify is not enough for the specific Parceltongue gap.
+
+It is broad memory.
+It is not a dedicated "what must I read before editing this public function" oracle.
+
+### Concept 30E: CodeGraphContext Has The Richest Graph Surface, But The Adoption Risk Is Friction
+
+`CodeGraphContext/CodeGraphContext` is the largest and richest prior-art reference in this slice.
+
+The README positions it as an MCP server and CLI toolkit that indexes local code into a graph database for AI assistants and developers.
+The architecture document describes a graph database exposed through MCP, CLI, visualization server, website, multiple database backends, many languages, Tree-sitter, optional SCIP, bundles, watcher, jobs, and graph writer.
+The MCP tools documentation lists a broad tool surface: contexts, indexing, package indexing, stats, code search, relationship analysis, dead code, complexity, bundles, watcher, Cypher, visualization, reports, Java Spring tools, and datasource ingestion.
+
+The source is even more useful than the README.
+
+The tool definitions expose relationship queries including:
+
+```text
+find_callers
+find_callees
+find_all_callers
+find_all_callees
+find_importers
+who_modifies
+class_hierarchy
+overrides
+dead_code
+call_chain
+module_deps
+variable_scope
+find_complexity
+functions by argument
+functions by decorator
+```
+
+The schema contract includes nodes such as:
+
+```text
+Repository
+Directory
+File
+Function
+Class
+Trait
+Variable
+Interface
+Macro
+Struct
+Enum
+EnumMember
+Union
+Record
+Property
+Annotation
+Module
+```
+
+And relationships such as:
+
+```text
+CONTAINS
+CALLS
+IMPORTS
+INHERITS
+HAS_PARAMETER
+INCLUDES
+IMPLEMENTS
+PARTIAL_OF
+PART_OF
+DECORATED_BY
+METACLASS
+COMPANION_OF
+EMBEDS
+INJECTS
+EXPOSES_ENDPOINT
+PROVIDES_BEAN
+MODULE_DEPENDS_ON
+USES_LIBRARY
+CHILD_MODULE
+FILE_BELONGS_TO
+READS
+WRITES
+MAPS_TO
+HAS_COLUMN
+STORED_IN
+```
+
+This is very close to the "universal relationship graph" idea.
+
+The call-resolution code is especially valuable because it admits uncertainty.
+It uses confidence tiers:
+
+```text
+1.00 explicit receiver
+0.95 same-file local
+0.88 inferred receiver with fully qualified import
+0.72 inferred receiver fallback
+0.90 unique short or same-package match
+0.85 qualified or wildcard import
+0.70 fully qualified path substring
+0.25 ambiguous alphabetical first
+0.08 unresolved object method same-file fallback
+```
+
+That is exactly the kind of honesty Parceltongue needs.
+
+But I also used the CodeGraphContext evidence-reader workflow locally, and the operational signal matters.
+
+Using the CodeGraphContext evidence-reader wrapper:
+
+```text
+/Users/amuldotexe/.codex/skills/codegraphcontext-evidence-reader/scripts/scan_current_repo_only.sh
+```
+
+I attempted a smoke index on the CodeGraphContext clone:
+
+```text
+repo: git-ref-repo/ignore-this-folder-repos/CodeGraphContext__CodeGraphContext
+out: /tmp/codex-code-intel/codegraphcontext/CodeGraphContext__CodeGraphContext-20260706-230309
+```
+
+The run initialized services and began re-indexing.
+It produced:
+
+```text
+ladybugdb.sqlite: 21 MB
+ladybugdb.sqlite.wal: 15 MB
+index.txt
+```
+
+But the session ended with signal 143 before normal smoke output.
+A concurrent read while indexing failed because the database lock was held by the index process.
+After the process exited, `cgc stats` and `cgc list` against that partial database failed with:
+
+```text
+Database Connection Error: std::bad_alloc
+```
+
+I then attempted a smaller smoke index on `dmtrKovalenko/fff`:
+
+```text
+repo: git-ref-repo/ignore-this-folder-repos/dmtrKovalenko__fff
+out: /tmp/codex-code-intel/codegraphcontext/dmtrKovalenko__fff-20260706-231648
+```
+
+That run also initialized services and began re-indexing, but ended with signal 143 before `list` or `stats`.
+It left:
+
+```text
+ladybugdb.sqlite: 4 KB
+ladybugdb.sqlite.wal: 3.4 MB
+index.txt
+```
+
+It also left an untracked auto-generated `.cgcignore` inside the `fff` clone.
+I removed that artifact after confirming it was untracked.
+
+Important caveat:
+
+```text
+This is not proof that CodeGraphContext is generally broken.
+It is evidence that, in this local Codex desktop research session,
+the CGC smoke path was not low-friction or quick enough to become
+a reliable always-on helper.
+```
+
+There were also other CGC index jobs running on the machine at the same time, so the environment was not a clean benchmark.
+
+Still, from a product point of view, the lesson is strong:
+
+```text
+Capability is not adoption.
+For a Codex companion, index predictability is part of the product.
+```
+
+If Parceltongue borrows from CodeGraphContext, it should borrow:
+
+```text
+rich relationship vocabulary
+source-backed graph schema
+confidence tiers
+caller/callee/import/hierarchy queries
+optional graph database backend
+datasource-aware edge categories
+MCP plus CLI duality
+```
+
+But it should avoid:
+
+```text
+too many visible tools
+opaque long indexing
+unbounded repo scans
+partial databases that fail unclearly
+tool-generated artifacts inside source clones
+ignore-pattern mismatches
+graph backends that feel heavier than the edit loop
+```
+
+### Concept 30F: The Ignore-Pattern Footgun Is A Product Requirement
+
+One very practical discovery:
+
+```text
+The CodeGraphContext evidence-reader wrapper ignores `gitrefrepo/`.
+This repo's clone folder is named `git-ref-repo/`.
+```
+
+That means running the wrapper on the whole Parceltongue workspace would risk indexing the entire reference clone forest.
+
+This sounds minor.
+It is not minor.
+
+For an agent, path ignore correctness is product correctness.
+
+If the graph tool accidentally indexes:
+
+```text
+reference clones
+vendored dependencies
+build artifacts
+model caches
+test fixtures
+generated output
+old experiments
+```
+
+then every answer becomes less trustworthy.
+
+The graph may still be technically "right", but the product is wrong because the agent's next action is polluted.
+
+Parceltongue V2 should make ignore behavior visible:
+
+```text
+parseltongue index --dry-run
+parseltongue index --explain-scope
+parseltongue index --print-excluded
+parseltongue stats --by-root
+parseltongue doctor --scope
+```
+
+And every answer should carry the scope:
+
+```text
+repo_root: /path/to/repo
+indexed_roots: src/, crates/, packages/
+excluded_roots: git-ref-repo/, target/, node_modules/
+language_packs: rust=exact-ish, ts=imports-only, cpp=scip-missing
+```
+
+For Codex, scope must be query-visible.
+
+### Concept 30G: Why The Earlier Bullseye List Looked Too Small
+
+The earlier "bullseye" framing naturally favored tools that already do:
+
+```text
+LLM asks query to tool
+tool returns dependency-shaped context
+LLM decides what to inspect next
+```
+
+That bias made tools like `treesitter-mcp`, `code-graph-mcp`, `code-review-graph`, and `CodeGraphContext` look more central.
+
+But if the product is:
+
+```text
+Solo Codex power user navigating large CRUD, Rust, C, and C++ systems repos
+```
+
+then the bullseye must be wider.
+
+The agent's daily loop includes:
+
+```text
+finding
+semantic recall
+dependency impact
+context compression
+review verification
+public API change safety
+test selection
+session memory
+```
+
+So the short list should not be only three tools.
+It should be a stack.
+
+The stack has layers:
+
+| Layer | Question | Candidate Tools |
+|---|---|---|
+| Locate | "Where is it?" | `fff`, `ripgrep`, `codemogger grep`, `cocoindex-code search` |
+| Recall | "What code is conceptually related?" | `codemogger`, `cocoindex-code`, `codebase-memory-mcp` |
+| Structure | "What files/modules are coupled?" | `clarity-cli`, `Graphify`, `code-review-graph` |
+| Symbol graph | "Who calls, imports, implements, overrides?" | `CodeGraphContext`, `code-graph-mcp`, `treesitter-mcp`, Parceltongue |
+| Minimal context | "What must the agent read next?" | `treesitter-mcp`, `code-review-graph`, Parceltongue V2 |
+| Verification | "Did the edit preserve shape and tests?" | `clarity-cli`, test suite, Parceltongue impact checks |
+| Memory | "What did we learn across sessions?" | `Graphify`, codebase-memory systems, Codex docs |
+
+The earlier "three" were closer to the symbol/minimal-context layer.
+For an actual solo Codex workflow, every layer matters.
+
+### Concept 30H: The Codex App Journey
+
+If I am using the Codex app, I want these journeys.
+
+#### Journey 1: First Contact With A Large Repo
+
+```text
+User asks:
+  "Orient yourself in this codebase."
+
+Codex does:
+  1. Run cheap filesystem discovery.
+  2. Use Clarity for whole-tree or module dependency shape.
+  3. Use Graphify if a persistent graph already exists.
+  4. Use fff for exact entry points.
+  5. Use codemogger or cocoindex when concepts are fuzzy.
+  6. Write a short project orientation note.
+
+Parceltongue role:
+  Not first.
+  It becomes useful after Codex has candidate symbols or public surfaces.
+```
+
+#### Journey 2: Change A Function Safely
+
+```text
+User asks:
+  "Modify this function."
+
+Codex does:
+  1. Locate function with fff or rg.
+  2. Ask Parceltongue for direct callers, direct callees, imports, tests,
+     public surface status, and confidence.
+  3. Ask Clarity for file-level dependents if file movement or refactor is likely.
+  4. Read only the selected context bundle.
+  5. Edit.
+  6. Run targeted tests.
+  7. Re-run Clarity or Parceltongue impact if shape changed.
+
+Parceltongue role:
+  Core.
+  This is the product.
+```
+
+#### Journey 3: Refactor A Module Boundary
+
+```text
+User asks:
+  "Move this module / split this package / clean this boundary."
+
+Codex does:
+  1. Use Clarity `--reach up` and `--reach both` for file/module blast radius.
+  2. Use Parceltongue for symbol-level exported/public API dependencies.
+  3. Use CodeGraphContext if richer import/class/call hierarchy is needed.
+  4. Generate a bounded refactor plan.
+  5. Edit in small commits.
+  6. Verify graph shape after each phase.
+
+Parceltongue role:
+  Public-interface graph plus minimal dependency context.
+```
+
+#### Journey 4: Debug A Production-ish Failure
+
+```text
+User asks:
+  "This error happens in this flow."
+
+Codex does:
+  1. fff search exact error message, log field, route, or function.
+  2. Semantic search if wording is fuzzy.
+  3. Parceltongue asks for upstream/downstream dependency path.
+  4. CodeGraphContext or code-graph-mcp handles deeper call chain when needed.
+  5. Codex reads the minimum path.
+  6. Reproduces or writes a failing test.
+
+Parceltongue role:
+  Keep the bug path small and evidence-backed.
+```
+
+#### Journey 5: Change Public API Or Serialized Shape
+
+```text
+User asks:
+  "Rename this field / change this endpoint / change this enum / alter this trait."
+
+Codex does:
+  1. Identify public surface.
+  2. Ask Parceltongue for public-interface impact.
+  3. Include callers, downstream consumers, tests, docs, schema files,
+     generated code, and serialization boundaries if detectable.
+  4. Ask Clarity for file/module reach.
+  5. Use fff for literal references.
+  6. Edit and run compatibility tests.
+
+Parceltongue role:
+  This is the second core product.
+```
+
+#### Journey 6: Long Session Memory
+
+```text
+User asks:
+  "Continue from last time."
+
+Codex does:
+  1. Read the project notes.
+  2. Query Graphify if project graph exists.
+  3. Query Parceltongue if graph index exists and the task names a symbol.
+  4. Avoid re-scanning the whole clone forest.
+
+Parceltongue role:
+  Local code relationship memory, not general project memory.
+```
+
+### Concept 30I: Public Interface Dependency Graph Is The Differentiator
+
+The phrase "dependency graph" is too broad.
+
+Most tools can say they have some graph.
+
+The useful Parceltongue phrase is:
+
+```text
+public interface dependency graph
+```
+
+This means:
+
+```text
+Which code is part of the surface that other code relies on?
+Which internal implementation nodes are safe to change locally?
+Which public/exported/serialized/API nodes require wider impact review?
+Which downstream tests and docs should be inspected?
+Which edges are proven, inferred, or ambiguous?
+```
+
+The public-interface graph has node types like:
+
+```text
+public function
+exported type
+trait/interface
+impl block
+API route
+database table or column mapping
+serialized field
+config key
+CLI command
+event name
+message type
+feature flag
+test fixture contract
+```
+
+And edge types like:
+
+```text
+calls
+imports
+implements
+overrides
+serializes
+deserializes
+reads
+writes
+exposes
+routes_to
+tests
+documents
+generates
+configures
+depends_on
+```
+
+Clarity approaches this from file/module coupling.
+CodeGraphContext approaches it from broad graph schema.
+Graphify approaches it from cross-artifact graph memory.
+code-review-graph approaches it from review impact context.
+treesitter-mcp approaches it from minimal edit context.
+
+But Parceltongue can own the intersection:
+
+```text
+public surface + dependency impact + minimal context + Codex edit loop
+```
+
+That is worth building.
+
+### Concept 30J: Concrete PMF Evaluation
+
+For the stated PMF:
+
+```text
+Can we use a particular library or tool for exploring a large codebase
+both as an agent for search
+and for being able to see dependency graphs of what calls whom?
+```
+
+My current scoring:
+
+| Tool | PMF For This Need | Shreyas-Style Read | Use With Codex Now? | Parceltongue Lesson |
+|---|---:|---|---|---|
+| `LegacyCodeHQ/clarity-cli` | 90 | Best immediate habit loop: before/after dependency shape, file/module impact, refactor verification. Limitation is honest: file granularity, not full runtime or API contract truth. | Yes. Use from shell today. | Copy the workflow taste, bounded views, reach up/both, before/after verification. |
+| `dmtrKovalenko/fff` | 84 | Extremely frequent search primitive. Likely low-token path to first clue. Not a graph. | Yes. Use as locate layer. | Do not rebuild fast fuzzy search unless needed; integrate or wrap. |
+| `glommer/codemogger` | 80 | Strong local AST chunk plus vector/FTS story, Turso embedded, no API key. Great when names are unknown. | Yes, especially for semantic recall. | Borrow local single-DB ergonomics and AST chunk boundaries. |
+| `cocoindex-io/cocoindex-code` | 78 | Clean agent integration and one-tool MCP search. Strong incremental Tree-sitter retrieval story. Not dependency graph. | Yes if semantic search setup is acceptable. | Borrow simple MCP surface and refresh/search model. |
+| `Graphify-Labs/graphify` | 76 | Best cross-artifact memory and graph-first ritual. Broad graph, reports, confidence labels. Less precise for edit dependency truth. | Yes for project memory and docs/code graph reports. | Copy confidence labels, persistent graph artifact, graph-first skill behavior. |
+| `CodeGraphContext/CodeGraphContext` | 74 | Richest schema and relationship surface. Powerful prior art. Local smoke was not low-friction in this session, so adoption risk is operational complexity. | Use selectively for deep graph analysis, not as the first daily reflex. | Borrow schema, confidence tiers, and relationship queries; avoid tool sprawl and opaque indexing. |
+| `Christoph/treesitter-mcp` | 73 | Very relevant minimal edit context and AST-first MCP shape. Good model for query-to-context tool responses. | Yes if installed and language support matches. | Copy minimal edit context and token budget discipline. |
+| `tirth8205/code-review-graph` | 72 | Strong review-context product: blast radius, compact context, SQLite graph, risk/community summaries. | Good reference, maybe use if setup is easy. | Copy review-oriented context bundles and context-savings instrumentation. |
+| `sdsrss/code-graph-mcp` | 70 | Relevant graph traversal, compression handles, context compression, confidence gates. | Use as research/reference unless it proves easy locally. | Copy row/depth caps, truncation flags, and context compression handles. |
+| `Parceltongue V2` | 92 if narrowed | Best possible PMF if it refuses to be a mega-tool and owns Codex edit safety through public-interface dependency context. | Build for self, not marketplace. | Become the local, bounded, evidence-backed dependency oracle. |
+
+The ranking is not "stars ranking."
+It is not "most technically ambitious."
+It is "most likely to help a solo Codex power user avoid wasting context and missing dependency impact."
+
+### Concept 30K: Final Recommendation For The Codex Power User
+
+Use this stack now:
+
+```text
+fff
+  for fast path/content/definition search
+
+codemogger or cocoindex-code
+  for semantic AST-aware retrieval when names are unknown
+
+clarity-cli
+  for file/module dependency shape and refactor verification
+
+Graphify
+  for persistent project graph memory and cross-artifact reports
+
+CodeGraphContext
+  as the heavy-duty relationship graph reference or occasional deep analyzer
+
+Parceltongue V2
+  for the missing narrow product: public-interface dependency context for Codex edits
+```
+
+The "daily loop" should be:
+
+```text
+locate with fff
+recall with codemogger/cocoindex when fuzzy
+inspect file/module impact with Clarity
+ask Parceltongue for minimal dependency context
+edit
+test
+verify shape with Clarity/Parceltongue
+write durable note if lesson matters
+```
+
+The "deep loop" should be:
+
+```text
+if call/import/inheritance graph is genuinely needed
+and the index can be built predictably
+then use CodeGraphContext or a similar graph backend
+else stay with smaller bounded tools
+```
+
+The "Parceltongue V2 MVP" should be:
+
+```text
+1. Index only the intended repo scope.
+2. Emit an explicit scope report.
+3. Extract public surfaces first.
+4. Extract imports/calls/implements/tests with confidence.
+5. Provide `what-must-i-read <symbol-or-file> --budget N`.
+6. Provide `public-impact <symbol-or-file>`.
+7. Provide `why-this-context` with source-backed evidence.
+8. Provide `stale?` and `doctor --scope`.
+9. Keep visible tools under 6.
+10. Make every response bounded, traceable, and cheap enough for Codex.
+```
+
+The hardest product discipline is saying no.
+
+Do not build:
+
+```text
+a generic graph database UI
+a generic semantic search engine
+a generic MCP server with 25 tools
+a Graphify clone
+a Clarity clone
+a faster fff
+```
+
+Build:
+
+```text
+the tool that lets Codex say:
+
+"Before I edit this, here is the smallest dependency-aware context
+I must read, here is why, here is the confidence of each edge,
+and here is the public-interface blast radius."
+```
+
+That is Parceltongue's real product.
+
+### Repos And Docs Touched For This Concept
+
+| Source | Evidence | Notes |
+|---|---|---|
+| `/Users/amuldotexe/.codex/skills/codegraphcontext-evidence-reader/SKILL.md` | full skill read | Used the required CodeGraphContext evidence-reader workflow. Key constraints: use local `cgc`, prefer wrapper, runtime output under `/tmp/codex-code-intel/codegraphcontext`, direct source reads remain final proof. |
+| `/Users/amuldotexe/.codex/skills/codegraphcontext-evidence-reader/scripts/scan_current_repo_only.sh` | lines 1-68 | Wrapper creates isolated output, sets a global `.cgcignore`, runs `cgc index`, then `list`, `stats`, `query`, and `find type Function`. Observed ignore template contains `gitrefrepo/`, while this repo uses `git-ref-repo/`. |
+| `/tmp/codex-code-intel/codegraphcontext/CodeGraphContext__CodeGraphContext-20260706-230309/index.txt` | local CGC run output | CGC initialized services and began re-indexing the CodeGraphContext clone, but the session ended with signal 143 before wrapper completion. Partial DB plus WAL remained. |
+| `/tmp/codex-code-intel/codegraphcontext/dmtrKovalenko__fff-20260706-231648/index.txt` | local CGC run output | Smaller CGC smoke run on `fff` also initialized services and began re-indexing, but ended with signal 143 before `list` or `stats`. Removed an untracked auto-generated `.cgcignore` artifact from the clone. |
+| `git-ref-repo/ignore-this-folder-repos/CodeGraphContext__CodeGraphContext/README.md` | lines 68, 128-184 | CGC positioning: MCP server and CLI toolkit, local code graph database, broad language support, Tree-sitter extraction, optional SCIP, multiple DB backends. |
+| `git-ref-repo/ignore-this-folder-repos/CodeGraphContext__CodeGraphContext/docs/ARCHITECTURE.md` | lines 37-234 | Architecture: graph database exposed through MCP, CLI, visualizer, website; GraphBuilder, CodeFinder, watcher, jobs, bundles, Tree-sitter, SCIP, graph writer, DB backends. |
+| `git-ref-repo/ignore-this-folder-repos/CodeGraphContext__CodeGraphContext/docs/MCP_TOOLS.md` | lines 1-240 | Tool surface: contexts, add/list/delete/stats, find code, analyze relationships, dead code, complexity, bundles, watcher, Cypher, visualization, report, Java Spring, datasources. |
+| `git-ref-repo/ignore-this-folder-repos/CodeGraphContext__CodeGraphContext/src/codegraphcontext/tool_definitions.py` | lines 1-388 | 25 MCP tool definitions and supported relationship query types. |
+| `git-ref-repo/ignore-this-folder-repos/CodeGraphContext__CodeGraphContext/src/codegraphcontext/tools/indexing/schema_contract.py` | lines 1-76 | Semantic graph node and relationship contract, including code, build, module, datasource, READS/WRITES, and storage mapping edges. |
+| `git-ref-repo/ignore-this-folder-repos/CodeGraphContext__CodeGraphContext/src/codegraphcontext/tools/indexing/pipeline.py` | lines 1-284 | Full indexing pipeline: file discovery, import pre-scan, concurrent parse, graph writes, inheritance/call resolution, Java/Spring/build/datasource handling, optional embeddings. |
+| `git-ref-repo/ignore-this-folder-repos/CodeGraphContext__CodeGraphContext/src/codegraphcontext/tools/indexing/resolution/calls.py` | lines 1-360 | Call-resolution confidence tiers and EXTRACTED/INFERRED/AMBIGUOUS labeling. |
+| `git-ref-repo/ignore-this-folder-repos/CodeGraphContext__CodeGraphContext/src/codegraphcontext/tools/code_finder.py` | lines 539-1380 | Relationship query implementation: callers, callees, imports, hierarchy, overrides, dead code, complexity, all callers/callees, call chains, module dependencies, variable scope. |
+| `git-ref-repo/ignore-this-folder-repos/LegacyCodeHQ__clarity-cli/README.md` | lines 9-243 | Clarity product shape: dependency impact graphs, files/modules/tests/docs connections, snapshot/anchor/lens/rendering model, refactor safety, cycles, watch, agent support, limitations. |
+| `git-ref-repo/ignore-this-folder-repos/LegacyCodeHQ__clarity-cli/AGENTS.md` | lines 42-87 | Agent workflow: use Clarity for design and refactor verification, read DOT/Mermaid for structural feedback, inspect dependents with `clarity show <file> --reach up`. |
+| `git-ref-repo/ignore-this-folder-repos/Graphify-Labs__graphify/README.md` | lines 21-260 | Graphify product shape: `/graphify`, graph.html, GRAPH_REPORT.md, graph.json, install skill, always-use-graph setup, confidence tags, broad file support. |
+| `git-ref-repo/ignore-this-folder-repos/Graphify-Labs__graphify/ARCHITECTURE.md` | lines 1-85 | Pipeline, module responsibilities, node/edge schema, confidence labels, adding language extractors, security, and tests. |
+| `git-ref-repo/ignore-this-folder-repos/Graphify-Labs__graphify/graphify/skill-codex.md` | lines 1-240 | Codex skill workflow: graph-first fast path, usage modes, query/path/explain, AST extraction, graph persistence, semantic extraction rules. |
+| `git-ref-repo/ignore-this-folder-repos/glommer__codemogger/README.md` | lines 7-212 | Codemogger: Tree-sitter semantic chunking, local embeddings, SQLite/Turso vector plus FTS, one DB per codebase, MCP tools, incremental hashing. |
+| `git-ref-repo/ignore-this-folder-repos/cocoindex-io__cocoindex-code/README.md` | lines 6-260 | CocoIndex Code: AST semantic code search, CLI/skill/MCP, single MCP search tool, Codex setup command, structural grep, index/search/status workflow. |
+| `git-ref-repo/ignore-this-folder-repos/cocoindex-io__realtime-codebase-indexing/README.md` | lines 35-152 | Realtime indexing demo: Tree-sitter chunking, incremental processing, live updates, vector index target, unchanged chunks reused. |
+| `git-ref-repo/ignore-this-folder-repos/dmtrKovalenko__fff/README.md` | lines 1-247 | fff: fast file search for humans and AI agents, MCP support for Codex and others, content/path/multi-grep tools, frecency, definition-first hints, smart-case/fuzzy fallback, programmatic APIs. |
+
+## Concept 31: Turn Parceltongue V2 Into Five Codex Commands
+
+Concept 30 said Parceltongue should not become a mega-tool.
+
+Concept 31 makes that concrete.
+
+The current repo already has a lot:
+
+```text
+Tree-sitter extraction
+12-plus language support
+CozoDB graph storage
+ISGL1 v2 stable entity keys
+dependency edges
+reverse callers
+forward callees
+blast radius
+smart context
+file watcher
+coverage diagnostics
+graph algorithms
+HTTP API
+```
+
+The risk is not that Parceltongue lacks ideas.
+The risk is that Parceltongue has too many ideas and too many surfaces.
+
+The docs already admit this tension.
+
+The README says the stable binary can parse code with Tree-sitter, build a graph in CozoDB, query through many HTTP endpoints, do blast radius and reverse callers, and update incrementally through a watcher.
+The same top banner says v2 must address architectural improvements:
+
+```text
+Search is O(n) full-scan, not indexed.
+Graph algorithms run in Rust, not in CozoDB native.
+No secondary indices for reverse lookups.
+Unresolved import references are mixed with production code.
+Schema is richer than product.
+```
+
+That last line is the product diagnosis:
+
+```text
+Schema richer than product.
+```
+
+V2 should not add another wide surface just because the graph can support it.
+V2 should turn the existing graph into a small number of Codex-native decisions.
+
+### The V2 Product Rule
+
+For a solo Codex power user, every command should answer one of these questions:
+
+```text
+What repo did you index?
+What can you see?
+Where is the thing?
+What must I read before editing it?
+What breaks if this public surface changes?
+Is the graph stale or lying?
+```
+
+That maps to five visible commands:
+
+| Command | User Question | Agent Output |
+|---|---|---|
+| `parseltongue index` | "What did you index, and what did you ignore?" | Scope report, language coverage, entity count, edge count, warnings. |
+| `parseltongue orient` | "What is this codebase shape?" | Small architecture/context summary within budget. |
+| `parseltongue find` | "Where is the thing?" | Candidate entity or file pointers, not raw dumps. |
+| `parseltongue context` | "What must I read before changing this?" | Budgeted source-backed dependency context with reasons. |
+| `parseltongue public-impact` | "What public contract might I break?" | Public-surface blast radius, tests/docs/schema hints, confidence labels. |
+| `parseltongue doctor` | "Can I trust this graph?" | Staleness, scope, ignored roots, language support, ambiguous edge count. |
+
+That is technically six commands, but five product jobs.
+`doctor` is not a workflow command.
+It is trust infrastructure.
+
+This command set is deliberately smaller than the current HTTP API.
+The existing API can remain under the hood.
+Codex should not have to manually sequence 26 endpoints every time.
+
+### Command 1: `parseltongue index`
+
+Current state:
+
+```text
+parseltongue pt01-folder-to-cozodb-streamer ./my-project --db rocksdb:mycode.db
+```
+
+This works, but it exposes implementation names.
+The command says "Tool 01" and "CozoDB streamer" instead of "build the graph I will query."
+
+V2 should expose:
+
+```bash
+parseltongue index . \
+  --db .parseltongue/graph.db \
+  --explain-scope \
+  --json
+```
+
+The response should include:
+
+```json
+{
+  "repo_root": "/repo",
+  "db": ".parseltongue/graph.db",
+  "indexed_roots": ["crates", "src", "packages"],
+  "ignored_roots": [".git", "target", "node_modules", "git-ref-repo"],
+  "languages": {
+    "rust": {"files": 141, "entities": 1290, "edges": 4100, "confidence": "high"},
+    "typescript": {"files": 33, "entities": 220, "edges": 520, "confidence": "medium"}
+  },
+  "warnings": [
+    "go selector expressions are syntax-ambiguous without type info",
+    "cpp compile_commands.json missing; header/public impact is best-effort"
+  ]
+}
+```
+
+This is the direct fix for the CGC ignore-footgun seen in Concept 30.
+Scope must be visible.
+
+The current ingestion code already has exclude patterns for `target`, `node_modules`, `.git`, build output, and virtualenvs.
+The standalone streamer CLI even supports repeated `--exclude` patterns.
+V2 should lift that into the main user-facing command and make the result inspectable.
+
+Acceptance criteria:
+
+```text
+WHEN I run `parseltongue index . --explain-scope --json`
+THEN the output SHALL list indexed roots and ignored roots
+AND SHALL include language-by-language entity and edge counts
+AND SHALL warn when reference clone roots like `git-ref-repo` are not ignored
+AND SHALL not create untracked artifacts outside `.parseltongue/`
+```
+
+### Command 2: `parseltongue orient`
+
+The README already has a "New Codebase Orientation" workflow:
+
+```text
+statistics
+cycles
+complexity hotspots
+semantic clusters
+coverage
+```
+
+That is the right idea.
+But Codex should not manually call five endpoints unless it needs to.
+
+V2 should expose:
+
+```bash
+parseltongue orient --budget 1500 --json
+```
+
+The response should be short:
+
+```json
+{
+  "entities": 1972,
+  "code_entities": 755,
+  "edges": 4055,
+  "languages": ["rust", "javascript"],
+  "top_folders": [
+    {"path": "crates/parseltongue-core", "entities": 680},
+    {"path": "crates/pt08-http-code-query-server", "entities": 390}
+  ],
+  "risks": [
+    {"kind": "cycle", "count": 3},
+    {"kind": "hotspot", "entity": "rust:fn:handle_request:...", "reason": "high fan-in"}
+  ],
+  "next_queries": [
+    "parseltongue find <name>",
+    "parseltongue context <entity>",
+    "parseltongue public-impact <entity>"
+  ]
+}
+```
+
+This is not a dashboard.
+It is an agent orientation packet.
+
+Acceptance criteria:
+
+```text
+WHEN Codex starts work in a repo
+THEN `parseltongue orient --budget 1500` SHALL return enough context to choose the next query
+AND SHALL not include full source bodies
+AND SHALL include parse coverage warnings
+AND SHALL include suggested next commands
+```
+
+### Command 3: `parseltongue find`
+
+Current state:
+
+```text
+GET /code-entities-search-fuzzy?q=PATTERN
+GET /code-entities-list-all
+GET /code-entity-detail-view?key=ENTITY_KEY
+```
+
+The README and journey docs already frame fuzzy search as an agent step.
+But current search is documented as O(n) full-scan.
+That is fine for now if the output is honest, but V2 should establish the facade:
+
+```bash
+parseltongue find authenticate --kind function --budget 1000 --json
+parseltongue find "public api" --kind public --json
+parseltongue find src/auth.rs --kind file --json
+```
+
+The command should return candidate pointers:
+
+```json
+{
+  "query": "authenticate",
+  "matches": [
+    {
+      "entity": "rust:fn:authenticate:__src_auth:T1706284800",
+      "name": "authenticate",
+      "kind": "function",
+      "visibility": "public",
+      "file": "src/auth.rs",
+      "line_range": [18, 64],
+      "signature": "pub fn authenticate(...) -> Result<...>",
+      "score": 0.93
+    }
+  ],
+  "warnings": ["search backend is linear scan in this version"]
+}
+```
+
+The key product difference:
+
+```text
+Find returns pointers and signatures.
+Context returns source-backed bundles.
+```
+
+This separation prevents accidental token floods.
+
+### Command 4: `parseltongue context`
+
+This is the core command.
+
+It should replace the agent having to manually call:
+
+```text
+detail
+reverse callers
+forward callees
+blast radius
+smart context
+edges list
+```
+
+with:
+
+```bash
+parseltongue context rust:fn:authenticate:__src_auth:T1706284800 \
+  --budget 4000 \
+  --why \
+  --json
+```
+
+The current `smart-context-token-budget` endpoint has the right algorithmic seed:
+
+```text
+direct callers get highest relevance
+direct callees get very high relevance
+transitive dependencies get lower scores by depth
+greedy selection stays within budget
+```
+
+But current implementation returns entity keys, relevance type, relevance score, and heuristic token estimates.
+It does not return a complete source-backed edit bundle.
+It estimates tokens from key length plus a base number.
+
+V2 should turn smart context into:
+
+```json
+{
+  "focus": "rust:fn:authenticate:__src_auth:T1706284800",
+  "budget": 4000,
+  "tokens_used": 3580,
+  "scope": {
+    "repo_root": "/repo",
+    "ignored_roots": ["target", "git-ref-repo"]
+  },
+  "selected": [
+    {
+      "entity": "rust:fn:authenticate:__src_auth:T1706284800",
+      "role": "focus",
+      "tokens": 420,
+      "include": "signature_and_body",
+      "reason": "requested focus entity",
+      "source": {
+        "file": "src/auth.rs",
+        "line_range": [18, 64]
+      }
+    },
+    {
+      "entity": "rust:fn:login_handler:__src_handlers:T1706284900",
+      "role": "direct_caller",
+      "tokens": 380,
+      "include": "signature_and_callsite",
+      "reason": "calls focus entity at src/handlers.rs:44",
+      "edge": {
+        "kind": "calls",
+        "confidence": "extracted",
+        "evidence": "call_expression"
+      }
+    }
+  ],
+  "omitted": [
+    {
+      "entity": "rust:fn:audit_event:__src_audit:T1706285000",
+      "reason": "budget exhausted",
+      "score": 0.41
+    }
+  ],
+  "warnings": [
+    "2 callees are external dependencies with no local source"
+  ]
+}
+```
+
+The command's promise:
+
+```text
+Codex can read this response and know what to inspect next,
+why it was selected,
+what was omitted,
+and how confident each dependency edge is.
+```
+
+Acceptance criteria:
+
+```text
+WHEN I run `parseltongue context ENTITY --budget 4000 --why`
+THEN the output SHALL include the focus entity
+AND SHALL include direct callers before transitive dependencies
+AND SHALL include source spans or callsite spans for every selected item
+AND SHALL include an omitted list when relevant entities exceed the budget
+AND SHALL never exceed the requested token budget by more than 10 percent
+```
+
+### Command 5: `parseltongue public-impact`
+
+This is the differentiator.
+
+Current blast radius answers:
+
+```text
+If I change X, what entities depend on X?
+```
+
+V2 public impact should answer:
+
+```text
+If I change this public surface, which callers, implementors, tests,
+docs, schemas, routes, or downstream contracts should Codex inspect?
+```
+
+Command:
+
+```bash
+parseltongue public-impact rust:trait:Authenticator:__src_auth:T1706284800 \
+  --hops 2 \
+  --budget 4000 \
+  --json
+```
+
+Response:
+
+```json
+{
+  "focus": "rust:trait:Authenticator:__src_auth:T1706284800",
+  "public_surface": true,
+  "surface_reason": "rust trait is public and has public method signatures",
+  "impact": {
+    "direct_callers": 7,
+    "implementors": 3,
+    "tests": 12,
+    "docs": 2,
+    "schema_or_route_edges": 0
+  },
+  "must_read": [
+    {
+      "entity": "rust:impl:Authenticator_for_JwtAuth:__src_jwt:T1706284800",
+      "role": "implementor",
+      "confidence": "extracted",
+      "reason": "implements the public trait"
+    },
+    {
+      "entity": "rust:fn:login_handler:__src_handlers:T1706284900",
+      "role": "direct_caller",
+      "confidence": "extracted",
+      "reason": "calls public authentication surface"
+    }
+  ],
+  "risk": {
+    "level": "high",
+    "reasons": [
+      "public trait",
+      "3 implementors",
+      "7 direct callers",
+      "tests exist in auth integration suite"
+    ]
+  }
+}
+```
+
+This command requires a new first-class concept:
+
+```text
+public surface
+```
+
+Public surface is not the same as "has callers."
+
+An entity can have many callers and still be private implementation.
+An entity can have zero local callers and still be public API.
+
+That is why dead-code elimination in the feature table correctly says "filter public APIs."
+
+### Public Surface Rules By Language
+
+Public-interface impact must be language-specific.
+There is no universal AST node that means "safe public contract."
+
+The V2 MVP should define a small rule pack:
+
+| Language | MVP Public Surface Rules | Confidence |
+|---|---|---|
+| Rust | `pub` functions, `pub` structs/enums/traits, trait items, `impl Trait for Type`, `pub mod`, `pub use`. `pub(crate)` is internal-public and should be labeled separately. | High when visibility captured from AST. |
+| TypeScript | `export` functions/classes/interfaces/types/enums, default exports, exported route handlers, exported object members when statically visible. | Medium until export queries are explicit. |
+| JavaScript | `export`, `module.exports`, `exports.foo`, framework route registrations by heuristic. | Medium to low depending syntax. |
+| Go | Uppercase identifiers at package scope, exported methods/types/interfaces, embedded public types. | High for naming rule, medium for method-set impact. |
+| Java | `public` and `protected` classes/interfaces/methods, annotations such as controllers/routes when detected. | High for modifiers, medium for framework annotations. |
+| C# | `public`, `protected`, interfaces, controllers, attributes, public DTOs. | High for modifiers, medium for reflection/DI. |
+| Python | Names in `__all__`, non-underscore module functions/classes, decorators for routes/commands. | Medium because convention-heavy. |
+| C/C++ | Header declarations, exported symbols, public class members, virtual methods, extern declarations. | Medium without compile database or SCIP. |
+| SQL | Tables, views, columns, stored procedures. | High when parsed from DDL. |
+
+The current query files do not yet capture enough of this.
+
+Examples from current evidence:
+
+```text
+Rust entity query captures function/struct/enum/trait/impl/module names.
+Rust dependency query captures calls, use declarations, impl Trait for Type, type refs, await, field access, iterator ops, generic types.
+TypeScript entity query captures functions, arrow functions, classes, interfaces, type aliases, enums, methods.
+TypeScript dependency query captures calls, methods, imports, constructors, property access, async, generics, extends, and interface extends.
+Go dependency query explicitly notes selector expressions are ambiguous without type info.
+C++ entity query captures functions, classes, structs, and enums.
+```
+
+So V2 must not claim public-impact precision before it adds visibility/export extraction.
+
+### Fact Schema V2
+
+Current CozoDB schema has:
+
+```text
+CodeGraph:
+  ISGL1_key
+  Current_Code
+  Future_Code
+  interface_signature
+  TDD_Classification
+  lsp_meta_data
+  current_ind
+  future_ind
+  Future_Action
+  file_path
+  language
+  last_modified
+  entity_type
+  entity_class
+  birth_timestamp
+  content_hash
+  semantic_path
+  root_subfolder_L1
+  root_subfolder_L2
+
+DependencyEdges:
+  from_key
+  to_key
+  edge_type
+  source_location
+```
+
+That is enough for v1.
+It is not enough for public-impact V2.
+
+V2 should add or materialize:
+
+```text
+EntityFacts:
+  entity_key
+  language
+  entity_kind
+  name
+  qualified_name
+  file_path
+  line_start
+  line_end
+  visibility
+  public_surface_kind
+  signature_text
+  body_hash
+  signature_hash
+  estimated_body_tokens
+  estimated_signature_tokens
+  extraction_rule_id
+  extraction_confidence
+  extraction_version
+
+EdgeFacts:
+  edge_id
+  from_key
+  to_key
+  edge_kind
+  source_file
+  source_line_start
+  source_line_end
+  evidence_kind
+  resolver_kind
+  confidence
+  confidence_reason
+  language_rule_id
+
+ContextBundleFacts:
+  bundle_id
+  focus_key
+  query_kind
+  token_budget
+  tokens_used
+  selected_keys
+  omitted_keys
+  created_at
+  index_version
+```
+
+The key additions are:
+
+```text
+visibility
+public_surface_kind
+signature_text
+confidence
+confidence_reason
+evidence spans
+token estimates based on actual code/signature text
+```
+
+Without these, Codex cannot know whether it is looking at implementation detail or contract surface.
+
+### Confidence Labels
+
+V2 should use simple confidence labels:
+
+```text
+extracted
+  The edge or surface is directly present in source syntax.
+
+inferred
+  The edge or surface is derived from a rule that is usually valid.
+
+ambiguous
+  The edge or surface could mean multiple things without type/runtime info.
+
+external
+  The edge points outside the indexed repo.
+
+unresolved
+  The parser saw a reference but could not resolve it to a local entity.
+```
+
+Examples:
+
+```text
+Rust `impl Trait for Type` -> extracted implements edge.
+Go `Receiver.Method()` -> extracted selector expression, inferred call edge.
+C++ header declaration -> extracted public surface, unresolved implementation if source not linked.
+Python non-underscore function -> inferred public surface.
+TypeScript `export interface Foo` -> extracted public surface.
+```
+
+This converts limitations into product trust.
+
+### First Three Codex Workflows
+
+#### Workflow 1: Before Edit
+
+```text
+User:
+  "Change authenticate to accept device id."
+
+Codex:
+  1. `parseltongue find authenticate --kind function --json`
+  2. `parseltongue public-impact <entity> --budget 3000 --json`
+  3. `parseltongue context <entity> --budget 5000 --why --json`
+  4. Reads selected source spans.
+  5. Edits.
+  6. Runs targeted tests.
+  7. Re-runs `parseltongue public-impact <entity>` if signature changed.
+```
+
+Decision rule:
+
+```text
+If public-impact says public_surface=false and direct_callers <= 3,
+Codex can do a smaller edit loop.
+
+If public-impact says public_surface=true,
+Codex must inspect callers, implementors, tests, and docs before editing.
+```
+
+#### Workflow 2: Debug Path
+
+```text
+User:
+  "This login failure happens after token refresh."
+
+Codex:
+  1. Uses fff or normal search for exact error strings.
+  2. `parseltongue find refresh_token --kind function --json`
+  3. `parseltongue context <entity> --budget 6000 --why --json`
+  4. Reads focus, direct callers, direct callees, error path, and tests.
+  5. Writes failing test or reproduction.
+  6. Fixes and verifies.
+```
+
+Decision rule:
+
+```text
+Use Parseltongue after locating the candidate.
+Do not ask Parseltongue to replace search.
+Ask it to narrow the dependency path.
+```
+
+#### Workflow 3: Boundary Refactor
+
+```text
+User:
+  "Split auth/session into a cleaner boundary."
+
+Codex:
+  1. Runs Clarity for file/module reach.
+  2. `parseltongue orient --budget 1500 --json`
+  3. `parseltongue public-impact auth/session --budget 5000 --json`
+  4. `parseltongue context <top-public-surface> --budget 6000 --why --json`
+  5. Creates a staged refactor plan.
+  6. Edits one public surface at a time.
+  7. Verifies graph and tests after each stage.
+```
+
+Decision rule:
+
+```text
+Clarity owns file/module shape.
+Parceltongue owns public symbol impact.
+Codex owns the edit.
+```
+
+### Fixture Tests For V2
+
+V2 should be fixture-driven before it is feature-driven.
+
+Minimum fixtures:
+
+| Fixture | What It Proves |
+|---|---|
+| Rust public trait plus two implementors plus three callers | `public-impact` finds trait surface, implementors, callers, and tests. |
+| Rust private helper with many local callers | High fan-in does not equal public API. |
+| TypeScript exported interface and default export | Export extraction marks public surfaces. |
+| Go package with uppercase and lowercase functions | Public surface follows Go export naming. |
+| C++ header plus source implementation | Header declaration is public surface; implementation is linked when possible. |
+| Python `__all__` plus underscore helper | Public heuristic distinguishes exported from private convention. |
+| SQL table plus Rust/TS model reference | Schema surface can appear as public impact. |
+| Ambiguous Go selector expression | Edge is present with ambiguous or inferred confidence, not silent high confidence. |
+| Over-budget dependency neighborhood | Context bundle includes selected and omitted lists. |
+| Repo containing `git-ref-repo` | Scope report excludes research clone folder by default or warns loudly. |
+
+These tests should come before new algorithms.
+
+### What Not To Build First
+
+Do not start V2 with:
+
+```text
+another graph visualization
+another broad HTTP endpoint family
+another embedding store
+another MCP server with 25 tools
+another architecture dashboard
+another graph database migration
+```
+
+The local docs already had a critical decision that MCP integration was dropped because research found high token overhead.
+That does not mean "never MCP."
+It means:
+
+```text
+Do not make MCP the core product if it inflates the context surface.
+Use CLI or a tiny MCP facade after the command contract is proven.
+```
+
+The V2 path should be:
+
+```text
+CLI first
+JSON always
+MCP later as a thin wrapper
+HTTP endpoints remain implementation detail
+```
+
+### Implementation Order
+
+The smallest useful implementation order:
+
+| Step | Build | Why First |
+|---|---|---|
+| 1 | `parseltongue doctor --scope --json` | Prevents polluted graphs and makes trust visible. |
+| 2 | `parseltongue index --explain-scope --json` | Makes indexing bounded and inspectable. |
+| 3 | Public surface classifier for Rust, TypeScript, Go | Covers solo user's main CRUD and systems-language workflow. |
+| 4 | Edge confidence labels | Turns parser ambiguity into agent-readable caution. |
+| 5 | `parseltongue context --why --budget` with actual source snippets | Upgrades smart context from keys to edit-ready context. |
+| 6 | `parseltongue public-impact` | The differentiating command. |
+| 7 | Fixture suite and golden JSON outputs | Makes agent behavior stable. |
+| 8 | Tiny Codex instructions | Teaches Codex when to call each command. |
+
+This order is intentionally not glamorous.
+It is the path to daily use.
+
+### The Shreyas Product Read
+
+The current product already proved the technical insight:
+
+```text
+Code is a graph, and an LLM should query the graph before reading raw files.
+```
+
+The V2 product should prove the workflow insight:
+
+```text
+Before an agent edits code, it should ask for the smallest public-impact-aware context bundle.
+```
+
+That is the emotional job.
+
+The user does not want to admire a graph.
+The user wants Codex to stop missing dependencies.
+
+The product promise should be:
+
+```text
+Codex changes large codebases with less wandering,
+less token waste,
+and fewer missed dependency consequences.
+```
+
+That is Parceltongue V2.
+
+### Repos And Docs Touched For This Concept
+
+| Source | Evidence | Notes |
+|---|---|---|
+| `README.md` | lines 1-104 | Current product banner, working features, known limitations, LLM system prompt, endpoint sequence, and orient/search/trace/context workflow. |
+| `README.md` | lines 228-305 | HTTP API reference with core, entity, graph, analysis, context, watcher, diagnostics, navigation, and graph analysis endpoints. |
+| `README.md` | lines 309-560 | Quick start, query examples, entity key format, response format, language support, edge types, and ready-made workflows. |
+| `docs/research000/UserJourney20260202v1.md` | lines 1-260 | End-to-end API testing, self-analysis metrics, setup, entity listing, reverse callers, forward callees, and blast radius use cases. |
+| `docs/research001/PRD-research-20260131v1/PARSELTONGUE_V2_LLM_AGENT_INTERACTIONS.md` | lines 1-260 | Iterative intelligence loop: LLM queries CPU graph features, receives structured context, asks refined queries, and builds insight. |
+| `docs/research000/FINAL_FEATURE_EXTRACTION_MASTER_TABLE.md` | lines 1-180 | Feature inventory, shipped baseline, PMF findings, LLM-CPU workflows, MCP dropped for token overhead, must-have workflows, API contract change impact, and test impact prediction. |
+| `docs/research000/FINAL_FEATURE_EXTRACTION_MASTER_TABLE.md` | lines 520-620 | Technology stack summary, key insights, workflow features as high-PMF category, and strategic note that MCP overhead contradicted token-reduction value prop. |
+| `docs/research001/PRD-research-20260131v1/00_EXECUTIVE_SUMMARY.md` | lines 1-185 | Agent memory patterns, preview/pointer, budget estimator, pagination, hot path cache, query composition, budget-aware planner, and ISG advantage over file systems. |
+| `docs/research001/PRD-research-20260131v1/PARSELTONGUE_V2_BIDIRECTIONAL_LLM_ENHANCEMENT.md` | lines 1-260 | Bidirectional LLM-CPU enhancement concept and API examples for semantic-guided graph workflows. |
+| `crates/parseltongue/src/main.rs` | lines 1-292 | Unified CLI currently exposes two implementation-named subcommands: folder-to-CozoDB streamer and HTTP code query server. |
+| `crates/pt01-folder-to-cozodb-streamer/src/cli.rs` | lines 1-269 | Standalone ingestion CLI philosophy, defaults, exclude patterns, and repeated `--exclude` support. |
+| `crates/pt08-http-code-query-server/src/route_definition_builder_module.rs` | lines 1-193 | Actual route surface for current HTTP endpoints. |
+| `crates/parseltongue-core/src/entities.rs` | lines 12-123 | Language and entity type definitions, including Rust/JS/TS/Python/Java/C/C++/Go/Ruby/PHP/C#/Swift/Kotlin/Scala/SQL and core entity kinds. |
+| `crates/parseltongue-core/src/entities.rs` | lines 251-620 | Interface signature, visibility, line ranges, language-specific signatures, code entity, entity class, TDD classification, LSP metadata, and usage analysis. |
+| `crates/parseltongue-core/src/interfaces.rs` | lines 12-214 | Tool abstraction, context generation output, repository interface, language parser interface, interface chunks, and dependency list shape. |
+| `crates/parseltongue-core/src/isgl1_v2.rs` | lines 1-320 | Stable entity identity, key format, semantic path, deterministic birth timestamp, content hashing, and incremental entity matching. |
+| `crates/parseltongue-core/src/storage/cozo_client.rs` | lines 100-183 | CozoDB CodeGraph schema and DependencyEdges schema. |
+| `crates/pt08-http-code-query-server/src/http_endpoint_handler_modules/smart_context_token_budget_handler.rs` | lines 1-292 | Smart context endpoint, relevance-weighted greedy selection, direct caller/callee scoring, transitive traversal, and current heuristic token estimate. |
+| `crates/pt08-http-code-query-server/src/http_endpoint_handler_modules/blast_radius_impact_handler.rs` | lines 1-303 | Blast radius as reverse dependency traversal, BFS by hops, fuzzy key matching, and token estimate. |
+| `crates/pt08-http-code-query-server/src/http_endpoint_handler_modules/reverse_callers_query_graph_handler.rs` | lines 1-255 | Reverse caller query endpoint, edge payload, scope filter, fuzzy matching, and direct CozoDB query. |
+| `crates/pt08-http-code-query-server/src/http_endpoint_handler_modules/forward_callees_query_graph_handler.rs` | lines 1-214 | Forward callee query endpoint, direct dependency query, and edge payload. |
+| `crates/pt08-http-code-query-server/src/http_endpoint_handler_modules/code_entity_detail_view_handler.rs` | lines 1-209 | Entity detail endpoint, source code return, scope filtering, and query-parameter key handling. |
+| `entity_queries/rust.scm` | lines 1-32 | Rust entity extraction currently captures functions, structs, enums, traits, impl blocks, methods, and modules. |
+| `dependency_queries/rust.scm` | lines 1-180 | Rust dependency query pack captures calls, use declarations, trait impls, type references, await, field access, iterator ops, and generic usage. |
+| `entity_queries/typescript.scm` | lines 1-35 | TypeScript entity query captures functions, arrow functions, classes, interfaces, type aliases, enums, and methods. |
+| `dependency_queries/typescript.scm` | lines 1-110 | TypeScript dependency query captures calls, methods, imports, constructors, property access, async, generics, class extends, and interface extends. |
+| `entity_queries/go.scm` | lines 1-22 | Go entity query captures functions, methods, structs, and interfaces. |
+| `dependency_queries/go.scm` | lines 1-115 | Go dependency query captures calls, method calls, imports, embeds, composite literals, goroutines, and documents selector ambiguity without type information. |
+| `entity_queries/cpp.scm` | lines 1-19 | C++ entity query currently captures functions, classes, structs, and enums. |
+
+## Concept 32: Write The Failing Tests Before Building Public Impact
+
+The next Parceltongue move should be test-first.
+
+Not because TDD is aesthetically pleasing.
+Because this particular product can lie very convincingly if it is not tested through exact contracts.
+
+A graph code assistant can say:
+
+```text
+Here is the blast radius.
+Here is the context bundle.
+Here is the public impact.
+```
+
+and still be wrong in the only way that matters:
+
+```text
+It missed the thing Codex needed to know before editing.
+```
+
+That is the failure mode to design against.
+
+The existing repo already has a serious testing culture.
+It has fixture categories, query extraction tests, CozoDB graph tests, JSON graph helper tests, blast-radius contracts, key-alignment regressions, and external placeholder documentation.
+That is good.
+
+But the V2 product from Concept 31 needs a harder test shape.
+It needs golden, agent-facing contracts.
+The output must not merely contain some edges.
+It must explain:
+
+```text
+what was selected
+why it was selected
+what was omitted
+why it was omitted
+which relationships are extracted versus inferred
+which public contract might break
+which confidence label Codex should trust
+```
+
+That is the difference between a graph demo and a daily Codex tool.
+
+### The Current Test Base Is Strong But Not Strict Enough
+
+The current test base already protects important invariants.
+
+It knows that ISGL1 v2 keys must align between entities and edges.
+It knows that dependency edges support `Calls`, `Uses`, and `Implements`.
+It knows that storage can insert entities, insert edges, query forward dependencies, query reverse dependencies, compute blast radius, and compute transitive closure.
+It knows that JSON graph helpers can find reverse dependencies and filter edges by type.
+It knows that external dependencies and unresolved references need placeholder nodes so graph traversal does not collapse.
+
+That is a strong foundation.
+
+The gap is that most of the current graph-facing tests answer questions like:
+
+```text
+Did we get at least N entities?
+Did we get at least N edges?
+Does the helper return something?
+Can storage round-trip a graph relation?
+```
+
+The V2 user journey needs a stricter question:
+
+```text
+Would Codex make the right next move from this output?
+```
+
+For public-impact and context selection, "at least N" is not enough.
+If the graph returns 50 things but omits the public trait, exported route, test fixture, or implementor, it fails the job.
+
+### First Cleanup Before New Feature Tests
+
+Before adding V2 tests, there are two hygiene mismatches worth fixing or at least making visible.
+
+| Mismatch | Evidence | Why It Matters |
+|---|---|---|
+| Fixture root mismatch | `crates/parseltongue-core/tests/fixture_harness.rs` looks under `../../test-fixtures/{}/...`, but the actual corpus lives under `tests/fixtures/`. | New T-folder tests may silently be awkward, skipped, or duplicated unless the harness root is corrected. |
+| Visibility documentation mismatch | `tests/fixtures/T314-query-based-extraction-multilangs/EXPECTED.txt` says query-based extraction extracts visibility, but the inspected Rust, TypeScript, Go, and C++ entity queries capture names and kinds, not visibility/export/public modifiers. | Public-impact depends on visibility. This cannot remain implied. It must be extracted, derived, or labeled unknown. |
+
+These are not embarrassing.
+They are exactly the kind of drift a graph project accumulates.
+
+The V2 move is to turn them into tests.
+
+### The Test Naming Scheme
+
+The fixture README says T-folder names follow:
+
+```text
+T{NNN}-word-word-word-word
+```
+
+Use the future band for the new product contract tests.
+Do not mix this with old graph infrastructure unless the test is truly a regression.
+
+| Fixture | Purpose | First Product Question |
+|---|---|---|
+| `T500-rust-public-impact-contract` | Rust public surface plus implementor/caller impact | If I change a public trait or function, what might break? |
+| `T502-typescript-export-surface-impact` | TypeScript exported interfaces/functions/classes | Which exported API surface did Codex touch? |
+| `T504-go-exported-symbol-impact` | Go exported symbol classification | Which capitalized Go symbols are public package API? |
+| `T506-context-bundle-token-budget` | Selected and omitted context under budget | What should Codex read first, and what did it skip? |
+| `T508-scope-ignore-root-report` | Index scope and ignore reporting | Did indexing accidentally include cloned reference repos? |
+| `T510-confidence-label-edge-contract` | Extracted/inferred/ambiguous edge labels | Which relationships can Codex trust? |
+| `T512-fixture-root-path-contract` | Harness path contract | Are fixture tests reading the canonical `tests/fixtures` corpus? |
+
+This set is intentionally small.
+It tests the product surface, not every language grammar.
+
+### RED Test 1: Fixture Root Must Be Canonical
+
+This should be the first failing test because every other fixture depends on it.
+
+Proposed file:
+
+```text
+crates/parseltongue-core/tests/fixture_root_path_contract_tests.rs
+```
+
+Proposed test:
+
+```rust
+#[test]
+fn test_fixture_root_path_contract() {
+    let repo_root = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("../..")
+        .canonicalize()
+        .expect("repo root should resolve");
+
+    let canonical = repo_root.join("tests/fixtures");
+    let legacy = repo_root.join("test-fixtures");
+
+    assert!(canonical.exists(), "canonical tests/fixtures corpus must exist");
+    assert!(
+        !legacy.exists(),
+        "legacy test-fixtures root should not be required for new tests"
+    );
+
+    let sample = canonical.join("T314-query-based-extraction-multilangs/EXPECTED.txt");
+    assert!(sample.exists(), "fixture harness must be able to read canonical fixtures");
+}
+```
+
+Expected RED:
+
+```text
+This exposes that the current helper points at ../../test-fixtures rather than ../../tests/fixtures.
+```
+
+Smallest GREEN:
+
+```text
+Change fixture_harness.rs to use ../../tests/fixtures, or make it resolve both but prefer tests/fixtures.
+```
+
+Product reason:
+
+```text
+Parceltongue V2 cannot build confidence on a fixture corpus it addresses inconsistently.
+```
+
+### RED Test 2: Rust Public Surface Must Be Explicit
+
+Proposed fixture:
+
+```text
+tests/fixtures/T500-rust-public-impact-contract/
+```
+
+Proposed source file:
+
+```text
+tests/fixtures/T500-rust-public-impact-contract/auth_service.rs
+```
+
+Fixture source:
+
+```rust
+pub trait Authenticator {
+    fn authenticate_user(&self, token: &str) -> Result<User, AuthError>;
+}
+
+pub struct JwtAuthenticator {
+    secret: String,
+}
+
+impl Authenticator for JwtAuthenticator {
+    fn authenticate_user(&self, token: &str) -> Result<User, AuthError> {
+        normalize_token_private(token)?;
+        Ok(User::default())
+    }
+}
+
+pub fn login_user_public(authenticator: &dyn Authenticator, token: &str) -> Result<User, AuthError> {
+    authenticator.authenticate_user(token)
+}
+
+fn normalize_token_private(token: &str) -> Result<&str, AuthError> {
+    Ok(token.trim())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_login_user_public() {
+        let auth = JwtAuthenticator { secret: "s".to_string() };
+        assert!(login_user_public(&auth, "token").is_ok());
+    }
+}
+
+#[derive(Default)]
+pub struct User;
+
+pub struct AuthError;
+```
+
+Proposed test file:
+
+```text
+crates/parseltongue-core/tests/public_impact_contract_tests.rs
+```
+
+Proposed failing assertion:
+
+```rust
+#[test]
+fn test_rust_public_surface_extraction() {
+    let result = parse_fixture_extract_results(
+        "T500-rust-public-impact-contract",
+        "auth_service.rs",
+        Language::Rust,
+    )
+    .expect("rust fixture should parse");
+
+    let public_names: Vec<_> = result
+        .entities
+        .iter()
+        .filter(|entity| entity.visibility == Some(Visibility::Public))
+        .map(|entity| entity.name.as_str())
+        .collect();
+
+    assert!(public_names.contains(&"Authenticator"));
+    assert!(public_names.contains(&"JwtAuthenticator"));
+    assert!(public_names.contains(&"login_user_public"));
+    assert!(!public_names.contains(&"normalize_token_private"));
+}
+```
+
+Expected RED:
+
+```text
+The current query extraction result shape does not expose visibility on parsed entities.
+The Rust entity query captures function, struct, enum, trait, impl, method, and module names, but not `pub`.
+```
+
+Smallest GREEN:
+
+```text
+Add a V2 extraction/fact layer that derives visibility from the source span or tree-sitter parent/modifier nodes.
+Do not mutate every old test immediately.
+Create EntityFacts beside the current ParsedEntity shape, then adapt old storage only after the fact contract is stable.
+```
+
+### RED Test 3: Public Impact Must Include Implementors And Callers
+
+This is the first real PMF test.
+
+The user journey:
+
+```text
+I am about to change `Authenticator::authenticate_user`.
+Tell Codex what else it must inspect before editing.
+```
+
+Expected public-impact output:
+
+```json
+{
+  "query": {
+    "entity": "rust:trait_method:Authenticator.authenticate_user",
+    "mode": "public-impact",
+    "max_hops": 2
+  },
+  "public_surface": {
+    "name": "Authenticator.authenticate_user",
+    "kind": "trait_method",
+    "visibility": "public",
+    "surface_kind": "public_trait_contract",
+    "confidence": "extracted"
+  },
+  "impact": {
+    "implementors": [
+      {
+        "name": "JwtAuthenticator.authenticate_user",
+        "edge_type": "Implements",
+        "confidence": "extracted",
+        "reason": "Changing the trait method contract requires checking implementors."
+      }
+    ],
+    "callers": [
+      {
+        "name": "login_user_public",
+        "edge_type": "Calls",
+        "confidence": "extracted",
+        "reason": "Caller invokes the trait method through the public login flow."
+      }
+    ],
+    "tests": [
+      {
+        "name": "test_login_user_public",
+        "confidence": "inferred",
+        "reason": "Test is in the same fixture module and exercises the public login function."
+      }
+    ]
+  },
+  "omitted": [],
+  "warnings": []
+}
+```
+
+Proposed failing assertion:
+
+```rust
+#[test]
+fn test_rust_public_impact_includes_implementors_and_callers() {
+    let graph = build_fixture_graph_facts(
+        "T500-rust-public-impact-contract",
+        "auth_service.rs",
+        Language::Rust,
+    )
+    .expect("fixture graph facts should build");
+
+    let impact = build_public_impact_from_graph(
+        &graph,
+        "Authenticator.authenticate_user",
+        PublicImpactOptions { max_hops: 2 },
+    )
+    .expect("public impact should resolve");
+
+    assert_eq!(impact.public_surface.surface_kind, PublicSurfaceKind::PublicTraitContract);
+    assert_contains_named(&impact.implementors, "JwtAuthenticator.authenticate_user");
+    assert_contains_named(&impact.callers, "login_user_public");
+    assert_contains_named(&impact.tests, "test_login_user_public");
+    assert_no_private_helper_as_public_surface(&impact, "normalize_token_private");
+}
+```
+
+Expected RED:
+
+```text
+No `build_public_impact_from_graph` helper exists.
+The current dependency model has `Implements`, but public-impact semantics are not packaged as an agent-facing answer.
+```
+
+Smallest GREEN:
+
+```text
+Implement this as a pure in-memory helper over EntityFacts and EdgeFacts first.
+Do not start with HTTP.
+Do not start with CozoDB migration.
+Do not start with CLI polish.
+Make the product answer correct in memory, then wire it outward.
+```
+
+### RED Test 4: TypeScript Export Surface Must Not Be Guesswork
+
+Proposed fixture:
+
+```text
+tests/fixtures/T502-typescript-export-surface-impact/session.ts
+```
+
+Fixture source:
+
+```typescript
+export interface UserSession {
+  userId: string;
+  expiresAt: Date;
+}
+
+export function refreshToken(session: UserSession): UserSession {
+  return normalizeSessionPrivate(session);
+}
+
+function normalizeSessionPrivate(session: UserSession): UserSession {
+  return session;
+}
+
+export class SessionStore {
+  saveSession(session: UserSession): void {
+    refreshToken(session);
+  }
+}
+```
+
+Proposed failing assertion:
+
+```rust
+#[test]
+fn test_typescript_export_surface_extraction() {
+    let facts = extract_fixture_entity_facts(
+        "T502-typescript-export-surface-impact",
+        "session.ts",
+        Language::TypeScript,
+    )
+    .expect("typescript fixture should parse");
+
+    assert_public_surface(&facts, "UserSession", PublicSurfaceKind::ExportedInterface);
+    assert_public_surface(&facts, "refreshToken", PublicSurfaceKind::ExportedFunction);
+    assert_public_surface(&facts, "SessionStore", PublicSurfaceKind::ExportedClass);
+    assert_private_or_internal(&facts, "normalizeSessionPrivate");
+}
+```
+
+Expected RED:
+
+```text
+The TypeScript entity query captures interfaces, functions, classes, methods, aliases, enums, and arrows, but export visibility is not part of the current entity contract.
+```
+
+Smallest GREEN:
+
+```text
+For TypeScript and JavaScript, detect `export_statement` and `export` modifiers around captured declarations.
+If the parser cannot prove export status, label it `unknown`, not `private`.
+```
+
+### RED Test 5: Go Public Surface Must Follow Language Convention
+
+Proposed fixture:
+
+```text
+tests/fixtures/T504-go-exported-symbol-impact/auth.go
+```
+
+Fixture source:
+
+```go
+package auth
+
+type Authenticator interface {
+    AuthenticateUser(token string) (User, error)
+}
+
+type JWTAuthenticator struct {
+    secret string
+}
+
+func (j JWTAuthenticator) AuthenticateUser(token string) (User, error) {
+    return User{}, nil
+}
+
+func LoginUser(authenticator Authenticator, token string) (User, error) {
+    return authenticator.AuthenticateUser(token)
+}
+
+func normalizeTokenPrivate(token string) string {
+    return token
+}
+
+type User struct{}
+```
+
+Proposed failing assertion:
+
+```rust
+#[test]
+fn test_go_exported_symbol_surface() {
+    let facts = extract_fixture_entity_facts(
+        "T504-go-exported-symbol-impact",
+        "auth.go",
+        Language::Go,
+    )
+    .expect("go fixture should parse");
+
+    assert_public_surface(&facts, "Authenticator", PublicSurfaceKind::ExportedInterface);
+    assert_public_surface(&facts, "JWTAuthenticator", PublicSurfaceKind::ExportedType);
+    assert_public_surface(&facts, "AuthenticateUser", PublicSurfaceKind::ExportedMethod);
+    assert_public_surface(&facts, "LoginUser", PublicSurfaceKind::ExportedFunction);
+    assert_private_or_internal(&facts, "normalizeTokenPrivate");
+}
+```
+
+Expected RED:
+
+```text
+The Go query captures functions, methods, structs, and interfaces, but public/exported status is currently not promoted into the graph answer.
+```
+
+Smallest GREEN:
+
+```text
+For Go, classify exported package surface by first-rune uppercase rule after entity extraction.
+This does not need a new tree-sitter query at first.
+```
+
+### RED Test 6: Context Bundle Must Explain Selection And Omission
+
+Current smart context is directionally right.
+It uses graph relevance and a budget.
+But it returns a list of selected entities with a heuristic token estimate.
+
+The V2 command needs to answer the agent's real question:
+
+```text
+What should I read next, why, and what did you leave out because of the budget?
+```
+
+Proposed fixture:
+
+```text
+tests/fixtures/T506-context-bundle-token-budget/
+```
+
+Use a small synthetic graph where:
+
+```text
+login_user_public
+  calls Authenticator.authenticate_user
+  calls audit_login_private
+
+Authenticator.authenticate_user
+  implemented by JwtAuthenticator.authenticate_user
+
+JwtAuthenticator.authenticate_user
+  calls normalize_token_private
+
+normalize_token_private
+  low public impact, private helper
+```
+
+Expected context output:
+
+```json
+{
+  "query": {
+    "entity": "login_user_public",
+    "budget_tokens": 120
+  },
+  "selected": [
+    {
+      "name": "login_user_public",
+      "reason": "focus entity",
+      "relationship": "self",
+      "estimated_tokens": 35,
+      "confidence": "extracted"
+    },
+    {
+      "name": "Authenticator.authenticate_user",
+      "reason": "public trait contract called by focus entity",
+      "relationship": "callee",
+      "estimated_tokens": 45,
+      "confidence": "extracted"
+    },
+    {
+      "name": "JwtAuthenticator.authenticate_user",
+      "reason": "implementor of public trait method",
+      "relationship": "implementor",
+      "estimated_tokens": 38,
+      "confidence": "extracted"
+    }
+  ],
+  "omitted": [
+    {
+      "name": "normalize_token_private",
+      "reason": "budget exhausted after higher-impact public contract context",
+      "relationship": "transitive_private_helper",
+      "estimated_tokens": 22,
+      "confidence": "extracted"
+    }
+  ],
+  "budget": {
+    "requested_tokens": 120,
+    "selected_tokens": 118,
+    "omitted_tokens": 22
+  }
+}
+```
+
+Proposed failing assertion:
+
+```rust
+#[test]
+fn test_context_bundle_explains_selected_and_omitted() {
+    let graph = load_fixture_graph_facts("T506-context-bundle-token-budget")
+        .expect("graph fixture should load");
+
+    let bundle = build_context_bundle_from_graph(
+        &graph,
+        "login_user_public",
+        ContextBundleOptions { budget_tokens: 120 },
+    )
+    .expect("context bundle should build");
+
+    assert_selected_reason(&bundle, "login_user_public", "focus entity");
+    assert_selected_relationship(&bundle, "Authenticator.authenticate_user", "callee");
+    assert_selected_relationship(&bundle, "JwtAuthenticator.authenticate_user", "implementor");
+    assert_omitted_reason_contains(&bundle, "normalize_token_private", "budget exhausted");
+    assert!(bundle.budget.selected_tokens <= 120);
+}
+```
+
+Expected RED:
+
+```text
+No V2 context bundle helper currently exists.
+The existing smart-context endpoint has a useful relevance model but not the selected/omitted/reason/confidence contract.
+```
+
+Smallest GREEN:
+
+```text
+Port the current relevance scoring into a pure helper.
+Replace key-length token estimates with a source-backed estimate when source text is available.
+Return selected and omitted lists.
+Do not hide omitted high-relevance nodes.
+```
+
+### RED Test 7: Scope Report Must Expose Accidental Clone Forests
+
+This comes directly from the CodeGraphContext evidence-reader run.
+
+I attempted to run the CGC wrapper against:
+
+```text
+crates/parseltongue-core
+```
+
+The wrapper resolved the path back to the repo root and began indexing:
+
+```text
+/Users/amuldotexe/Desktop/personal-repos-lane/parseltongue-rust-LLM-companion
+```
+
+I stopped it because this repo contains a large `git-ref-repo/` reference clone forest and the skill warns against indexing reference forests unless explicitly requested.
+The run left a generated `.cgcignore`; I removed it.
+
+This is not only a CGC issue.
+It is a product requirement for Parceltongue.
+
+The agent needs a command that says:
+
+```text
+Here is exactly what I will index.
+Here is exactly what I will ignore.
+Here are roots that look dangerous.
+```
+
+Proposed fixture:
+
+```text
+tests/fixtures/T508-scope-ignore-root-report/
+```
+
+Fixture tree:
+
+```text
+T508-scope-ignore-root-report/
+  src/lib.rs
+  git-ref-repo/ignore-this-folder-repos/fake_repo/src/lib.rs
+  node_modules/fake/index.js
+  target/debug/fake
+```
+
+Expected scope report:
+
+```json
+{
+  "requested_root": "T508-scope-ignore-root-report",
+  "effective_root": "T508-scope-ignore-root-report",
+  "indexed_roots": [
+    "src"
+  ],
+  "ignored_roots": [
+    {
+      "path": "git-ref-repo",
+      "reason": "reference repository folder"
+    },
+    {
+      "path": "node_modules",
+      "reason": "dependency folder"
+    },
+    {
+      "path": "target",
+      "reason": "build artifact folder"
+    }
+  ],
+  "warnings": [
+    {
+      "kind": "reference_clone_forest",
+      "path": "git-ref-repo",
+      "message": "Reference clones are ignored unless explicitly included."
+    }
+  ]
+}
+```
+
+Proposed failing assertion:
+
+```rust
+#[test]
+fn test_scope_report_excludes_reference_clone_forest() {
+    let report = build_index_scope_report(
+        fixture_path("T508-scope-ignore-root-report"),
+        ScopeOptions::default(),
+    )
+    .expect("scope report should build");
+
+    assert_indexed_root(&report, "src");
+    assert_ignored_root(&report, "git-ref-repo");
+    assert_ignored_root(&report, "node_modules");
+    assert_ignored_root(&report, "target");
+    assert_warning_kind(&report, "reference_clone_forest");
+}
+```
+
+Expected RED:
+
+```text
+No first-class scope-report helper exists for the V2 command shape.
+Current ingestion has exclude support, but the agent-facing explanation is not the product surface yet.
+```
+
+Smallest GREEN:
+
+```text
+Create a pure scope-report builder.
+Default-ignore `.git`, `target`, `node_modules`, `git-ref-repo`, `gitrefrepo`, and `ignore-this-folder-repos`.
+Expose the explanation as JSON before indexing.
+```
+
+### RED Test 8: Edge Confidence Labels Must Be Required
+
+The current `DependencyEdge` has:
+
+```text
+from_key
+to_key
+edge_type
+source_location
+```
+
+That is enough to traverse.
+It is not enough to guide a coding agent.
+
+For Codex, there is a big difference between:
+
+```text
+This call was extracted from an actual call expression.
+```
+
+and:
+
+```text
+This target is unresolved and might be local, external, trait dispatch, macro expansion, generic instantiation, or dynamic dispatch.
+```
+
+Both can be useful.
+They should not have the same confidence.
+
+Proposed fixture:
+
+```text
+tests/fixtures/T510-confidence-label-edge-contract/
+```
+
+Expected EdgeFacts JSON:
+
+```json
+{
+  "edges": [
+    {
+      "from": "login_user_public",
+      "to": "Authenticator.authenticate_user",
+      "edge_type": "Calls",
+      "evidence_kind": "call_expression",
+      "resolver_kind": "tree_sitter_exact",
+      "confidence": "extracted"
+    },
+    {
+      "from": "login_user_public",
+      "to": "audit_login_private",
+      "edge_type": "Calls",
+      "evidence_kind": "identifier_call",
+      "resolver_kind": "same_file_name_match",
+      "confidence": "inferred"
+    },
+    {
+      "from": "JwtAuthenticator.authenticate_user",
+      "to": "external-dependency-anyhow",
+      "edge_type": "Uses",
+      "evidence_kind": "use_declaration",
+      "resolver_kind": "external_placeholder",
+      "confidence": "external"
+    },
+    {
+      "from": "login_user_public",
+      "to": "unresolved-reference",
+      "edge_type": "Calls",
+      "evidence_kind": "call_expression",
+      "resolver_kind": "unresolved",
+      "confidence": "unresolved"
+    }
+  ]
+}
+```
+
+Proposed failing assertion:
+
+```rust
+#[test]
+fn test_edge_facts_require_confidence_labels() {
+    let graph = build_fixture_graph_facts(
+        "T510-confidence-label-edge-contract",
+        "auth_service.rs",
+        Language::Rust,
+    )
+    .expect("graph facts should build");
+
+    assert_edge_confidence(&graph, "login_user_public", "Authenticator.authenticate_user", EdgeConfidence::Extracted);
+    assert_edge_confidence(&graph, "login_user_public", "audit_login_private", EdgeConfidence::Inferred);
+    assert_any_edge_confidence(&graph, EdgeConfidence::External);
+    assert_any_edge_confidence(&graph, EdgeConfidence::Unresolved);
+}
+```
+
+Expected RED:
+
+```text
+Current edge structs do not require confidence labels.
+External placeholder docs distinguish external dependency and unresolved reference, but that distinction is not yet a general agent-facing EdgeFacts contract.
+```
+
+Smallest GREEN:
+
+```text
+Add EdgeFacts as a V2 adapter type first.
+Do not break old DependencyEdge storage yet.
+Convert DependencyEdge plus extraction metadata into EdgeFacts at query time.
+```
+
+### The Smallest Implementation Path
+
+This is the implementation order I would actually use.
+
+| Step | Implement | Why This Step |
+|---|---|---|
+| 1 | Fix or dual-resolve fixture root | Makes the new RED tests stable. |
+| 2 | Add `EntityFacts`, `EdgeFacts`, `ContextBundleFacts`, and `PublicImpactFacts` as pure structs | Avoids storage migration before semantics are known. |
+| 3 | Add Rust public-surface classification | Rust is the user's systems-programming priority and the repo's strongest language. |
+| 4 | Add TypeScript export classification | Covers CRUD app work and API surface changes. |
+| 5 | Add Go exported symbol classification | Cheap win because public status is mostly name convention. |
+| 6 | Build in-memory `public-impact` helper | Proves the product answer before HTTP/CLI. |
+| 7 | Build in-memory `context-bundle` helper | Upgrades smart context into selected/omitted/reason output. |
+| 8 | Build `scope-report` helper | Prevents accidental polluted indexes. |
+| 9 | Wire helpers into CLI commands | Only after pure contracts pass. |
+| 10 | Wire HTTP endpoints if still useful | Codex app may prefer CLI; HTTP is secondary for solo use. |
+
+The key principle:
+
+```text
+Start with pure functions over small fixture graphs.
+Only then connect them to ingestion, CozoDB, HTTP, and CLI.
+```
+
+This keeps the first PR small enough to finish.
+
+### The Minimum V2 Data Types
+
+Do not overbuild.
+The first structs can be boring.
+
+```rust
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct EntityFacts {
+    pub key: String,
+    pub name: String,
+    pub language: Language,
+    pub entity_type: EntityType,
+    pub visibility: VisibilityFact,
+    pub public_surface_kind: Option<PublicSurfaceKind>,
+    pub file_path: String,
+    pub line_range: LineRange,
+    pub signature_text: Option<String>,
+    pub source_text: Option<String>,
+    pub estimated_tokens: usize,
+    pub confidence: FactConfidence,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct EdgeFacts {
+    pub from_key: String,
+    pub to_key: String,
+    pub edge_type: EdgeType,
+    pub source_location: Option<String>,
+    pub evidence_kind: EvidenceKind,
+    pub resolver_kind: ResolverKind,
+    pub confidence: FactConfidence,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum FactConfidence {
+    Extracted,
+    Inferred,
+    Ambiguous,
+    External,
+    Unresolved,
+}
+```
+
+The important thing is not the exact names.
+The important thing is that the graph can stop pretending all relationships are equally true.
+
+### What To Avoid
+
+Do not start V2 by adding another endpoint.
+
+That is tempting because the current product already has many HTTP routes.
+But an endpoint is just transport.
+The missing thing is a trustworthy answer contract.
+
+Do not start by tuning CozoDB queries.
+
+The storage layer already has real graph tests.
+Public-impact semantics are not primarily a storage problem yet.
+They are a classification and packaging problem.
+
+Do not start with ten languages.
+
+The user journey is:
+
+```text
+Solo agent power user.
+All languages eventually.
+CRUD apps plus Rust, C, C++ systems programming.
+Help Codex navigate large codebases faster and more reliably.
+```
+
+So the first proof should cover:
+
+```text
+Rust
+TypeScript
+Go
+```
+
+Then add:
+
+```text
+C
+C++
+Python
+Java
+C#
+SQL
+```
+
+after the product contract is stable.
+
+### The Shreyas Product Read
+
+The product risk is not that Parceltongue lacks enough graph features.
+The product risk is that Codex will not know when to trust the graph.
+
+So the next tests should optimize for trust:
+
+```text
+exact outputs
+named reasons
+omitted context
+confidence labels
+public contract classification
+scope transparency
+```
+
+This is Shreyas-style PMF thinking:
+
+```text
+The user is not buying graph completeness.
+The user is buying fewer agent mistakes while editing large codebases.
+```
+
+The first delight moment should be:
+
+```text
+Codex asks Parceltongue for public impact,
+gets a tiny answer,
+and immediately reads the right trait, implementor, caller, and test.
+```
+
+That is the test to make pass.
+
+### Why CodeGraphContext Matters Here
+
+Using the CodeGraphContext evidence-reader changed the plan in one specific way.
+
+It showed that a powerful graph tool can still be risky if scope is implicit.
+The attempted CGC run on a crate path resolved back to the repository root and began walking from there.
+Because this repository contains a reference clone forest, that was enough reason to stop the run.
+
+That behavior turns into a Parceltongue requirement:
+
+```text
+Every index command must have an explainable scope.
+Every context result must say what corpus it came from.
+Every public-impact answer must be reproducible from visible indexed roots.
+```
+
+So `T508-scope-ignore-root-report` is not a side quest.
+It is core product trust.
+
+### Acceptance Criteria For Concept 32
+
+The next implementation should not be considered real until these are true:
+
+| Acceptance Criterion | How To Verify |
+|---|---|
+| New fixture root test passes | `cargo test -p parseltongue-core --test fixture_root_path_contract_tests` |
+| Rust public-surface facts exist | `cargo test -p parseltongue-core --test public_impact_contract_tests test_rust_public_surface_extraction` |
+| Rust public impact includes implementors, callers, and tests | `cargo test -p parseltongue-core --test public_impact_contract_tests test_rust_public_impact_includes_implementors_and_callers` |
+| TypeScript exports are classified | `cargo test -p parseltongue-core --test public_impact_contract_tests test_typescript_export_surface_extraction` |
+| Go exported symbols are classified | `cargo test -p parseltongue-core --test public_impact_contract_tests test_go_exported_symbol_surface` |
+| Context bundle reports selected and omitted entities | `cargo test -p parseltongue-core --test context_bundle_contract_tests` |
+| Scope report ignores reference clone forests | `cargo test -p parseltongue-core --test scope_report_contract_tests` |
+| Edge confidence labels exist | `cargo test -p parseltongue-core --test edge_confidence_contract_tests` |
+
+If these pass, then CLI wiring becomes straightforward.
+
+### The Next Commit Shape
+
+If implementing this, I would use small commits:
+
+| Commit | Content |
+|---|---|
+| 1 | Fix fixture root harness and add `T512-fixture-root-path-contract`. |
+| 2 | Add V2 fact structs with no behavior. |
+| 3 | Add Rust public-surface extraction RED/GREEN. |
+| 4 | Add TypeScript and Go public-surface extraction RED/GREEN. |
+| 5 | Add public-impact pure helper and golden JSON. |
+| 6 | Add context-bundle pure helper and selected/omitted contract. |
+| 7 | Add scope-report helper and default ignore report. |
+| 8 | Add edge confidence labels and adapter from current edges. |
+| 9 | Add CLI commands after all pure helpers pass. |
+
+The first commit should be tiny.
+It should prove that the fixture foundation is reliable.
+
+### Repos And Docs Touched For This Concept
+
+| Source | Evidence | Notes |
+|---|---|---|
+| `/Users/amuldotexe/.codex/skills/codegraphcontext-evidence-reader/SKILL.md` | lines 1-72 | Skill says CGC is evidence-gathering, important graph findings need direct source reads, wrapper is preferred, and reference repo forests should not be indexed unless explicitly requested. |
+| `/tmp/codex-code-intel/codegraphcontext/parseltongue-rust-LLM-companion-20260706-233111/index.txt` | lines 1-62 | Aborted CGC run showed the wrapper resolving to the repo root and entering discovery before manual stop, which motivates explicit scope-report testing. |
+| `crates/parseltongue-core/tests/fixture_harness.rs` | lines 1-44 | Harness currently resolves fixture source files under `../../test-fixtures/{}/...`. |
+| `tests/fixtures/README.md` | lines 1-128 | Canonical fixture corpus, T-folder naming scheme, category bands, expected folder contents, and instructions for adding tests. |
+| `crates/parseltongue-core/tests/query_based_extraction_test.rs` | lines 1-144 | Inline query-based extraction tests for Rust, Python, C, JavaScript, and malformed code. |
+| `crates/parseltongue-core/tests/rust_dependency_patterns_test.rs` | lines 1-340 | Rust dependency pattern tests with count-style assertions and printed edge diagnostics. |
+| `crates/parseltongue-core/tests/t_rust_edge_tests.rs` | lines 1-340 | T-folder style Rust dependency tests using `parse_fixture_extract_results`. |
+| `crates/parseltongue-core/tests/cozo_storage_integration_tests.rs` | lines 1-360 | Storage, dependency edge, forward/reverse dependency, blast radius, transitive closure, and performance tests. |
+| `crates/parseltongue-core/tests/query_json_graph_contract_tests.rs` | lines 1-360 | Agent-friendly JSON graph query helper tests with reverse deps, call chains, edge filtering, file collection, and error handling. |
+| `crates/parseltongue-core/src/query_json_graph_helpers.rs` | lines 1-104 | Existing pure JSON graph helpers for reverse dependencies, call chains, edge type filtering, and file-path collection. |
+| `crates/parseltongue-core/src/query_json_graph_errors.rs` | lines 1-29 | Existing helper error types: entity not found, malformed JSON, invalid edge type. |
+| `tests/fixtures/T315-json-graph-contract-queries/EXPECTED.txt` | lines 1-155 | Existing JSON graph helper contract and limitations around pre-generated JSON, cycles, performance, and reverse deps. |
+| `tests/fixtures/T314-query-based-extraction-multilangs/EXPECTED.txt` | lines 1-116 | Query extraction fixture contract and visibility claim that should be reconciled with actual query packs. |
+| `crates/parseltongue-core/src/entities.rs` | lines 1030-1225 | Current edge model has `EdgeType::{Calls, Uses, Implements}` and `DependencyEdge` with keys, edge type, and optional source location. |
+| `tests/fixtures/T244-blast-radius-key-alignment/EXPECTED.txt` | lines 1-152 | Regression contract for key alignment between entities and edges, required for graph traversal trust. |
+| `tests/fixtures/T311-external-dependency-placeholder/EXPECTED.txt` | lines 1-102 | External dependency and unresolved-reference placeholder contract, including why orphaned edges break blast-radius queries. |
+| `tests/fixtures/T307-cozo-storage-crud-operations/EXPECTED.txt` | lines 1-262 | Storage CRUD, graph query, blast-radius, transitive closure, and performance contract summary. |
+| `tests/fixtures/T308-blast-radius-transitive-closure/EXPECTED.txt` | lines 1-255 | Focused blast-radius and transitive-closure semantics, edge cases, and performance notes. |
+
+## Concept 33: Generate Typed Tree-Sitter Facts Before Writing Query Logic
+
+The next pattern is not another graph algorithm.
+
+It is a discipline pattern:
+
+```text
+Do not let every extractor hand-roll stringly Tree-sitter access.
+Generate typed accessors from the grammar contract first.
+Then write public-impact and context logic against typed facts.
+```
+
+This matters because Concept 32 identified the exact thing Parceltongue V2 needs next:
+
+```text
+visibility
+public surface kind
+edge confidence
+source-backed spans
+selected and omitted context
+```
+
+Those facts are fragile if every language extractor does this:
+
+```rust
+node.child_by_field_name("name")
+node.child_by_field_name("body")
+node.kind() == "function_item"
+capture_name == "definition.function"
+```
+
+That works until it does not.
+
+One typo in a field name.
+One grammar version that renames a node.
+One capture whose dot/underscore normalization is inconsistent.
+One language where "public" is not a modifier node but a convention.
+
+Then Codex gets a confident-looking graph answer that missed the exact public contract it needed.
+
+The typed-wrapper repos show the alternative.
+
+Use `node-types.json` and query files as schemas.
+Generate a typed layer.
+Make the extractor code depend on that typed layer.
+Make grammar drift fail loudly.
+
+That is the core lesson from:
+
+```text
+Jakobeha/type-sitter
+JoranHonig/python-tree-sitter-types
+```
+
+### Codebase-Memory Evidence Used
+
+I used the required `codebase-memory-evidence-reader` on both repos before writing this concept.
+
+| Repo | Codebase-Memory Result | Useful Signal |
+|---|---|---|
+| `Jakobeha__type-sitter` | Indexed cleanly: 17,473 nodes and 58,325 edges. | Graph search found exported `generate_nodes`, `generate_queries`, `_generate_queries_from_dir`, `_generate_query_from_file`, and related codegen functions. |
+| `JoranHonig__python-tree-sitter-types` | Indexed cleanly: 71 nodes and 125 edges. | Small repo; direct source reads were more useful than graph search, but the run confirmed scope isolation and no clone-forest leakage. |
+
+One tool note:
+
+```text
+codebase-memory-mcp search_graph needs `project`, not `project_name`.
+```
+
+The wrapper examples are close, but the explicit CLI call only worked after using the `project` key.
+That is another small argument for Parceltongue's own command contracts to be boringly exact.
+
+### What Type-Sitter Does That Parceltongue Should Steal
+
+`type-sitter` starts from two authoritative Tree-sitter artifacts:
+
+```text
+src/node-types.json
+queries/*.scm
+```
+
+Then it generates typed Rust wrappers.
+
+The README states the product idea plainly:
+
+```text
+node-types.json -> typed node wrappers
+query s-expressions -> typed query wrappers
+```
+
+The useful part for Parceltongue is not that we need to adopt `type-sitter` wholesale.
+The useful part is the shape of the generated layer.
+
+It turns raw Tree-sitter primitives into these higher-level commitments:
+
+| Raw Tree-Sitter Habit | Generated Typed Habit | Why It Matters For Parceltongue |
+|---|---|---|
+| `node.kind() == "function_item"` | `FunctionItem<'tree>` type | Extractor logic can compile against known node kinds. |
+| `child_by_field_name("name")` | `.name()` method | Field names become generated API, not scattered strings. |
+| `child_by_field_name("body")` | `.body()` method returning typed child | Public-surface extraction can require the exact child shape. |
+| `capture("function.name")` | typed capture accessor | Query capture names become schema, not magic strings. |
+| Runtime node-kind switch everywhere | Supertype enums | Exhaustive handling of variants becomes possible. |
+| Comments ignored unless manually traversed | Extra-node support | Documentation adjacency and doc-comment extraction become first-class. |
+| Hidden grammar nodes remain anonymous | Custom supertypes | Parceltongue can define product-level groupings when grammar authors did not. |
+
+The killer phrase:
+
+```text
+The grammar becomes an API.
+```
+
+That is what Parceltongue needs.
+
+### Pattern: Product Types For Nodes, Sum Types For Supertypes
+
+In `type-sitter-gen/src/node_types/print.rs`, regular node types print as transparent wrapper structs around `tree_sitter::Node`.
+
+The generated struct has the important invariant:
+
+```rust
+fn try_from_raw(node) -> NodeResult<Self> {
+    if node.kind() == KIND {
+        Ok(Self(node))
+    } else {
+        Err(IncorrectKind::new::<Self>(node))
+    }
+}
+```
+
+That is a small thing with a large effect.
+
+It converts:
+
+```text
+"I think this node is a Rust function"
+```
+
+into:
+
+```text
+"This node proved it is a Rust function, or extraction failed at the boundary."
+```
+
+For supertypes, `type-sitter` generates enums.
+That means something like a declaration/expression/type family can become:
+
+```rust
+enum Declaration<'tree> {
+    FunctionItem(FunctionItem<'tree>),
+    StructItem(StructItem<'tree>),
+    TraitItem(TraitItem<'tree>),
+}
+```
+
+The exact generated enum varies by grammar, but the pattern matters.
+Parceltongue's current extraction model should move toward:
+
+```rust
+enum RustPublicSurfaceNode<'tree> {
+    FunctionItem(FunctionItem<'tree>),
+    StructItem(StructItem<'tree>),
+    EnumItem(EnumItem<'tree>),
+    TraitItem(TraitItem<'tree>),
+    ModItem(ModItem<'tree>),
+    UseDeclaration(UseDeclaration<'tree>),
+}
+```
+
+Then public-surface extraction becomes ordinary Rust pattern matching instead of a pile of capture strings.
+
+### Pattern: Field Accessors Are Fact Boundaries
+
+`type-sitter` generates methods from `node-types.json` fields.
+
+That is exactly what Parceltongue needs for public-impact:
+
+| Public-Impact Need | Tree-Sitter Field/API Need |
+|---|---|
+| Function name | generated `.name()` accessor |
+| Trait name | generated `.name()` accessor |
+| Method receiver | generated receiver/self/type accessor |
+| Visibility modifier | generated child/field accessor or language-specific rule |
+| Type parameters | generated type-parameter accessor |
+| Return type | generated return-type accessor |
+| Body calls | generated body/block accessor |
+| Attribute/decorator/annotation | generated modifier/attribute/decorator accessor |
+
+The pattern is not "generate everything and use everything."
+The pattern is:
+
+```text
+Generate the shape.
+Use a small product-level subset.
+Fail tests when the grammar shape changes.
+```
+
+For Parceltongue V2, I would generate or hand-author a small facade per language:
+
+```rust
+trait PublicSurfaceExtractor<'tree> {
+    type Function;
+    type TypeDecl;
+    type TraitDecl;
+    type ImportDecl;
+
+    fn function_name(node: Self::Function) -> Option<SourceTextSpan>;
+    fn function_visibility(node: Self::Function) -> VisibilityFact;
+    fn function_signature(node: Self::Function) -> SignatureFacts;
+    fn function_body(node: Self::Function) -> Option<BodyNode<'tree>>;
+}
+```
+
+The implementation can be generated from grammar facts where possible.
+When it is not possible, the rule must be explicit:
+
+```text
+VisibilityFact::Inferred("go_exported_identifier")
+VisibilityFact::Unknown("grammar_no_modifier_capture")
+VisibilityFact::Extracted("rust_visibility_modifier")
+```
+
+That one distinction prevents a lot of agent overconfidence.
+
+### Pattern: Typed Queries Should Wrap Captures, Not Just Matches
+
+`type-sitter-lib/src/query/mod.rs` defines a typed query trait with associated `Match` and `Capture` types.
+
+The key contract is:
+
+```rust
+trait Query {
+    type Match<'query, 'tree>;
+    type Capture<'query, 'tree>;
+}
+```
+
+And `captures.rs` wraps raw captures with:
+
+```text
+typed_query
+untyped_captures
+```
+
+Each typed capture still exposes the raw node and capture index, but it also knows:
+
+```text
+which query it came from
+which capture name it has
+which typed node it should wrap
+```
+
+This is directly useful for Parceltongue's V2 edge confidence labels.
+
+Current query extraction can produce:
+
+```text
+Calls
+Uses
+Implements
+```
+
+But Concept 32 says the agent needs:
+
+```text
+edge_type
+evidence_kind
+resolver_kind
+confidence
+```
+
+A typed query capture layer can make that natural:
+
+```rust
+enum RustDependencyCapture<'tree> {
+    FunctionCall {
+        call_node: CallExpression<'tree>,
+        callee: IdentifierLike<'tree>,
+    },
+    UseDeclaration {
+        use_node: UseDeclaration<'tree>,
+        path: UsePath<'tree>,
+    },
+    TraitImplementation {
+        impl_node: ImplItem<'tree>,
+        trait_path: TypePath<'tree>,
+        for_type: TypeIdentifier<'tree>,
+    },
+}
+```
+
+Then the edge builder can say:
+
+```rust
+match capture {
+    RustDependencyCapture::FunctionCall { .. } => {
+        confidence = Extracted;
+        evidence_kind = CallExpression;
+    }
+    RustDependencyCapture::UseDeclaration { .. } => {
+        confidence = Extracted;
+        evidence_kind = UseDeclaration;
+    }
+    RustDependencyCapture::TraitImplementation { .. } => {
+        confidence = Extracted;
+        evidence_kind = TraitImpl;
+    }
+}
+```
+
+That is much safer than making every handler remember what capture names mean.
+
+### Pattern: Query Directories Become Modules
+
+`type-sitter-gen/src/queries/mod.rs` supports both:
+
+```text
+single .scm file
+directory of .scm files
+```
+
+When it receives a directory, it reads entries, sorts them, recursively processes folders and `.scm` files, and emits submodules for nested directories.
+
+That is a language-pack architecture pattern.
+
+Parceltongue should treat each language like:
+
+```text
+language_pack/
+  node-types.json
+  queries/
+    entities.scm
+    dependencies.scm
+    public_surface.scm
+    tests.scm
+    docs.scm
+  generated/
+    nodes.rs
+    queries.rs
+  manifest.toml
+```
+
+Then generated query modules become a stable internal API:
+
+```rust
+rust_pack::queries::entities::EntityQuery
+rust_pack::queries::dependencies::DependencyQuery
+rust_pack::queries::public_surface::PublicSurfaceQuery
+```
+
+The manifest should record:
+
+```text
+parser crate/version
+node-types hash
+query file hashes
+generated-at tool version
+supported public-surface facts
+known unsupported facts
+```
+
+That would have caught the mismatch from Concept 32:
+
+```text
+Fixture says visibility is extracted.
+Actual query pack does not expose visibility.
+```
+
+### Pattern: Custom Supertypes Are Product Semantics
+
+`type-sitter` supports custom supertypes.
+
+The README example creates a supertype for "all named" nodes and another for hidden class-member variants.
+
+That is not just type-system cleverness.
+It is product design.
+
+Tree-sitter grammars are written for parsing.
+Parceltongue needs grammars shaped for agent tasks.
+
+Those are not always the same ontology.
+
+Parceltongue should define product-level supertypes like:
+
+```text
+PublicSurfaceDeclaration
+CallableDeclaration
+TypeDeclaration
+ImportDeclaration
+TestDeclaration
+RouteDeclaration
+SchemaDeclaration
+DocComment
+```
+
+For Rust:
+
+```text
+PublicSurfaceDeclaration =
+  function_item with pub visibility
+  struct_item with pub visibility
+  enum_item with pub visibility
+  trait_item with pub visibility
+  mod_item with pub visibility
+  use_declaration with pub visibility
+```
+
+For TypeScript:
+
+```text
+PublicSurfaceDeclaration =
+  exported function_declaration
+  exported class_declaration
+  exported interface_declaration
+  exported type_alias_declaration
+  export_statement wrapping declaration
+```
+
+For Go:
+
+```text
+PublicSurfaceDeclaration =
+  package-scope declaration with exported identifier
+  method_declaration with exported method name
+  interface method with exported name
+```
+
+The point:
+
+```text
+Do not let raw grammar supertypes be the product ontology.
+Generate product supertypes from grammar facts plus language rules.
+```
+
+### Pattern: Generated Code Must Be Regeneration-Safe
+
+`type-sitter-cli` has a practical safety detail.
+
+When processing a whole language root, it removes the previous output directory only if that directory contains all Rust files.
+
+That protects users from accidentally deleting hand-written code.
+
+Parceltongue should copy this spirit exactly.
+
+If we generate language-pack code, the output folder should be:
+
+```text
+crates/parseltongue-core/src/generated_language_packs/rust/
+```
+
+and regeneration should require:
+
+```text
+generated marker present
+manifest hash matches
+only generated files inside
+no user-authored files mixed in
+```
+
+Proposed guard:
+
+```rust
+fn assert_codegen_dir_regenerable(path: &Path) -> Result<()> {
+    ensure!(path.join(".parseltongue-generated").exists());
+    ensure!(dir_contains_only_generated_files(path)?);
+    Ok(())
+}
+```
+
+This is mundane.
+It also prevents expensive pain.
+
+### What Python-Tree-Sitter-Types Adds
+
+The Python repo is smaller and looser, but it contributes a useful second version of the idea.
+
+It parses `node-types.json` into Pydantic models:
+
+```text
+TypeSpecification
+ChildrenSpecification
+FieldSpecification
+NodeType
+NodeTypeList
+```
+
+Then the generator builds Python classes with:
+
+```text
+field_names
+annotated fields
+children annotation
+type_name_to_class mapping
+TreeSitterNode base class
+```
+
+The runtime parser recursively maps raw Tree-sitter nodes into those generated classes:
+
+```text
+node.type -> constructor
+field_names -> children_by_field_name
+named_children not already used by fields -> children
+base_node retained for text/source access
+```
+
+This is less statically safe than Rust.
+But it has a useful architectural pattern:
+
+```text
+Keep raw node access available as `base_node`.
+Build typed convenience around it.
+```
+
+Parceltongue should do the same.
+
+Even if we generate `RustFunctionItem` or `TypeScriptExportedFunction`, every fact should still retain:
+
+```text
+raw node kind
+byte range
+point range
+source file
+query capture name
+parser version
+```
+
+Because sometimes Codex needs to inspect the exact span.
+Typed facts should not hide raw evidence.
+They should make it safer to get to the right raw evidence.
+
+### The Python Caveats Are Also Design Warnings
+
+`python-tree-sitter-types` has TODOs around:
+
+```text
+literals
+field names colliding with children/field_names/base_node
+clean field initialization
+```
+
+That is very relevant to Parceltongue.
+
+If Parceltongue generates fact-accessor code, it must explicitly handle reserved names:
+
+```text
+type
+match
+self
+children
+field_names
+base_node
+from
+else
+crate
+super
+mod
+```
+
+`type-sitter` has a much more detailed naming strategy:
+
+```text
+illegal character substitutions
+raw identifiers when possible
+reserved-word fallback
+deterministic disambiguation
+module separation for unnamed/symbol nodes
+capture-name dot-to-underscore conversion
+```
+
+For Parceltongue, deterministic naming is not aesthetic.
+It is graph identity hygiene.
+
+If one grammar update renames:
+
+```text
+method.definition
+```
+
+to:
+
+```text
+method_definition
+```
+
+or if both collapse to the same Rust identifier, the generated layer should surface that conflict.
+Do not silently overwrite a capture.
+
+### Parceltongue V2 Pattern: Generate Fact Extractors, Not Whole AST Bindings
+
+A full `type-sitter` style binding for every Parceltongue language might be too heavy.
+
+The README notes the generated wrappers for Rust can be tens of thousands of lines.
+That is too much to casually add to a lean code-assist core.
+
+But Parceltongue does not need every AST node as a public API.
+
+It needs a generated fact layer for the agent-relevant subset:
+
+```text
+entities
+dependencies
+public surface
+tests
+docs/comments
+routes
+schemas
+imports/exports
+```
+
+So the better Parceltongue design is:
+
+```text
+node-types.json
+queries/*.scm
+language rules
+    -> generate small FactExtractor APIs
+    -> run extractor
+    -> emit EntityFacts and EdgeFacts
+```
+
+Not:
+
+```text
+generate a complete Rust API for every grammar node and expose it everywhere
+```
+
+The generated output should be narrow:
+
+```rust
+pub struct RustPublicSurfaceFacts<'tree> {
+    pub name: SourceSpan<'tree>,
+    pub visibility: VisibilityFact,
+    pub signature: SignatureFacts<'tree>,
+    pub doc_comment: Option<SourceSpan<'tree>>,
+    pub raw_kind: &'static str,
+}
+```
+
+And the generator should be asked:
+
+```text
+Can this language pack produce RustPublicSurfaceFacts?
+If not, which fields are missing?
+```
+
+That fits the V2 trust model.
+
+### Proposed Parceltongue Architecture
+
+```text
+language_packs/
+  rust/
+    manifest.toml
+    node-types.json
+    queries/
+      entities.scm
+      dependencies.scm
+      public_surface.scm
+    product_supertypes.toml
+    generated/
+      fact_accessors.rs
+      query_captures.rs
+      manifest_hash.rs
+
+runtime/
+  parser loads language pack
+  query runner emits typed captures
+  fact builder converts typed captures to EntityFacts and EdgeFacts
+  context/public-impact operate only on EntityFacts/EdgeFacts
+```
+
+The important boundary:
+
+```text
+Tree-sitter parser specifics stop at the language-pack adapter.
+Agent product logic starts at EntityFacts and EdgeFacts.
+```
+
+This means `public-impact` should never care whether Rust uses `visibility_modifier`, TypeScript uses `export_statement`, or Go uses uppercase names.
+It should care only about:
+
+```rust
+VisibilityFact::Public { confidence, evidence }
+PublicSurfaceKind::ExportedFunction
+```
+
+### Tests Parceltongue Should Add
+
+Concept 32 introduced T500-series product tests.
+This concept adds generated-layer tests.
+
+| Fixture | Purpose |
+|---|---|
+| `T514-generated-capture-contract` | Capture names in `.scm` produce deterministic generated enum variants. |
+| `T516-node-type-drift-detection` | `node-types.json` hash mismatch fails with a clear language-pack error. |
+| `T518-reserved-name-normalization` | Fields/captures named `type`, `match`, `from`, `else`, `self`, and `children` normalize deterministically. |
+| `T520-product-supertype-contract` | `PublicSurfaceDeclaration` includes expected Rust/TypeScript/Go variants and rejects private helpers. |
+| `T522-raw-evidence-retention` | Every generated fact retains raw kind, byte range, point range, file path, capture name, and parser/query hashes. |
+
+The most important test is `T522`.
+
+If a generated fact cannot point back to source evidence, it is not acceptable for agent use.
+
+### Minimal Implementation Path
+
+Do not start with a generator that handles every language.
+
+Start with one Rust prototype:
+
+| Step | Build | Why |
+|---|---|---|
+| 1 | Read Rust `node-types.json` and current `entity_queries/rust.scm` / `dependency_queries/rust.scm`. | Establish schema inputs. |
+| 2 | Generate a small capture enum only for current captures. | Converts magic capture strings into typed variants. |
+| 3 | Generate a small accessor facade for `function_item`, `struct_item`, `enum_item`, `trait_item`, `impl_item`, `use_declaration`, `mod_item`. | Covers public-surface MVP. |
+| 4 | Add manifest with node/query hashes. | Makes drift detectable. |
+| 5 | Convert capture enum into `EntityFacts` and `EdgeFacts`. | Keeps graph product logic independent. |
+| 6 | Wire only Rust into `public-impact` tests from Concept 32. | Proves end-to-end value before more languages. |
+| 7 | Add TypeScript export facade. | Covers CRUD/web work. |
+| 8 | Add Go exported-name facade. | Cheap language-rule win. |
+
+This is a manageable first PR.
+
+### What Not To Do
+
+Do not generate full typed wrappers for all 12 current Parceltongue languages on day one.
+
+That would create a large codegen surface before the product contract is proven.
+
+Do not keep typed generated code and handwritten query logic equally authoritative.
+
+That creates two sources of truth.
+
+Do not let generated facts drop raw spans.
+
+Codex needs source evidence, not just abstract graph claims.
+
+Do not allow capture-name collisions to silently disambiguate without a warning.
+
+Capture names are product semantics in Parceltongue.
+If two captures collapse to the same generated name, the language-pack manifest should report it.
+
+### Shreyas Product Read
+
+This is a "make the core loop trustable" feature.
+
+The user does not wake up wanting typed Tree-sitter wrappers.
+The user wants Codex to change a large codebase without missing public dependencies.
+
+Typed generated facts matter only because they make this answer more trustworthy:
+
+```text
+Before editing this function, read this public trait,
+this implementor,
+this exported route,
+this test,
+and ignore these private helpers for now.
+```
+
+The PMF framing:
+
+```text
+Typed wrappers are not the product.
+Typed facts are the trust infrastructure behind the product.
+```
+
+The minimum lovable result:
+
+```text
+Parceltongue can explain why it knows a symbol is public,
+which grammar/query fact proved it,
+and exactly where Codex should look.
+```
+
+That is more valuable than having a giant AST API nobody uses.
+
+### Reference Pattern Summary
+
+| Pattern | Source Repo | Parceltongue Takeaway |
+|---|---|---|
+| Typed node wrappers from `node-types.json` | `Jakobeha__type-sitter` | Generate fact-accessor facades instead of stringly `node.kind()` checks. |
+| Supertypes as enums | `Jakobeha__type-sitter` | Product supertypes like `PublicSurfaceDeclaration` should be explicit. |
+| Typed query captures | `Jakobeha__type-sitter` | Edge evidence and confidence can come from typed capture variants. |
+| Query directories as recursive modules | `Jakobeha__type-sitter` | Language packs should compile query folders into stable modules. |
+| Custom supertypes | `Jakobeha__type-sitter` | Parceltongue can add product semantics missing from grammar supertypes. |
+| Regeneration guard | `Jakobeha__type-sitter` | Generated output directories should be protected from deleting hand-written code. |
+| Pydantic node-types schema | `JoranHonig__python-tree-sitter-types` | A simple schema model is enough to start. |
+| Recursive raw-node-to-typed-object parser | `JoranHonig__python-tree-sitter-types` | Keep raw nodes available while adding typed convenience. |
+| Typed class generation with field annotations | `JoranHonig__python-tree-sitter-types` | Field names should become generated contract, not scattered strings. |
+| Field-name collision TODOs | `JoranHonig__python-tree-sitter-types` | Reserved/colliding names must be tested before codegen is trusted. |
+
+### Repos And Docs Touched For This Concept
+
+| Source | Evidence | Notes |
+|---|---|---|
+| `/Users/amuldotexe/.codex/skills/codebase-memory-evidence-reader/SKILL.md` | lines 1-72 | Required evidence-reader skill; graph output is an accelerator and direct source reads remain final proof. |
+| `/tmp/codex-code-intel/codebase-memory/Jakobeha__type-sitter-20260706-233700/index_repository.json` | local output | Codebase-memory indexed `type-sitter` with 17,473 nodes and 58,325 edges. |
+| `/tmp/codex-code-intel/codebase-memory/JoranHonig__python-tree-sitter-types-20260706-233817/index_repository.json` | local output | Codebase-memory indexed `python-tree-sitter-types` with 71 nodes and 125 edges. |
+| `git-ref-repo/ignore-this-folder-repos/Jakobeha__type-sitter/README.md` | lines 16-49 | Type-sitter overview: typed wrappers from `node-types.json`, typed query wrappers from query s-expressions, typed fields, typed captures, extra nodes, custom supertypes, optional yak-sitter. |
+| `git-ref-repo/ignore-this-folder-repos/Jakobeha__type-sitter/README.md` | lines 53-63 | Usage modes and vendoring requirement for grammar root, `node-types.json`, queries, and shared object. |
+| `git-ref-repo/ignore-this-folder-repos/Jakobeha__type-sitter/README.md` | lines 99-155 | Build-script generation pattern and `include!(OUT_DIR)` integration. |
+| `git-ref-repo/ignore-this-folder-repos/Jakobeha__type-sitter/README.md` | lines 157-203 | Custom supertypes and hidden-node naming examples. |
+| `git-ref-repo/ignore-this-folder-repos/Jakobeha__type-sitter/README.md` | lines 251-281 | CLI generation mode, input flexibility, and regeneration caveats. |
+| `git-ref-repo/ignore-this-folder-repos/Jakobeha__type-sitter/README.md` | lines 283-321 | Untyped vs typed import-path example and generated-code size/performance drawbacks. |
+| `git-ref-repo/ignore-this-folder-repos/Jakobeha__type-sitter/README.md` | lines 323-404 | Naming rules, reserved-name handling, deterministic disambiguation, module placement, and query capture naming. |
+| `git-ref-repo/ignore-this-folder-repos/Jakobeha__type-sitter/type-sitter-gen/src/queries/mod.rs` | lines 22-132 | Public query generation API: query path, language path, nodes path, yak-sitter flag, custom module paths, and `NodeTypeMap` load from `src/node-types.json`. |
+| `git-ref-repo/ignore-this-folder-repos/Jakobeha__type-sitter/type-sitter-gen/src/queries/mod.rs` | lines 134-203 | Recursive query directory/file generation and submodule emission for directories. |
+| `git-ref-repo/ignore-this-folder-repos/Jakobeha__type-sitter/type-sitter-gen/src/node_types/mod.rs` | lines 16-65 | `generate_nodes` accepts anything convertible into `NodeTypeMap`. |
+| `git-ref-repo/ignore-this-folder-repos/Jakobeha__type-sitter/type-sitter-gen/src/node_types/mod.rs` | lines 67-114 | Custom module path generation and printing each node type into generated tokens. |
+| `git-ref-repo/ignore-this-folder-repos/Jakobeha__type-sitter/type-sitter-gen/src/node_types/print.rs` | lines 16-78 | NodeType printing dispatches regular product nodes versus supertype sum nodes. |
+| `git-ref-repo/ignore-this-folder-repos/Jakobeha__type-sitter/type-sitter-gen/src/node_types/print.rs` | lines 80-155 | Generated product wrapper struct, `KIND`, `try_from_raw`, raw access, and conversion. |
+| `git-ref-repo/ignore-this-folder-repos/Jakobeha__type-sitter/type-sitter-gen/src/node_types/print.rs` | lines 158-307 | Generated enum/sum type wrapper and subtype conversion/access. |
+| `git-ref-repo/ignore-this-folder-repos/Jakobeha__type-sitter/type-sitter-gen/src/node_types/print.rs` | lines 459-647 | Common subtype fields and generated child/field accessors. |
+| `git-ref-repo/ignore-this-folder-repos/Jakobeha__type-sitter/type-sitter-lib/src/query/mod.rs` | lines 16-57 | Typed query trait with associated match/capture types and raw wrapper safety contract. |
+| `git-ref-repo/ignore-this-folder-repos/Jakobeha__type-sitter/type-sitter-lib/src/query/captures.rs` | lines 9-61 | Typed capture wrapper shape: query, raw capture, node, name, and index. |
+| `git-ref-repo/ignore-this-folder-repos/Jakobeha__type-sitter/type-sitter-lib/src/query/captures.rs` | lines 125-177 | Iteration maps raw captures into typed query captures. |
+| `git-ref-repo/ignore-this-folder-repos/Jakobeha__type-sitter/type-sitter-cli/src/args.rs` | lines 10-53 | CLI args: input type, output dir, language dir, yak-sitter flag, and path/output pairs. |
+| `git-ref-repo/ignore-this-folder-repos/Jakobeha__type-sitter/type-sitter-cli/src/args.rs` | lines 62-121 | Input type inference for `node-types.json`, `.scm`, query directories, and language roots. |
+| `git-ref-repo/ignore-this-folder-repos/Jakobeha__type-sitter/type-sitter-cli/src/process.rs` | lines 45-112 | Regeneration flow, safe directory removal, and recursive node/query generation for language roots. |
+| `git-ref-repo/ignore-this-folder-repos/JoranHonig__python-tree-sitter-types/README.md` | lines 4-32 | Python typed interface generation motivation, CLI use, parser install/load library functions, and typing/autocomplete value. |
+| `git-ref-repo/ignore-this-folder-repos/JoranHonig__python-tree-sitter-types/tree_sitter_types/node_types/__init__.py` | lines 1-32 | Pydantic schema for `node-types.json`: type specs, child specs, field specs, node types, node type list parser. |
+| `git-ref-repo/ignore-this-folder-repos/JoranHonig__python-tree-sitter-types/tree_sitter_types/generation/code_generator.py` | lines 8-52 | Type annotation construction from field/children specs, including Union/List/Optional handling. |
+| `git-ref-repo/ignore-this-folder-repos/JoranHonig__python-tree-sitter-types/tree_sitter_types/generation/code_generator.py` | lines 55-99 | Class generation for node types with field annotations and `field_names`. |
+| `git-ref-repo/ignore-this-folder-repos/JoranHonig__python-tree-sitter-types/tree_sitter_types/generation/code_generator.py` | lines 115-146 | Type-name-to-class map, base class with `base_node`, and generated import surface. |
+| `git-ref-repo/ignore-this-folder-repos/JoranHonig__python-tree-sitter-types/tree_sitter_types/parser/parser.py` | lines 4-29 | Depth-first traversal over raw Tree-sitter cursor/tree. |
+| `git-ref-repo/ignore-this-folder-repos/JoranHonig__python-tree-sitter-types/tree_sitter_types/parser/parser.py` | lines 31-83 | Recursive raw-node to typed-object conversion, field handling, child fallback, base node retention, and TODOs. |
+| `git-ref-repo/ignore-this-folder-repos/JoranHonig__python-tree-sitter-types/tree_sitter_types/cli/__init__.py` | lines 15-47 | CLI reads `node-types.json`, builds generated class source, and writes target file. |
+| `git-ref-repo/ignore-this-folder-repos/JoranHonig__python-tree-sitter-types/tree_sitter_types/parser/parser_manager.py` | lines 7-44 | Parser installation, shared-library build, cleanup, and load path. |
+
+## Concept 34: Turn Structural Search And Structural Diff Into Changed Public Contracts
+
+### Core Idea
+
+Parceltongue should not treat "search", "diff", and "dependency graph" as three separate
+features. For agentic code assistance, the highest-value product shape is a tool that can
+answer this question:
+
+```text
+The agent is about to edit or has just edited this code.
+What public contract changed, what depends on it, and what should the agent inspect next
+with the smallest useful token packet?
+```
+
+The reference repos in this concept point to three complementary pieces:
+
+1. `ast-grep__ast-grep` shows how to make structural search feel like code-shaped search,
+   with meta-variables, relational constraints, replacement templates, and rule validation.
+2. `afnanenayet__diffsitter` shows how to expose Tree-sitter parsing as a bounded navigation
+   surface for tools and agents, plus a pragmatic AST-leaf diff path.
+3. `Wilfred__difftastic` shows how to normalize a raw Tree-sitter tree into a simpler syntax
+   representation, diff it as a graph problem, and fall back conservatively when the parse or
+   graph budget is not trustworthy.
+
+The Parceltongue synthesis:
+
+```text
+typed Tree-sitter facts
+  -> structural search rules
+  -> before/after public-fact diff
+  -> dependency/blast-radius expansion
+  -> token-budgeted agent context packet
+```
+
+This is different from "show me a diff". It is closer to:
+
+```text
+Tell Codex what changed that matters, why it matters, and where to look next.
+```
+
+### Why This Concept Comes After Concept 33
+
+Concept 33 argued for generated typed Tree-sitter facts before writing query logic.
+Concept 34 is the next layer. Once Parceltongue has typed facts, it can compare facts,
+not raw files.
+
+Raw AST diffing answers:
+
+```text
+Which syntax nodes changed?
+```
+
+Typed fact diffing answers:
+
+```text
+Which public names, signatures, schemas, routes, trait contracts, call edges,
+exports, configuration keys, or externally meaningful behavior surfaces changed?
+```
+
+That is the agentic code-assistance primitive. The LLM does not need the entire file when it
+asks a tool for context. It needs the smallest coherent dependency packet around the changed
+contract.
+
+### Evidence Table
+
+| Repo | Evidence Used | What It Proves | Parceltongue Relevance |
+|---|---|---|---|
+| `ast-grep__ast-grep` | CodeGraphContext indexed 298 files, 2,754 functions; direct reads of `README.md`, `crates/language/src/lib.rs`, `crates/core/src/matcher.rs`, `crates/core/src/matcher/pattern.rs`, `crates/core/src/meta_var.rs`, `crates/core/src/replacer.rs`, `crates/core/src/replacer/template.rs`, `crates/config/src/check_var.rs`, `crates/config/src/rule/relational_rule.rs` | Structural matching can be code-shaped, typed by language, pruned by node kind, and validated before use. | Use this style for public-contract rules and dangerous-change detectors. |
+| `afnanenayet__diffsitter` | CodeGraphContext indexed 101 files, 379 functions; direct reads of `src/parse.rs`, `src/ast_navigation.rs`, `src/input_processing.rs`, `src/diff.rs`, `src/mcp_server.rs`, `src/bin/diffsitter.rs`, `tests/ast_navigation_test.rs` | Tree-sitter can be wrapped as a narrow navigation/MCP surface with parse caching, node lookup, scope lookup, query execution, symbol listing, definition lookup, and children lookup. | This is very close to the "LLM asks query -> tool returns bounded context" user journey. |
+| `Wilfred__difftastic` | CodeGraphContext scan was attempted but ended with signal 143 before a completed smoke footer; direct reads of `README.md`, `manual/src/parsing.md`, `manual/src/diffing.md`, `manual/src/language_detection.md`, `manual/src/tree_diffing.md`, `src/parse/syntax.rs`, `src/parse/tree_sitter_parser.rs`, `src/diff/changes.rs`, `src/diff/shortest_path.rs`, `src/diff/graph.rs`, `src/main.rs`, `src/options.rs` | Structural diff needs normalization, cost modeling, graph limits, parse-error limits, and conservative text fallback. | Use this as the pattern for honest changed-contract diffing under large-codebase pressure. |
+
+### Product Journey: Agent Asks For The Smallest Correct Next Context
+
+The journey Parceltongue should optimize is not:
+
+```text
+User asks broad question.
+Agent dumps files into context.
+LLM guesses.
+```
+
+It should be:
+
+```text
+Agent asks Parceltongue:
+  "I am editing `create_user_session_from_token`.
+   What public contract and dependency context should I inspect before changing it?"
+
+Parceltongue returns:
+  - the function signature and nearby typed facts
+  - callers and callees that define the contract
+  - public exports/routes/schemas/trait impls touched by the function
+  - tests that exercise the contract
+  - changed-contract risk flags
+  - exact next entities to inspect, sorted by usefulness per token
+```
+
+After the edit:
+
+```text
+Agent asks Parceltongue:
+  "Compare before and after. Did the public contract change?"
+
+Parceltongue returns:
+  - changed public facts
+  - dependencies affected by those facts
+  - confidence level
+  - fallback reasons if AST/fact matching was incomplete
+  - next verification commands or tests to run
+```
+
+This is the Shreyas Doshi view: the product is not a graph. The product is an improved
+agent decision at the point where the agent would otherwise waste context, miss a dependency,
+or change a public surface accidentally.
+
+### The Three Tool Layers
+
+Parceltongue should keep three layers separate internally, even if the user experience feels
+like one tool.
+
+```text
+Layer 1: Structural Search
+  Finds code-shaped facts and rule matches.
+
+Layer 2: Structural Diff
+  Finds changed syntax or changed normalized facts between two versions.
+
+Layer 3: Dependency Expansion
+  Explains who relies on the changed contract and what the agent should inspect next.
+```
+
+If these layers are mixed too early, the tool becomes brittle. If they are separate, the agent
+can ask increasingly precise questions:
+
+```text
+Search: "Where are public route handlers?"
+Diff:   "Which public route facts changed?"
+Graph:  "Which clients/tests/callers depend on those changed route facts?"
+```
+
+### Ast-Grep Pattern: Code-Shaped Structural Search
+
+Ast-grep's strongest idea is that a structural pattern can look like ordinary code. A user
+does not need to learn a full AST schema before writing a useful match. The README presents
+patterns using meta-variables such as `$MATCH`, and the language layer preprocesses those
+patterns so they can parse in languages where the literal meta-variable marker would be illegal.
+
+The important implementation details:
+
+| Pattern | Source Evidence | Parceltongue Adaptation |
+|---|---|---|
+| Code-shaped pattern source | `crates/core/src/matcher/pattern.rs:345-375` builds patterns from source strings after language preprocessing. | Let Parceltongue rules be written as example code snippets where possible. |
+| Pattern root kind pruning | `Pattern::potential_kinds` in `crates/core/src/matcher/pattern.rs:408-428` returns a `BitSet` of possible target kinds when it can. | Public-contract rules should declare target node kinds so scans avoid whole-tree matching. |
+| Contextual pattern selection | `Pattern::contextual` in `crates/core/src/matcher/pattern.rs:364-375`; tests around `public_field_definition` at lines 549-567. | Rules like "public method inside impl" should support selector-plus-context matching. |
+| Meta-variable environment | `MetaVarEnv` in `crates/core/src/meta_var.rs:14-21`; inserts and repeated-variable checks at lines 32-48 and 89-118. | Captured names/signatures/types should become structured facts, not only strings. |
+| Multi-capture support | `MetaVariable::MultiCapture` and `Multiple` in `crates/core/src/meta_var.rs:223-233`. | Rules can capture argument lists, generic params, match arms, body statements, or route middleware lists. |
+| Rule validation | `crates/config/src/check_var.rs:63-133` checks variables used in constraints/transforms/fixes. | Parceltongue should reject public-impact rules that reference undefined captures. |
+| Relational rules | `Inside`, `Has`, `Precedes`, and `Follows` in `crates/config/src/rule/relational_rule.rs`. | "This function has an attribute", "this type is inside a module", "this export follows a declaration" should be first-class. |
+
+The exact move to borrow:
+
+```text
+Do not expose raw Tree-sitter queries as the only interface.
+Expose code-shaped patterns and compile them down into Tree-sitter-aware matchers.
+```
+
+Tree-sitter queries are powerful, but they are not the best front door for an LLM or a solo
+power user. A code-shaped pattern is closer to how the agent already thinks.
+
+### Ast-Grep Pattern: Meta-Variables Are Facts, Not Strings
+
+Ast-grep's meta-variable environment is more disciplined than string substitution. It keeps:
+
+```text
+single captures
+multi captures
+transformed variables
+```
+
+It also rejects inconsistent repeated captures by checking structural equality. If a pattern
+uses the same capture twice, the second occurrence must match the first. That is extremely
+useful for Parceltongue.
+
+For public-contract detection, repeated captures can express rules like:
+
+```text
+public function `$NAME` changed return type
+exported symbol `$NAME` has no matching test named around `$NAME`
+route `$PATH` changed handler but not auth middleware
+trait method `$METHOD` changed impl signature
+```
+
+The matcher should not merely report:
+
+```json
+{ "NAME": "foo" }
+```
+
+It should report a structured fact:
+
+```rust
+struct CapturedContractFact {
+    rule_id: RuleId,
+    capture_name: String,
+    node_kind: String,
+    symbol_name: Option<String>,
+    source_span: SourceSpan,
+    text_preview: String,
+    stable_fingerprint: String,
+}
+```
+
+That lets the dependency layer connect captures to entities, call edges, exports, and tests.
+
+### Ast-Grep Pattern: Relational Rules Are The Missing Middle
+
+The relational rules in ast-grep matter because public contracts are rarely detectable from a
+single node alone.
+
+Examples:
+
+```text
+The node is public because it is inside a public module.
+The method is public because it is in a trait impl that is exported.
+The handler is public because it has a route attribute.
+The schema field is public because it is inside a serializable struct.
+The config key is public because it is read from environment/config binding code.
+```
+
+A single Tree-sitter node kind is not enough. Parceltongue needs relation-aware rule primitives:
+
+| Rule Primitive | Meaning | Example Use |
+|---|---|---|
+| `inside` | Current node has an ancestor matching a rule. | Function inside exported module. |
+| `has` | Current node contains a child/descendant matching a rule. | Struct has public field. |
+| `precedes` | Current node comes before another relevant node. | Comment/doc contract before declaration. |
+| `follows` | Current node comes after another relevant node. | Implementation follows trait declaration. |
+| `field` | Relation constrained to a Tree-sitter field id. | Match only name/type/body fields, not all children. |
+| `stop_by` | Bound traversal by neighbor/end/rule. | Avoid unbounded scans inside large files. |
+
+The important implementation detail is that ast-grep turns field names into numeric field IDs
+through the language abstraction. Parceltongue should do the same. Repeated string comparisons
+over node kinds and field names are fine for a prototype, but public-impact scanning should use
+compiled rule objects.
+
+### Ast-Grep Pattern: Validate Rules Before Agents Use Them
+
+For agentic workflows, rule validation is product safety. Ast-grep checks that captures used
+in constraints, transforms, and fixes are actually defined. Parceltongue should apply the same
+idea to analysis rules, not just rewrites.
+
+Bad rule:
+
+```yaml
+id: rust-public-function-return-type
+match:
+  pattern: "pub fn $NAME($$$ARGS) -> $RET { $$$BODY }"
+emit:
+  symbol: "$NAME"
+  return_type: "$RETURN_TYPE"
+```
+
+The rule defines `$RET` but emits `$RETURN_TYPE`. Parceltongue should reject this rule at load
+time, not silently emit partial facts.
+
+For a solo power user, this matters because bad rules can quietly poison the agent context.
+The LLM then reasons from false or missing evidence. Rule validation is not polish; it is a
+guardrail against expensive context mistakes.
+
+### Diffsitter Pattern: A Narrow Agent Navigation Surface
+
+Diffsitter has a very relevant MCP-facing surface:
+
+```text
+parse_file
+get_node_at_position
+get_scope
+navigate
+query
+list_symbols
+get_definition
+get_children_of
+```
+
+This is almost exactly the "LLM asks query -> tool responds with relevant context" loop.
+The key design is not that it exposes Tree-sitter. The key design is that it exposes small,
+bounded answers.
+
+`NodeInfo` intentionally includes:
+
+```text
+kind
+is_named
+span
+text preview
+child count
+field name
+named children summary
+```
+
+It also truncates inline text at a fixed limit. That is a small but important token-control
+pattern. If a node is huge, the tool should not stuff the whole node into the LLM by default.
+
+Parceltongue should use the same shape, but with dependency awareness:
+
+```rust
+struct AgentNodeContext {
+    entity_id: EntityId,
+    kind: EntityKind,
+    symbol_name: Option<String>,
+    source_span: SourceSpan,
+    preview: String,
+    named_children: Vec<ChildSummary>,
+    callers_summary: Vec<EdgeSummary>,
+    callees_summary: Vec<EdgeSummary>,
+    public_contract_summary: Option<PublicContractSummary>,
+    omitted_reason: Option<String>,
+}
+```
+
+This is not a giant AST dump. It is a bounded context object.
+
+### Diffsitter Pattern: Scope Lookup Is A Product Primitive
+
+`get_scope` walks up from a point to the innermost language-specific scope and returns a parent
+chain. The language-specific scope list includes nodes like Rust `function_item`, `impl_item`,
+`struct_item`, `enum_item`, `trait_item`, and `mod_item`.
+
+That is exactly what an agent needs when it has an error location:
+
+```text
+Compiler error at line 211.
+What scope am I in?
+What symbol is this?
+What parent impl/trait/module gives it meaning?
+What dependency context should I inspect next?
+```
+
+Parceltongue should support this as a first-class workflow:
+
+```text
+GET /context/point?file=src/foo.rs&line=211&column=17&budget=2000
+```
+
+The response should include:
+
+```text
+innermost entity
+parent entity chain
+public/private status
+callers/callees clipped to budget
+tests touching the entity
+next recommended query
+```
+
+This is much better than asking the LLM to infer context from a file chunk.
+
+### Diffsitter Pattern: Symbol Query With Heuristic Fallback
+
+Diffsitter uses language-specific Tree-sitter queries for symbols when available. If no query
+works, it falls back to root named children with a `name` field.
+
+This is an important PMF pattern for Parceltongue:
+
+```text
+Perfect language support is not required to be useful.
+But imperfect support must be labeled.
+```
+
+Parceltongue should score every extracted fact:
+
+| Confidence | Source | Agent Behavior |
+|---|---|---|
+| `high` | Generated typed grammar fact or validated language-specific query. | Use for dependency and public-contract decisions. |
+| `medium` | Heuristic `name` field extraction or generic scope kind. | Use for orientation, ask for confirmation before risky edits. |
+| `low` | Text fallback, regex fallback, parse-error fallback. | Return as candidate context only, not proof. |
+
+This gives Codex a way to reason honestly:
+
+```text
+I found this as a medium-confidence symbol, so I should inspect source before editing.
+```
+
+### Diffsitter Pattern: Parse Cache With Mtime Invalidation
+
+Diffsitter's `ParseCache` stores parsed files by canonical path and reparses when the file's
+modified time changes. That is exactly the kind of simple, robust cache Parceltongue needs
+before inventing heavier database machinery.
+
+For a solo agent power user, the steady-state loop is:
+
+```text
+agent reads/edit file
+agent asks context question
+tool reparses only stale files
+tool returns compact graph/fact answer
+```
+
+The cache should be transparent. The agent should not need to care whether the answer came from
+fresh parse, stale invalidation, or persisted index, as long as the response includes:
+
+```text
+index_timestamp
+file_mtime_seen
+staleness
+confidence
+```
+
+### Diffsitter Pattern: Diff Vectors Are Flattened AST Leaves
+
+Diffsitter flattens Tree-sitter leaves into `Entry` values and compares `kind_id + text`.
+It can split leaves into Unicode graphemes, strip whitespace, include/exclude node kinds, and
+treat configured pseudo-leaf types as leaves.
+
+For Parceltongue, this is not the final algorithm, but it gives a useful analogy:
+
+```text
+Diffsitter flattens syntax leaves.
+Parceltongue should flatten public-contract facts.
+```
+
+Instead of comparing every leaf token, compare:
+
+```text
+PublicFunctionFact
+PublicTypeFact
+PublicFieldFact
+PublicRouteFact
+PublicSchemaFact
+PublicTraitFact
+ExportFact
+CallEdgeFact
+TestCoverageFact
+ConfigKeyFact
+```
+
+Then compute the edit script over facts:
+
+```text
+removed public function
+added public function
+same name, changed signature
+same route, changed handler
+same schema, changed field type
+same trait method, changed impl coverage
+```
+
+That is a much smaller diff for the LLM and much closer to what the agent must act on.
+
+### Difftastic Pattern: Normalize Raw Tree-Sitter Into Product Syntax
+
+Difftastic does not diff the raw Tree-sitter parse tree directly. Its manual explains that it
+converts the parse tree into a simpler syntax tree of atoms and lists. Source code confirms
+the representation:
+
+```text
+Syntax::Atom
+Syntax::List
+SyntaxInfo
+unique_id
+content_id
+parent/sibling traversal cells
+change metadata
+```
+
+This is a key architectural pattern:
+
+```text
+Raw Tree-sitter nodes are parser-shaped.
+Agent context should be product-shaped.
+```
+
+For Parceltongue, the normalized layer should not be `Atom` and `List`. It should be:
+
+```text
+EntityFact
+EdgeFact
+ContractFact
+ScopeFact
+ExportFact
+TestFact
+DiagnosticFact
+```
+
+Each normalized fact should have:
+
+```text
+stable identity
+content fingerprint
+source span
+language
+confidence
+public/private meaning
+dependency links
+```
+
+Then the agent works with stable facts instead of raw syntax trivia.
+
+### Difftastic Pattern: Separate Unique Identity From Content Identity
+
+Difftastic's syntax nodes carry both unique IDs and content IDs. Unique ID says "this exact
+node instance"; content ID says "this content is the same as another node's content regardless
+of position".
+
+Parceltongue needs the same distinction.
+
+Example:
+
+```text
+pub fn parse_user_token(input: &str) -> Result<UserToken>
+```
+
+A unique fact ID might include:
+
+```text
+repo
+file path
+span
+language
+node id
+```
+
+A content ID should include:
+
+```text
+symbol namespace
+name
+public signature
+generic params
+return type
+visibility
+attributes
+```
+
+Why this matters:
+
+```text
+Moved function, same signature:
+  unique fact changed location
+  content fact stayed same
+  public contract probably unchanged
+
+Same function, changed return type:
+  unique fact stayed similar
+  content fact changed
+  public contract changed
+```
+
+This distinction is crucial for reducing false alarms.
+
+### Difftastic Pattern: Structural Diff Needs Budgets
+
+Difftastic treats structural diffing as graph search and uses limits:
+
+```text
+byte limit
+parse error limit
+graph limit
+text fallback
+check-only mode
+```
+
+This is directly relevant to large-codebase agent work. A tool that always attempts the most
+precise graph operation can become the bottleneck. Worse, it can leave the LLM waiting or
+force the agent to abandon the tool.
+
+Parceltongue should expose budget-aware modes:
+
+| Mode | Purpose | Behavior |
+|---|---|---|
+| `check_only` | Fast "did any public contract change?" | Compare public fact fingerprints only. |
+| `contract_diff` | Explain changed public facts. | Return changed fact objects and source spans. |
+| `impact_context` | Help the agent decide next files. | Expand dependency graph around changed facts. |
+| `deep_structural_diff` | Investigate confusing changes. | Use AST-aware diff with higher graph budget. |
+| `fallback_text_context` | Stay useful when parse/graph fails. | Return line/text spans with explicit fallback reason. |
+
+The user experience should make fallback visible:
+
+```json
+{
+  "mode": "impact_context",
+  "confidence": "medium",
+  "fallbacks": [
+    "difftastic-style graph budget exceeded for src/big_generated.rs",
+    "used typed public facts plus line diff"
+  ]
+}
+```
+
+The agent can still act, but it knows to be more cautious.
+
+### Difftastic Pattern: Check-Only Is A Great Agent Primitive
+
+Difftastic supports a check-only mode to determine whether two files have the same AST without
+calculating the full diff. Parceltongue should implement the public-contract equivalent:
+
+```text
+Are the before/after public contract facts equivalent?
+```
+
+This is a very high-PMF command for Codex:
+
+```bash
+parseltongue check-public-impact --base HEAD --worktree . --json
+```
+
+Possible response:
+
+```json
+{
+  "has_public_contract_changes": true,
+  "changed_fact_count": 3,
+  "highest_risk": "route_signature_changed",
+  "next_query": "parseltongue explain-public-impact --fact route:POST:/sessions"
+}
+```
+
+The agent does not need a wall of output. It needs a fast yes/no plus the next precise query.
+
+### The Changed Public Contract Data Model
+
+A first pass model:
+
+```rust
+enum PublicContractKind {
+    Function,
+    Type,
+    Field,
+    Trait,
+    Impl,
+    Route,
+    Schema,
+    Export,
+    ConfigKey,
+    TestContract,
+}
+
+enum ContractChangeKind {
+    Added,
+    Removed,
+    SignatureChanged,
+    VisibilityChanged,
+    AttributeChanged,
+    SchemaChanged,
+    RouteChanged,
+    DependencyChanged,
+    BodyChangedPubliclyRelevant,
+    MovedWithoutContractChange,
+}
+
+struct PublicContractFact {
+    id: String,
+    content_id: String,
+    kind: PublicContractKind,
+    language: String,
+    symbol_name: Option<String>,
+    visibility: Option<String>,
+    signature: Option<String>,
+    source_span: SourceSpan,
+    dependency_edges: Vec<EdgeId>,
+    confidence: Confidence,
+}
+
+struct PublicContractChange {
+    change_kind: ContractChangeKind,
+    before: Option<PublicContractFact>,
+    after: Option<PublicContractFact>,
+    impacted_entities: Vec<EntityImpact>,
+    evidence_spans: Vec<SourceSpan>,
+    confidence: Confidence,
+    fallback_reasons: Vec<String>,
+}
+```
+
+The key is that `PublicContractChange` should be the primary output to Codex, not a raw AST
+node, not a raw graph node, and not a raw file diff.
+
+### Proposed Parceltongue Pipeline
+
+```text
+1. Parse changed files.
+2. Generate typed facts from Tree-sitter nodes.
+3. Compile structural rules by language.
+4. Run public-contract extractors.
+5. Compute before/after fact diff.
+6. Attach source spans and confidence.
+7. Expand dependency graph only around changed facts.
+8. Rank next inspection targets by usefulness per token.
+9. Return compact agent packet.
+```
+
+The pipeline should support both pre-edit and post-edit workflows.
+
+Pre-edit:
+
+```text
+Given an entity, what contract could this edit affect?
+```
+
+Post-edit:
+
+```text
+Given before/after, what contract did this edit actually affect?
+```
+
+### Concrete API Shape
+
+The API should be boring and composable:
+
+```text
+GET /api/v1/context/point
+GET /api/v1/context/entity
+GET /api/v1/search/structural
+GET /api/v1/diff/public-contract
+GET /api/v1/impact/public-contract
+GET /api/v1/check/public-contract
+```
+
+Example request:
+
+```json
+{
+  "repo": ".",
+  "base": "HEAD",
+  "target": "worktree",
+  "budget_tokens": 4000,
+  "include_tests": true,
+  "include_callers": true,
+  "include_callees": true,
+  "confidence_floor": "medium"
+}
+```
+
+Example response:
+
+```json
+{
+  "summary": "2 public contracts changed",
+  "changes": [
+    {
+      "kind": "SignatureChanged",
+      "entity": "parse_user_token",
+      "before_signature": "fn parse_user_token(&str) -> Result<UserToken>",
+      "after_signature": "fn parse_user_token(&str, Clock) -> Result<UserToken>",
+      "impact": ["create_user_session_from_token", "session_api_tests"],
+      "confidence": "high"
+    }
+  ],
+  "next_to_inspect": [
+    {
+      "entity": "create_user_session_from_token",
+      "reason": "direct caller of changed public function",
+      "estimated_tokens": 720
+    }
+  ],
+  "fallbacks": []
+}
+```
+
+### Token Efficiency: Why This Beats File Dumping
+
+A file dump spends tokens on:
+
+```text
+imports
+formatting
+unchanged body code
+nearby private helpers
+comments unrelated to current task
+syntax trivia
+```
+
+A changed-contract packet spends tokens on:
+
+```text
+changed facts
+contract spans
+direct dependency edges
+tests
+next inspection targets
+fallback warnings
+```
+
+This is the core PMF:
+
+```text
+Codex needs less context, but better context.
+```
+
+For a large codebase, this matters more than UI polish. A tool that saves 4,000 tokens and
+prevents one missed dependency is immediately useful to a solo power user.
+
+### What To Borrow From Each Repo
+
+| Repo | Borrow | Do Not Borrow Blindly |
+|---|---|---|
+| `ast-grep__ast-grep` | Code-like structural patterns, meta-variable env, pattern preprocessing, potential-kind pruning, relational rules, undefined capture validation. | Do not turn Parceltongue into a codemod-first tool. Search/rewrite is a means, not the product. |
+| `afnanenayet__diffsitter` | MCP-style narrow tools, parse cache, scope lookup, symbol query fallback, node previews, AST navigation by point. | Do not stop at syntax navigation; Parceltongue must add dependency and public-impact semantics. |
+| `Wilfred__difftastic` | Normalized syntax layer, unique/content identity split, change map, graph-cost diff, check-only mode, parse/graph fallback reasons. | Do not expose human visual diff as the primary agent interface. Codex needs decision context, not side-by-side display. |
+
+### Design Rule: Every Result Needs A Confidence And A Next Query
+
+For an LLM-facing tool, returning facts is not enough. Each response should include:
+
+```text
+confidence
+evidence spans
+what was omitted
+why it was omitted
+recommended next query
+estimated token cost
+```
+
+Example:
+
+```json
+{
+  "entity": "SessionStore",
+  "confidence": "medium",
+  "evidence": [
+    "struct exported from crate root",
+    "constructor called by API route",
+    "serializer derive detected"
+  ],
+  "omitted": [
+    "transitive callers beyond depth 2"
+  ],
+  "next_query": {
+    "name": "impact/public-contract",
+    "args": {
+      "entity": "SessionStore",
+      "depth": 3,
+      "budget_tokens": 3000
+    }
+  }
+}
+```
+
+The next query is important because it turns Parceltongue into a navigation partner rather
+than a one-shot report.
+
+### Rust-Specific Public Contract Rules
+
+Initial Rust rules for Parceltongue:
+
+| Rule ID | Detects | Structural Signal |
+|---|---|---|
+| `rust_public_function_signature` | Public function contract. | `pub fn` name, args, return type, attributes. |
+| `rust_trait_method_contract` | Trait API surface. | `trait_item` method signatures and associated types. |
+| `rust_impl_public_method` | Public method surface. | `impl_item` containing public `function_item`. |
+| `rust_export_surface` | Re-exported symbol. | `pub use`, crate root exports, module visibility. |
+| `rust_serde_schema_surface` | Serialized schema contract. | Struct/enum with serde derives and public fields. |
+| `rust_route_handler_surface` | HTTP/API route surface. | Axum/Actix/Rocket route macros or router construction. |
+| `rust_error_contract` | Error variants visible to callers. | Public enum variants implementing error traits. |
+| `rust_feature_flag_contract` | Feature/config public surface. | `cfg(feature = ...)`, env/config key reads. |
+
+This is where ast-grep-style relational rules help:
+
+```text
+pub fn inside public module
+function has route attribute
+struct has serde derive
+enum follows error derive
+impl has public method
+```
+
+### TypeScript-Specific Public Contract Rules
+
+For CRUD apps and agent work across TypeScript:
+
+| Rule ID | Detects | Structural Signal |
+|---|---|---|
+| `ts_exported_function_contract` | Exported function/API. | `export function`, exported const arrow function. |
+| `ts_route_handler_contract` | Route/API endpoint. | Express/Fastify/Next route registrations. |
+| `ts_zod_schema_contract` | Request/response schema. | `z.object`, exported schema constants, inferred types. |
+| `ts_public_type_contract` | External type surface. | `export interface`, `export type`, public class. |
+| `ts_env_config_contract` | Runtime config API. | `process.env`, config schema, env validation. |
+| `ts_test_contract_link` | Tests around changed surface. | Test names and imports referencing changed export. |
+
+The tool should not need perfect framework knowledge to start. It can return high-confidence
+facts for exported types/functions and medium-confidence facts for route/config conventions.
+
+### C/C++ Systems Contract Rules
+
+For C and C++ systems programming:
+
+| Rule ID | Detects | Structural Signal |
+|---|---|---|
+| `c_public_header_symbol` | Header-level public API. | Declarations in `.h`/`.hpp`. |
+| `c_function_signature_contract` | Function ABI/API surface. | Function declarator signature. |
+| `c_struct_layout_contract` | Struct layout that may affect ABI. | Public struct fields, order, types. |
+| `cpp_class_public_method` | Public class contract. | Public section methods and fields. |
+| `cpp_template_contract` | Template API surface. | Template params and exported declarations. |
+| `c_macro_contract` | Macro API surface. | Public macro definitions in headers. |
+
+This is where difftastic-style conservative fallback matters. C/C++ parse errors and
+preprocessor behavior are common. Parceltongue should label confidence rather than pretending
+the raw AST is complete.
+
+### Product Functionality That Falls Out Of Concept 34
+
+This concept supports multiple concrete tools:
+
+| Functionality | Agent Journey | Why It Matters |
+|---|---|---|
+| `check_public_impact` | Agent checks whether an edit changed public contracts. | Fast yes/no before commit or before broader refactor. |
+| `explain_public_impact` | Agent asks why a changed contract matters. | Avoids missed callers/tests/docs. |
+| `context_for_point` | Agent starts from compiler error line/column. | Gives scope and dependency context quickly. |
+| `structural_search_public` | Agent searches for code-shaped public patterns. | Better than regex when locating API surfaces. |
+| `contract_diff_since_base` | Agent compares worktree to `HEAD`. | Post-edit verification loop. |
+| `next_context_to_read` | Agent asks what to inspect next under token budget. | Directly optimizes context usage. |
+| `fallback_report` | Agent sees what was not trusted. | Prevents overconfident edits. |
+
+### A Possible CLI For Codex App Usage
+
+For this user's workflow, the CLI should be simple enough for Codex to call with shell:
+
+```bash
+parseltongue check-public-impact --base HEAD --target worktree --json
+parseltongue explain-public-impact --entity parse_user_token --budget 4000 --json
+parseltongue context-for-point src/session.rs:211:17 --budget 2000 --json
+parseltongue structural-search --lang rust --pattern 'pub fn $NAME($$$ARGS) -> $RET { $$$BODY }' --json
+parseltongue next-context --entity SessionStore --task refactor --budget 6000 --json
+```
+
+The output should be intentionally boring JSON, because Codex can parse, rank, and decide.
+
+### Tests Parceltongue Should Add
+
+| Test ID | Test Name | Requirement |
+|---|---|---|
+| `T524` | `detect_rust_public_function_signature_change` | Changing a Rust public function return type emits `SignatureChanged`. |
+| `T526` | `ignore_private_body_only_change` | Changing only a private helper body does not emit public-contract change unless it affects a public dependency rule. |
+| `T528` | `detect_route_handler_contract_change` | Changing route path/method/handler emits route contract change. |
+| `T530` | `validate_undefined_rule_capture` | A structural rule that emits an undefined capture fails at load time. |
+| `T532` | `return_scope_context_for_point` | A file/line/column query returns innermost scope and parent chain. |
+| `T534` | `fallback_when_parse_error_limit_exceeded` | Parse failures return fallback reason and do not claim high confidence. |
+| `T536` | `fallback_when_graph_budget_exceeded` | Structural diff budget overflow returns text/fact fallback reason. |
+| `T538` | `rank_next_context_by_token_value` | Dependency expansion returns direct impacted entities before broad transitive context. |
+| `T540` | `detect_moved_contract_without_signature_change` | Moving a public function without changing signature is labeled separately from contract change. |
+| `T542` | `diff_public_facts_not_raw_ast` | Formatting-only AST changes do not become public contract changes. |
+
+### Concept-Level Acceptance Criteria
+
+```text
+WHEN Parceltongue compares before/after code
+THEN it SHALL report changed public facts, not just changed lines.
+
+WHEN structural rule matching uses captures
+THEN it SHALL validate all referenced captures before running.
+
+WHEN parsing or graph diffing exceeds configured limits
+THEN it SHALL return a conservative fallback with explicit reason.
+
+WHEN an agent asks for context around a changed contract
+THEN it SHALL return a token-budgeted packet with next inspection targets.
+
+WHEN a changed contract has callers, callees, tests, routes, or schemas
+THEN it SHALL include those dependency edges before unrelated file context.
+```
+
+### PMF Judgment For This Concept
+
+This is one of the most relevant directions for Parceltongue.
+
+Reason:
+
+```text
+Codex already has shell, rg, git diff, language servers, and direct file access.
+What Codex lacks is a compact, reliable explanation of what code relationships matter
+after a change.
+```
+
+Structural search alone is not enough. Difftastic-style diff alone is not enough.
+Tree-sitter MCP navigation alone is not enough.
+
+The high-PMF combination is:
+
+```text
+structural facts + changed public contracts + dependency expansion + token budget
+```
+
+That is a real solo power-user tool. It helps Codex navigate faster and more reliably in
+large codebases without asking the user to productize anything for other people.
+
+### Most Useful Build Slice
+
+The smallest useful Parceltongue V2 slice from this concept:
+
+```text
+Rust-only public contract diff for worktree vs HEAD.
+```
+
+Scope:
+
+```text
+1. Parse changed Rust files.
+2. Extract public functions, structs, enums, traits, impl methods, and pub uses.
+3. Compare before/after public facts.
+4. For changed facts, find direct callers/callees from existing dependency graph.
+5. Return JSON with confidence, spans, and next entities to inspect.
+```
+
+Do not start with every language. Do not start with perfect C++ preprocessor handling.
+Do not start with a UI.
+
+Start with:
+
+```bash
+parseltongue check-public-impact --base HEAD --json
+```
+
+If this is fast and reliable, Codex will use it constantly.
+
+### Implementation Notes For Parceltongue
+
+1. Keep rule compilation separate from rule execution.
+2. Store language-specific node kind IDs and field IDs in compiled rules.
+3. Store captures as typed fact references, not only raw strings.
+4. Use a parse cache with file mtimes.
+5. Assign both unique IDs and content IDs to normalized facts.
+6. Compare public facts before doing expensive AST graph diffing.
+7. Use graph/fact budget limits and always return fallback reasons.
+8. Rank dependency expansion by directness, confidence, and estimated token cost.
+9. Return a `next_query` in every nontrivial result.
+10. Keep the CLI JSON-first so Codex App can use it through shell today.
+
+### Search Keywords This Concept Adds
+
+These are the new keywords Parceltongue research should track:
+
+```text
+structural search
+code-shaped AST pattern
+meta-variable environment
+multi-capture structural pattern
+relational AST rule
+Tree-sitter query capture
+AST navigation MCP
+symbol query fallback
+scope chain lookup
+AST leaf vector diff
+syntax-aware diff
+AST-aware diff
+Tree-sitter structural diff
+public contract diff
+semantic public impact
+API surface change detector
+typed fact diff
+normalized syntax tree
+unique node id
+content id
+graph diff budget
+parse error fallback
+check-only structural diff
+token-budgeted code context
+agent next-context query
+```
+
+### Summary
+
+The lesson from these repos is not "use Tree-sitter". The lesson is:
+
+```text
+Use Tree-sitter to generate trustworthy structural facts.
+Use structural search to identify meaningful code contracts.
+Use structural diff to detect meaningful changes.
+Use dependency graphs to explain impact.
+Use budgets and confidence to keep the agent honest.
+```
+
+That is the Parceltongue product center.
+
+## Concept 35: Treat Parser Lifecycle As A Cache Contract, Not A Parser Detail
+
+### Why This Concept Exists
+
+Concept 34 said Parceltongue should produce changed public facts, not just changed
+lines. That immediately raises a harder question:
+
+```text
+Can Parceltongue trust its syntax trees across edits?
+```
+
+Tree-sitter's answer is precise. Incremental parsing is not magic. The caller has to
+keep the old tree aligned with the edited source, pass that edited old tree back to
+the parser, and then use changed ranges to invalidate downstream facts. If Parceltongue
+gets this lifecycle wrong, every graph edge, public contract diff, and token-budgeted
+context packet becomes suspect.
+
+So this concept is about a boring but extremely high-leverage design rule:
+
+```text
+Parser lifecycle must be a first-class Parceltongue cache contract.
+```
+
+Not:
+
+```text
+We happen to keep a parser around for speed.
+```
+
+But:
+
+```text
+Every parse result has a language ABI, grammar identity, included-range policy,
+source revision, edit history, tree revision, changed-range set, query budget,
+and invalidation consequence.
+```
+
+That is the difference between "Tree-sitter wrapper" and "agent context engine".
+
+### Repositories Inspected
+
+| Repo | Why It Matters | Evidence Collected |
+|---|---|---|
+| `tree-sitter__tree-sitter` | Canonical C implementation and public API for parsers, trees, ranges, nodes, queries, ABI boundaries, cancellation, and logging. | codebase-memory scan: 7915 nodes / 27164 edges. CodeGraphContext scan: 494 files / 3039 functions / 97 classes / 361 structs / 83 enums / 371 modules. Direct reads from `lib/include/tree_sitter/api.h`, `lib/src/parser.c`, `lib/src/tree.c`, `lib/src/get_changed_ranges.c`, `lib/src/query.c`, and parser docs. |
+| `tree-sitter__py-tree-sitter` | A compact binding that shows the user-facing API shape for parser lifecycle: `Parser.parse`, `Tree.edit`, `Tree.changed_ranges`, `Node.edit`, `QueryCursor` bounds, included ranges, logger, and ABI checks. | codebase-memory scan: 546 nodes / 1346 edges. CodeGraphContext scan: 31 files / 139 functions / 11 classes / 15 structs / 30 modules. Direct reads from `tree_sitter/__init__.pyi`, C binding files, and tests. |
+
+### CodeGraphContext Evidence
+
+The user explicitly asked to use CodeGraphContext here, so it is treated as required
+evidence, not optional decoration.
+
+| Repo | CodeGraphContext Result | What It Added |
+|---|---|---|
+| `tree-sitter__tree-sitter` | Smoke run completed at `/tmp/codex-code-intel/codegraphcontext/tree-sitter__tree-sitter-20260706-235900`; verified output did not mention `gitrefrepo/`. Explicit CGC lookups found `ts_parser_parse`, `ts_tree_get_changed_ranges`, and `ts_query_cursor_set_match_limit` locations before source confirmation. | Confirmed repository scale and gave a second index view over core parser/query/tree implementation files before direct source reads. |
+| `tree-sitter__py-tree-sitter` | Smoke run completed at `/tmp/codex-code-intel/codegraphcontext/tree-sitter__py-tree-sitter-20260706-235821`. CGC indexed the Python tests/examples and found lifecycle tests like `test_parse_with_one_included_range`, `test_parse_with_multiple_included_ranges`, and `test_parse_with_a_newly_excluded_range`; exact C extension function-name lookup was less useful, so binding internals were verified by direct reads. | Confirmed the binding is small enough to treat as an API design reference rather than only a language binding. |
+
+CodeGraphContext was used as navigational evidence. The claims below are grounded in
+direct source reads because the skill's rule is: graph evidence helps find things;
+source evidence proves them.
+
+### Core Thesis
+
+Parceltongue should model Tree-sitter parsing as a lifecycle state machine:
+
+```text
+language selected
+included ranges selected
+source version parsed
+tree stored
+source edit received
+old tree edited
+new source reparsed with old tree
+changed ranges computed
+facts invalidated
+queries bounded
+dependency graph patched
+context packet emitted
+```
+
+That lifecycle should be visible in code, visible in CLI output, and visible to Codex.
+
+The wrong product shape:
+
+```text
+parse(file) -> AST
+```
+
+The right product shape:
+
+```text
+parse_incremental_file_version(file, source_revision, edit_batch, cache_policy)
+  -> ParseLifecycleReport {
+       tree_revision,
+       changed_ranges,
+       invalidated_facts,
+       retained_facts,
+       query_budget_used,
+       parser_confidence,
+       next_context_targets
+     }
+```
+
+### Pattern 1: ABI Compatibility Belongs In The Cache Key
+
+Tree-sitter has hard parser/library compatibility boundaries. The core header defines
+the currently supported language ABI and minimum compatible ABI:
+
+```text
+TREE_SITTER_LANGUAGE_VERSION = 15
+TREE_SITTER_MIN_COMPATIBLE_LANGUAGE_VERSION = 13
+```
+
+The public `ts_parser_set_language` contract returns false when the language was
+generated with an incompatible Tree-sitter CLI version. The C implementation enforces
+that check before it accepts a language. The Python binding exposes the same idea as
+`Language.abi_version` and raises a `ValueError` if the language ABI is outside the
+supported range.
+
+For Parceltongue, this means:
+
+```text
+language_id alone is not enough for parser cache identity.
+```
+
+The cache key must include at least:
+
+| Cache Field | Why |
+|---|---|
+| `language_id` | Rust, TypeScript, Python, C, C++, etc. |
+| `tree_sitter_language_abi` | Prevents reusing trees/facts across incompatible generated parsers. |
+| `grammar_revision` | Grammar node kinds and fields can change even when the language name does not. |
+| `parser_runtime_revision` | The runtime's behavior and supported ABI window can change. |
+| `query_bundle_revision` | Parceltongue queries depend on grammar node names and field names. |
+
+Suggested shape:
+
+```rust
+pub struct ParserCacheKey {
+    pub repo_root_id: RepoRootId,
+    pub file_path: Utf8PathBuf,
+    pub language_id: LanguageId,
+    pub tree_sitter_language_abi: u32,
+    pub grammar_revision: GrammarRevision,
+    pub parser_runtime_revision: ParserRuntimeRevision,
+    pub query_bundle_revision: QueryBundleRevision,
+    pub included_range_hash: IncludedRangeHash,
+}
+```
+
+The important PMF point:
+
+```text
+An agent should never debug a stale parser ABI issue by reading random code.
+Parceltongue should reject the stale cache and say why.
+```
+
+### Pattern 2: Old Trees Must Be Edited Before Incremental Reparse
+
+Tree-sitter's incremental flow is strict:
+
+```text
+1. The source changes.
+2. Caller constructs TSInputEdit with byte and point coordinates.
+3. Caller applies ts_tree_edit to the old tree.
+4. Caller parses the new source and passes that edited old tree.
+5. Tree-sitter reuses unchanged subtrees.
+```
+
+The docs are explicit that efficient reparsing needs two steps: edit the syntax tree,
+then parse again with the old tree. The `ts_parser_parse` API also says that, for
+reuse to work correctly, the old syntax tree must already have been edited in a way
+that exactly matches the source code changes.
+
+The Python tests show the exact workflow:
+
+```python
+tree = parser.parse(b"def foo():\n  bar()")
+tree.edit(...)
+new_tree = parser.parse(b"def foo(ab):\n  bar()", tree)
+changed_ranges = tree.changed_ranges(new_tree)
+```
+
+Parceltongue implication:
+
+```text
+Edit handling is not an implementation detail inside the parser adapter.
+It is the boundary between source revision N and source revision N+1.
+```
+
+If Parceltongue receives a file edit from Codex, a watch event, or a git diff, it
+should normalize it into one internal type:
+
+```rust
+pub struct SourceInputEdit {
+    pub start_byte: u32,
+    pub old_end_byte: u32,
+    pub new_end_byte: u32,
+    pub start_point: SourcePoint,
+    pub old_end_point: SourcePoint,
+    pub new_end_point: SourcePoint,
+}
+```
+
+And the lifecycle method should make the edit order impossible to bypass:
+
+```rust
+pub fn parse_incremental_file_version(
+    cache_entry: &mut ParserCacheEntry,
+    new_source: &SourceText,
+    source_edit: SourceInputEdit,
+) -> ParseLifecycleReport {
+    cache_entry.old_tree.edit(&source_edit);
+    let new_tree = cache_entry.parser.parse(new_source, Some(&cache_entry.old_tree));
+    let changed_ranges = cache_entry.old_tree.changed_ranges(&new_tree);
+    cache_entry.replace_tree(new_tree);
+    cache_entry.invalidate_changed_facts(changed_ranges)
+}
+```
+
+The exact method names above are illustrative, but the order should be enforced in
+real code.
+
+### Pattern 3: Stored Nodes Are Stale Unless Edited Or Re-Fetched
+
+Tree-sitter nodes carry tree identity and position context. The core API exposes
+`ts_node_edit`, but the docs emphasize it is only needed if the caller kept a `TSNode`
+retrieved before the tree edit and wants to continue using that same node instance.
+Often the better approach is to re-fetch nodes from the edited tree.
+
+This is a huge warning for Parceltongue.
+
+Do not persist raw `TSNode` handles as durable graph identities.
+
+Persist this instead:
+
+| Durable Thing | Purpose |
+|---|---|
+| `FactId` | Stable Parceltongue identity for a discovered code fact. |
+| `SourceSpan` | Byte and point range in a specific source revision. |
+| `ContentFingerprint` | Helps detect unchanged fact bodies across parse revisions. |
+| `GrammarPath` | Node-kind/field path used to re-find a fact after edits. |
+| `TreeRevision` | Prevents accidental cross-tree node reuse. |
+
+Suggested rule:
+
+```text
+Tree-sitter node handles are per-tree navigation cursors.
+Parceltongue facts are persisted graph objects.
+```
+
+That separation prevents a class of stale-node bugs where the graph says a function
+still starts at byte 100 but the source edit moved it to byte 127.
+
+### Pattern 4: Changed Ranges Are Structural Invalidation Hints
+
+Tree-sitter changed ranges are not "the exact text that changed". The public API says
+they represent ranges where hierarchical syntax structure changed between old and new
+trees. Characters outside those ranges have identical ancestor nodes in both trees.
+It also says the returned ranges can be slightly larger than the exact changed area.
+
+The implementation is also instructive. `ts_tree_get_changed_ranges` compares both
+the old/new roots and the old/new included ranges. That means included-range changes
+can produce syntax changes even when the raw source bytes are mostly unchanged.
+
+The Python tests make this concrete:
+
+```text
+When an included range is newly excluded, changed_ranges includes the directive range
+because the syntax tree changed even though the edit was about inclusion policy.
+```
+
+Parceltongue should therefore treat changed ranges like this:
+
+```text
+changed_ranges = minimal structural invalidation candidate set
+```
+
+Not like this:
+
+```text
+changed_ranges = all semantic impact
+```
+
+Downstream invalidation should combine:
+
+| Signal | Why |
+|---|---|
+| Source edit byte range | Captures the raw textual edit. |
+| Tree-sitter changed ranges | Captures syntactic structure shifts. |
+| Included-range differences | Captures embedded-language parse boundary shifts. |
+| Public fact diff | Captures API contract changes. |
+| Dependency graph reachability | Captures callers/callees that did not syntactically change. |
+
+Suggested invalidation flow:
+
+```text
+changed source bytes
+  -> edited old tree
+  -> new tree
+  -> changed structural ranges
+  -> facts intersecting changed ranges
+  -> public fact diff
+  -> dependency expansion
+  -> token-budgeted context packet
+```
+
+This gives Parceltongue a principled answer to:
+
+```text
+What must Codex inspect next?
+```
+
+### Pattern 5: Included Ranges Are Part Of Parse Identity
+
+Tree-sitter supports parsing only selected ranges of a document while preserving
+coordinates in the whole document. That is how applications can parse embedded
+languages in templates.
+
+The core docs show an embedded-template example:
+
+```text
+Parse the whole file as ERB.
+Extract HTML ranges and Ruby ranges from the ERB tree.
+Set parser language and included ranges.
+Parse HTML and Ruby over the original document.
+```
+
+The Python tests show the same shape across HTML, JavaScript, and template strings:
+parse the outer language, derive ranges for the embedded language, switch parser
+language, set included ranges, and parse the same source bytes with full-document
+coordinates.
+
+For Parceltongue, included ranges should be promoted to first-class graph input:
+
+```rust
+pub struct IncludedRangePolicy {
+    pub owner_language: LanguageId,
+    pub target_language: LanguageId,
+    pub ranges: Vec<SourceRange>,
+    pub extracted_from_fact: Option<FactId>,
+    pub policy_hash: IncludedRangeHash,
+}
+```
+
+This matters for real solo power-user work:
+
+| File Type | Why Included Ranges Matter |
+|---|---|
+| `.tsx` / JSX | JavaScript/TypeScript plus embedded JSX grammar regions. |
+| Vue/Svelte/Astro | Script/template/style sections need separate structural facts. |
+| Markdown with code fences | Code blocks can be parsed by language while keeping document coordinates. |
+| HTML with script/style | JavaScript/CSS facts live inside HTML containers. |
+| Rust doc tests | Code examples can matter to agent reasoning and tests. |
+| SQL strings in application code | Future slice could parse embedded SQL ranges. |
+
+Cache implication:
+
+```text
+Same file bytes + same grammar + different included ranges = different tree.
+```
+
+So `included_range_hash` belongs in `ParserCacheKey`.
+
+### Pattern 6: Query Cursor Bounds Are Token-Budget Controls
+
+Tree-sitter query cursors are not just "run query and get captures". The core API and
+Python binding expose several controls:
+
+| Control | Meaning For Parceltongue |
+|---|---|
+| `set_byte_range` | Return matches intersecting a byte window. |
+| `set_point_range` | Return matches intersecting a row/column window. |
+| `set_containing_byte_range` | Return only matches fully contained in a byte window. |
+| `set_containing_point_range` | Return only matches fully contained in a point window. |
+| `set_max_start_depth` | Limit how deep the cursor starts matching. |
+| `match_limit` | Cap in-progress matches. |
+| `did_exceed_match_limit` | Detect that the query result may be incomplete. |
+| query progress callback | Stop long-running query execution. |
+
+The C implementation starts query cursors with unbounded ranges and unlimited depth.
+That is fine for a library. It is not fine for an agent context tool.
+
+Parceltongue should never run agent-facing structural queries without an explicit
+budget policy.
+
+Suggested query policy:
+
+```rust
+pub struct StructuralQueryBudget {
+    pub byte_range: Option<SourceByteRange>,
+    pub point_range: Option<SourcePointRange>,
+    pub containing_range: Option<SourceByteRange>,
+    pub max_start_depth: Option<u32>,
+    pub match_limit: u32,
+    pub time_budget_ms: u64,
+    pub token_budget: usize,
+}
+```
+
+Agent-facing behavior:
+
+```text
+If did_exceed_match_limit is true, Parceltongue must say:
+"results_truncated": true
+"reason": "tree_sitter_query_match_limit_exceeded"
+"next_query": "narrow byte range or raise match limit"
+```
+
+That is much more useful than silently dropping matches and letting Codex reason from
+an incomplete picture.
+
+### Pattern 7: Parser Reset And Cancellation Must Be Explicit
+
+The core parser has a progress callback. If parsing is cancelled, Tree-sitter can
+resume where it left off on the next parse. The API says that if the caller does not
+want to resume and intends to parse another document, it must call `ts_parser_reset`.
+The Python binding exposes `Parser.reset()` with the same public shape.
+
+This is an agent reliability detail.
+
+Codex may ask Parceltongue to inspect:
+
+```text
+file A
+file B
+file C
+then back to file A
+```
+
+If a long parse or query is cancelled and the parser silently resumes against the
+wrong logical task, the agent gets confusing behavior.
+
+Parceltongue should model cancellation like this:
+
+```text
+cancelled parse
+  -> mark parser state dirty
+  -> reset before next unrelated document
+  -> report cancellation reason
+```
+
+Suggested report field:
+
+```rust
+pub enum ParserLifecycleState {
+    Clean,
+    IncrementalReuse,
+    CancelledNeedsReset,
+    ResetBeforeParse,
+    AbiRejected,
+    QueryLimitExceeded,
+    ParseFailed,
+}
+```
+
+The agent should see this in JSON. Not as logs buried in stderr.
+
+### Pattern 8: Logging And DOT Graphs Are Debugging Interfaces, Not Product UI
+
+Tree-sitter exposes parser logging and DOT graph output. The Python binding keeps this
+visible through `logger` and `print_dot_graphs`.
+
+Parceltongue should not make the normal product experience depend on DOT graphs, but
+it should preserve the debugging channel:
+
+```bash
+parseltongue parse-file src/lib.rs --debug-dot /tmp/parse.dot
+parseltongue parse-file src/lib.rs --debug-log /tmp/parse.log
+```
+
+For a solo Codex power user, that matters when a grammar behaves unexpectedly. The
+agent can ask for a debug artifact, but ordinary flows stay JSON-first.
+
+### The Agent User Journey
+
+The user journey for Codex should feel like this:
+
+```text
+Codex sees an edit or bug.
+Codex asks Parceltongue for the lifecycle-aware context.
+Parceltongue says what changed structurally.
+Parceltongue says which facts were invalidated.
+Parceltongue says what public contracts changed.
+Parceltongue says which dependency edges make the change risky.
+Parceltongue returns the smallest useful snippets and next queries.
+Codex edits with less wandering.
+```
+
+Concrete example:
+
+```bash
+parseltongue parse-incremental \
+  --file crates/core/src/session.rs \
+  --from-revision HEAD \
+  --to-revision worktree \
+  --budget 4000 \
+  --json
+```
+
+Possible response shape:
+
+```json
+{
+  "file": "crates/core/src/session.rs",
+  "language": "rust",
+  "tree_sitter_language_abi": 15,
+  "parser_lifecycle_state": "IncrementalReuse",
+  "source_edit_count": 2,
+  "changed_ranges": [
+    {
+      "start_byte": 4180,
+      "end_byte": 4621,
+      "start_point": {"row": 132, "column": 0},
+      "end_point": {"row": 147, "column": 1}
+    }
+  ],
+  "invalidated_facts": [
+    "function:parse_user_session_token",
+    "impl_method:SessionStore::load_user_session"
+  ],
+  "retained_facts": [
+    "struct:SessionStore",
+    "enum:SessionError"
+  ],
+  "public_contract_changes": [
+    {
+      "fact_id": "function:parse_user_session_token",
+      "change": "return_type_changed",
+      "confidence": "high"
+    }
+  ],
+  "dependency_edges_to_inspect": [
+    "caller:authenticate_request_handler",
+    "test:test_parse_user_session_token_expired"
+  ],
+  "query_budget": {
+    "match_limit": 512,
+    "did_exceed_match_limit": false,
+    "token_budget": 4000,
+    "estimated_tokens_returned": 1280
+  },
+  "next_query": "parseltongue explain-public-impact --fact function:parse_user_session_token --budget 2500 --json"
+}
+```
+
+This is the key product behavior:
+
+```text
+LLM asks query to tool.
+Tool responds with relevant lifecycle-aware context.
+LLM decides what to inspect next with fewer tokens.
+```
+
+### What This Adds Beyond LSP
+
+A language server can tell Codex "definition", "references", maybe "call hierarchy".
+That is useful, but it does not usually give:
+
+```text
+old tree was edited correctly
+changed structural ranges
+included range changes
+query budget status
+public fact invalidation
+cross-language embedded range identity
+agent-ready next query
+```
+
+Parceltongue's opportunity is not to replace LSP. The opportunity is to sit beside
+LSP as the structural cache and dependency explanation layer.
+
+### What This Adds Beyond Plain `rg`
+
+`rg` is still the first tool for literals. But `rg` cannot say:
+
+```text
+This edit only changed a function body.
+This edit changed an exported signature.
+This edit changed the parse boundary for embedded JavaScript.
+This query exceeded a match limit and may be incomplete.
+This syntax tree was produced by ABI 15 grammar revision X.
+This fact can be retained across the edit because its structural ancestors did not change.
+```
+
+That is why this concept is PMF-relevant for a Codex app power user.
+
+### Suggested Parceltongue Data Model
+
+```rust
+pub struct ParserCacheEntry {
+    pub cache_key: ParserCacheKey,
+    pub source_revision: SourceRevision,
+    pub source_hash: SourceHash,
+    pub tree_revision: TreeRevision,
+    pub tree: ParsedTreeHandle,
+    pub included_ranges: Vec<SourceRange>,
+    pub parse_errors: Vec<ParseErrorFact>,
+    pub last_changed_ranges: Vec<SourceRange>,
+    pub last_lifecycle_state: ParserLifecycleState,
+    pub fact_index: FactIndexSnapshot,
+}
+
+pub struct ParseLifecycleReport {
+    pub file_path: Utf8PathBuf,
+    pub language_id: LanguageId,
+    pub source_revision_before: SourceRevision,
+    pub source_revision_after: SourceRevision,
+    pub lifecycle_state: ParserLifecycleState,
+    pub changed_ranges: Vec<SourceRange>,
+    pub invalidated_facts: Vec<FactId>,
+    pub retained_facts: Vec<FactId>,
+    pub public_contract_changes: Vec<PublicContractChange>,
+    pub dependency_edges_to_inspect: Vec<DependencyEdgeId>,
+    pub query_budget_report: QueryBudgetReport,
+    pub confidence: ParseConfidence,
+    pub next_query: Option<String>,
+}
+```
+
+The thing to notice:
+
+```text
+The parse tree is not the product.
+The lifecycle report is the product.
+```
+
+### Suggested Commands
+
+```bash
+parseltongue parse-file src/lib.rs --json
+parseltongue parse-incremental src/lib.rs --base HEAD --target worktree --json
+parseltongue changed-ranges src/lib.rs --base HEAD --target worktree --json
+parseltongue invalidated-facts src/lib.rs --base HEAD --target worktree --budget 4000 --json
+parseltongue query-structural src/lib.rs --query queries/rust-public.scm --byte-range 1000:5000 --match-limit 512 --json
+parseltongue explain-parser-cache src/lib.rs --json
+```
+
+For Codex, `explain-parser-cache` is especially useful. It should answer:
+
+```text
+Can this cached tree be trusted?
+Why or why not?
+What changed since the last parse?
+What facts were retained?
+What facts were invalidated?
+Did any query limit truncate results?
+```
+
+### Tests Parceltongue Should Add
+
+| Test ID | Test Name | Requirement |
+|---|---|---|
+| `T544` | `reject_parser_cache_on_abi_mismatch` | A cached tree/fact bundle with a different Tree-sitter language ABI is rejected with explicit reason. |
+| `T546` | `edit_old_tree_before_incremental_parse` | Incremental parse applies the source edit to the old tree before reusing it. |
+| `T548` | `do_not_persist_raw_node_handles` | Persistent facts store spans/fingerprints/tree revision, not raw Tree-sitter node handles. |
+| `T550` | `invalidate_facts_intersecting_changed_ranges` | Changed structural ranges invalidate intersecting facts and retain unrelated facts. |
+| `T552` | `included_ranges_change_cache_identity` | Same source bytes with different included ranges create a distinct parse identity. |
+| `T554` | `report_query_match_limit_exceeded` | Structural query results include `did_exceed_match_limit` and truncation reason. |
+| `T556` | `reset_parser_after_cancelled_unrelated_parse` | A cancelled parse marks parser state dirty and resets before parsing another document. |
+| `T558` | `bound_query_by_byte_and_point_range` | Agent-facing query APIs require explicit byte or point bounds unless caller chooses `full_file`. |
+| `T560` | `included_range_diff_invalidates_embedded_facts` | Embedded-language facts are invalidated when included ranges change even if source bytes are mostly stable. |
+| `T562` | `return_next_query_after_incremental_parse` | Lifecycle reports include a next query when changed facts have dependency edges. |
+
+### Concept-Level Acceptance Criteria
+
+```text
+WHEN Parceltongue reuses a Tree-sitter tree
+THEN it SHALL first verify language ABI, grammar revision, query bundle revision,
+and included-range identity.
+
+WHEN Parceltongue performs an incremental parse
+THEN it SHALL apply the source edit to the old tree before passing it to parse.
+
+WHEN Parceltongue has stored facts from a previous tree revision
+THEN it SHALL invalidate facts intersecting changed structural ranges and retain
+unchanged facts only when their tree revision and fingerprint rules allow it.
+
+WHEN Parceltongue runs a structural query for an agent
+THEN it SHALL use explicit range/depth/match/time budget controls or mark the query
+as intentionally full-file.
+
+WHEN Tree-sitter reports a query limit or cancellation
+THEN Parceltongue SHALL surface that state in JSON and provide a next query or fallback.
+```
+
+### PMF Judgment For This Concept
+
+This is a high-PMF concept for the user's stated use case:
+
+```text
+Solo agent power user.
+All languages.
+CRUD apps plus Rust/C/C++ systems programming.
+Use Codex app.
+Help agent navigate large codebases faster and more reliably.
+```
+
+The reason is simple:
+
+```text
+Fast unreliable context is worse than slow direct reading.
+Fast reliable lifecycle-aware context is a superpower.
+```
+
+Tree-sitter already gives the low-level machinery. The product gap is the lifecycle
+report that an LLM can consume without reading parser internals every time.
+
+Score:
+
+```text
+PMF for Parceltongue: 94 / 100
+```
+
+Why not 100:
+
+```text
+This is infrastructure. It becomes product only when paired with public-contract
+facts, dependency expansion, and next-query recommendations.
+```
+
+But as infrastructure, it is foundational. If parser lifecycle is wrong, everything
+above it is untrustworthy.
+
+### Most Useful Build Slice
+
+Build this slice first:
+
+```text
+Rust-only incremental parse lifecycle report for worktree vs HEAD.
+```
+
+Scope:
+
+```text
+1. Parse one Rust file at HEAD.
+2. Parse the worktree version.
+3. Convert the diff hunk into SourceInputEdit where possible.
+4. Edit the old tree.
+5. Reparse with old tree.
+6. Compute changed ranges.
+7. Extract function/struct/enum/trait facts in changed ranges.
+8. Return JSON with invalidated facts, retained facts, and next query.
+```
+
+Then expand to TypeScript.
+
+Do not start with every language. The lifecycle abstraction must be proven in one
+language first, with tests that make stale-cache behavior impossible to ignore.
+
+### Search Keywords This Concept Adds
+
+```text
+Tree-sitter incremental parsing
+Tree-sitter parser lifecycle
+Tree-sitter old tree reuse
+TSInputEdit
+ts_tree_edit
+ts_node_edit
+ts_tree_get_changed_ranges
+Tree-sitter changed ranges
+Tree-sitter included ranges
+Tree-sitter ABI version
+Tree-sitter language ABI
+tree_sitter Parser.parse old_tree
+tree_sitter Tree.edit
+tree_sitter Tree.changed_ranges
+tree_sitter QueryCursor match_limit
+tree_sitter QueryCursor byte range
+tree_sitter QueryCursor point range
+structural query budget
+syntax tree cache invalidation
+parser cache key
+grammar revision cache
+included range hash
+embedded language parsing
+stale syntax node
+fact invalidation graph
+parse lifecycle report
+agent code context lifecycle
+```
+
+### Summary
+
+The key lesson from Tree-sitter core and py-tree-sitter is:
+
+```text
+Parsing is a lifecycle, not a function call.
+```
+
+For Parceltongue, that means:
+
+```text
+Make parser cache identity explicit.
+Make edit order impossible to bypass.
+Make changed ranges feed fact invalidation.
+Make included ranges part of parse identity.
+Make query bounds mandatory for agent-facing APIs.
+Make cancellation and match-limit truncation visible to Codex.
+```
+
+If Concept 34 is about "what public contracts changed", Concept 35 is about "can we
+trust the trees and facts used to answer that question".
+
 ### Next Concepts To Add
 
-1. Inspect CodeGraphContext, Clarity, Graphify, coco-index/Turso-style repos, and local Parceltongue docs to define the concrete Parceltongue V2 product shortlist: which existing tool should be used with Codex today, which ideas should be copied, and which ideas should be avoided.
+1. Inspect Tree-sitter grammar repos for `node-types.json`, query files, corpus tests, injections, locals, highlights, and language-specific schema patterns that can make Parceltongue's fact extraction less brittle.
+2. Inspect `BloopAI__bloop`, `sourcegraph__scip`, and similar code-intelligence repos for cross-language symbol identity and repository-scale indexing patterns that could feed `PublicContractFact`.
+3. Inspect `Cody`, `Aider`, `Continue`, and MCP-oriented code tools for how agent-facing code context should package summaries, snippets, and next-step recommendations.
